@@ -11,7 +11,8 @@ class Install
      */
     public static function install()
     {
-        symlink(__DIR__ . "/webman", base_path()."/webman");
+        copy_dir(__DIR__ . "/webman", base_path()."/webman");
+        chmod(base_path()."/webman", 0755);
     }
 
     /**
@@ -22,5 +23,5 @@ class Install
     {
         unlink(base_path()."/webman");
     }
-    
+
 }
