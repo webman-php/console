@@ -1,6 +1,6 @@
 {
   "name": "webman/console",
-  "type": "project",
+  "type": "library",
   "keywords": [
     "webman console"
   ],
