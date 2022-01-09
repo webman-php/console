@@ -6,11 +6,12 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Webman\Console\Util;
 
 class PluginExportCommand extends Command
 {
     protected static $defaultName = 'plugin:export';
-    protected static $defaultDescription = 'Plugin export';
+    protected static $defaultDescription = 'Plugin Export';
 
     /**
      * @return void
@@ -18,7 +19,6 @@ class PluginExportCommand extends Command
     protected function configure()
     {
         $this->addOption('name', 'name', InputOption::VALUE_REQUIRED, 'Plugin name, for example foo/my-admin');
-        $this->addOption('dest', 'dest', InputOption::VALUE_REQUIRED, 'Location of plugin storage for export');
         $this->addOption('source', 'source', InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, 'Directories to export');
     }
 
@@ -35,19 +35,17 @@ class PluginExportCommand extends Command
             $output->writeln('<error>Bad name, name must contain character \'/\' , for example foo/MyAdmin</error>');
             return self::INVALID;
         }
-        $namespace = $this->getNamespace($name);
+        $namespace = Util::nameToNamespace($name);
         $path_relations = $input->getOption('source');
-        $original_dest = $dest = $input->getOption('dest');
-        if (!is_dir($dest)) {
-            mkdir($dest, 0777, true);
-        }
-        $output->writeln("<info>Create $dest/composer.json</info>");
-        $this->createComposerJson($name, $namespace, $dest);
+        $original_dest = $dest = base_path()."/vendor/$name";
         $dest .= '/src';
         $this->writeInstallFile($namespace, $path_relations, $dest);
         $output->writeln("<info>Create $dest/Install.php</info>");
-
-        foreach ($input->getOption('source') as $source) {
+        $sources = $input->getOption('source');
+        if (!in_array("config/plugin/$name", $sources)) {
+            $sources[] = "config/plugin/$name";
+        }
+        foreach ($sources as $source) {
             $base_path = pathinfo("$dest/$source", PATHINFO_DIRNAME);
             if (!is_dir($base_path)) {
                 mkdir($base_path, 0777, true);
@@ -57,48 +55,6 @@ class PluginExportCommand extends Command
         }
         $output->writeln("<info>Saved $name to $original_dest</info>");
         return self::SUCCESS;
-    }
-
-    /**
-     * @param $name
-     * @return string
-     */
-    protected function getNamespace($name)
-    {
-        $namespace = ucfirst($name);
-
-        $namespace = preg_replace_callback(['/-([a-zA-Z])/', '/(\/[a-zA-Z])/'], function ($matches) {
-            return strtoupper($matches[1]);
-        }, $namespace);
-        $namespace = str_replace('/', '\\' ,ucfirst($namespace));
-        return $namespace;
-    }
-
-    /**
-     * @param $name
-     * @param $namespace
-     * @param $dest
-     * @return void
-     */
-    protected function createComposerJson($name, $namespace, $dest)
-    {
-        $namespace = str_replace('\\', '\\\\', $namespace);
-        $composer_json_content = <<<EOT
-{
-  "name": "$name",
-  "type": "library",
-  "license": "MIT",
-  "require": {
-    "php": ">=7.2"
-  },
-  "autoload": {
-    "psr-4": {
-      "$namespace\\\\": "src"
-    }
-  }
-}
-EOT;
-        file_put_contents("$dest/composer.json", $composer_json_content);
     }
 
     /**
@@ -173,14 +129,20 @@ class Install
     public static function uninstallByRelation()
     {
         foreach (static::\$pathRelation as \$source => \$dest) {
-            /*if (is_link(base_path()."/\$dest")) {
-                unlink(base_path()."/\$dest");
+            \$path = base_path()."/\$dest";
+            if (!is_dir(\$path) && !is_file(\$path)) {
+                continue;
+            }
+            /*if (is_link(\$path) {
+                unlink(\$path);
             }*/
-            remove_dir(base_path()."/\$dest");
+            remove_dir(\$path);
         }
     }
+    
 }
 EOT;
         file_put_contents("$dest_dir/Install.php", $install_php_content);
     }
+
 }
