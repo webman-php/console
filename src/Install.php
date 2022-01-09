@@ -11,7 +11,7 @@ class Install
      */
     public static function install()
     {
-        copy_dir(__DIR__ . "/webman", base_path()."/webman");
+        copy(__DIR__ . "/webman", base_path()."/webman");
         chmod(base_path()."/webman", 0755);
     }
 
