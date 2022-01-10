@@ -116,7 +116,7 @@ EOF;
   "type": "library",
   "license": "MIT",
   "require": {
-    "php": ">=7.2"
+    "workerman/webman-framework": "^1.2.1"
   },
   "autoload": {
     "psr-4": {
