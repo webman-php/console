@@ -25,10 +25,7 @@ class VersionCommand extends Command
         if (is_file($installed_file)) {
             $version_info = include $installed_file;
         }
-        $webman_version = $version_info['root']['pretty_version'] ?? (defined('WEBMAN_VERSION') ? WEBMAN_VERSION : '< 1.2.0');
-        if ($webman_version === 'dev-master') {
-            $webman_version .= '('.(defined('WEBMAN_VERSION') ? WEBMAN_VERSION : '<1.2.0').')';
-        }
+        $webman_version = defined('WEBMAN_VERSION') ? WEBMAN_VERSION : '< 1.2.0';
         $output->writeln("Webman $webman_version");
         $webman_framework_version = $version_info['versions']['workerman/webman-framework']['pretty_version'] ?? '';
         $output->writeln("Webman-framework $webman_framework_version");
