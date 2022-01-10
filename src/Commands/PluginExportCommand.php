@@ -11,7 +11,7 @@ use Webman\Console\Util;
 class PluginExportCommand extends Command
 {
     protected static $defaultName = 'plugin:export';
-    protected static $defaultDescription = 'Plugin Export';
+    protected static $defaultDescription = 'Plugin export';
 
     /**
      * @return void
