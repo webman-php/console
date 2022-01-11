@@ -37,15 +37,14 @@ class PluginExportCommand extends Command
         }
         $namespace = Util::nameToNamespace($name);
         $path_relations = $input->getOption('source');
+        if (!in_array("config/plugin/$name", $path_relations)) {
+            $path_relations[] = "config/plugin/$name";
+        }
         $original_dest = $dest = base_path()."/vendor/$name";
         $dest .= '/src';
         $this->writeInstallFile($namespace, $path_relations, $dest);
         $output->writeln("<info>Create $dest/Install.php</info>");
-        $sources = $input->getOption('source');
-        if (!in_array("config/plugin/$name", $sources)) {
-            $sources[] = "config/plugin/$name";
-        }
-        foreach ($sources as $source) {
+        foreach ($path_relations as $source) {
             $base_path = pathinfo("$dest/$source", PATHINFO_DIRNAME);
             if (!is_dir($base_path)) {
                 mkdir($base_path, 0777, true);
