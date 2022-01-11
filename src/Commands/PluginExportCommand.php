@@ -38,7 +38,9 @@ class PluginExportCommand extends Command
         $namespace = Util::nameToNamespace($name);
         $path_relations = $input->getOption('source');
         if (!in_array("config/plugin/$name", $path_relations)) {
-            $path_relations[] = "config/plugin/$name";
+            if (is_dir("config/plugin/$name")) {
+                $path_relations[] = "config/plugin/$name";
+            }
         }
         $original_dest = $dest = base_path()."/vendor/$name";
         $dest .= '/src';
