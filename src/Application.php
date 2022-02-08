@@ -24,7 +24,9 @@ class Application
 
         $runtime_views_path = runtime_path() . DIRECTORY_SEPARATOR . 'views';
         if ( !file_exists($runtime_views_path) || !is_dir($runtime_views_path) ) {
-            mkdir($runtime_views_path,0777,true);
+            if (!mkdir($runtime_views_path,0777,true)) {
+                throw new RuntimeException("Failed to create runtime directory. Please check the permission.");
+            }
         }
 
         Worker::$onMasterReload = function (){
