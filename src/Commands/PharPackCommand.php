@@ -30,7 +30,7 @@ class PharPackCommand extends Command
             throw new RuntimeException('Please set the phar file output directory.');
         }
         if (!file_exists($phar_file_output_dir) && !is_dir($phar_file_output_dir)) {
-            if (mkdir($phar_file_output_dir,0777,true)) {
+            if (!mkdir($phar_file_output_dir,0777,true)) {
                 throw new RuntimeException("Failed to create phar file output directory. Please check the permission.");
             }
         }
@@ -38,11 +38,6 @@ class PharPackCommand extends Command
         $phar_filename = config('plugin.webman.console.app.phar_filename');
         if (empty($phar_filename)) {
             throw new RuntimeException('Please set the phar filename.');
-        }
-
-        $compression = config('plugin.webman.console.app.compression');
-        if (!in_array($compression,[Phar::GZ,Phar::BZ2,Phar::NONE])) {
-            throw new RuntimeException('Compression must be one of Phar::GZ,Phar::BZ2 to add compression, or Phar::NONE to remove compression.');
         }
 
         $phar_file = rtrim($phar_file_output_dir,DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $phar_filename;
@@ -83,8 +78,6 @@ class PharPackCommand extends Command
         }
 
         $output->writeln('Files collect complete, begin add file to Phar.');
-
-        $phar->compressFiles($compression);
 
         $phar->setStub("#!/usr/bin/env php
 <?php
