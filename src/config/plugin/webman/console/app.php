@@ -6,8 +6,6 @@ return [
 
     'phar_filename'     => 'webman.phar',
 
-    'compression'  => Phar::GZ,// Compression must be one of Phar::GZ,Phar::BZ2 to add compression, or Phar::NONE to remove compression.
-
     'signature_algorithm'=> Phar::SHA256, //set the signature algorithm for a phar and apply it. The signature algorithm must be one of Phar::MD5, Phar::SHA1, Phar::SHA256, Phar::SHA512, or Phar::OPENSSL.
 
     'private_key_file'  => '', // The file path for certificate or OpenSSL private key file.
