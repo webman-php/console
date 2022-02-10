@@ -48,7 +48,7 @@ class Application
         Worker::$stdoutFile                   = $config['stdout_file'];
         Worker::$logFile                      = $config['log_file'];
         // Phar support. Defined the file paths to store the master process status file.
-        Worker::$statisticsFileNamePrefix     = $config['statistics_file_prefix'];
+        Worker::$statusFile                   = $config['status_file'];
         TcpConnection::$defaultMaxPackageSize = $config['max_package_size'] ?? 10*1024*1024;
 
         $worker = new Worker($config['listen'], $config['context']);
