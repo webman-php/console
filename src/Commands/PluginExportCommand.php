@@ -120,6 +120,7 @@ class Install
             }
             //symlink(__DIR__ . "/\$source", base_path()."/\$dest");
             copy_dir(__DIR__ . "/\$source", base_path()."/\$dest");
+            echo "Create $dest\r\n";
         }
     }
 
@@ -134,9 +135,11 @@ class Install
             if (!is_dir(\$path) && !is_file(\$path)) {
                 continue;
             }
-            /*if (is_link(\$path) {
-                unlink(\$path);
-            }*/
+            echo "Remove $dest\r\n";
+            if (is_file($path) || is_link($path)) {
+                unlink($path);
+                continue;
+            }
             remove_dir(\$path);
         }
     }
