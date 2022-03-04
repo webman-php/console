@@ -47,6 +47,7 @@ class Application
         Worker::$pidFile                      = $config['pid_file'];
         Worker::$stdoutFile                   = $config['stdout_file'];
         Worker::$logFile                      = $config['log_file'];
+        Worker::$eventLoopClass = $config['event_loop'] ?? '';
         TcpConnection::$defaultMaxPackageSize = $config['max_package_size'] ?? 10*1024*1024;
         if (property_exists(Worker::class, 'statusFile')) {
             Worker::$statusFile = $config['status_file'] ?? '';
