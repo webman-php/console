@@ -70,7 +70,7 @@ class Application
 
         $worker->onWorkerStart = function ($worker) {
             $app = new App($worker, Container::instance(), Log::channel('default'), app_path(), public_path());
-            Http::requestClass(Request::class);
+            Http::requestClass(config('server.request_class') ?? Request::class);
             $worker->onMessage = [$app, 'onMessage'];
         };
 
