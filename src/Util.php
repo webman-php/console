@@ -12,4 +12,13 @@ class Util
         $namespace = str_replace('/', '\\' ,ucfirst($namespace));
         return $namespace;
     }
+
+    public static function classToName($class)
+    {
+        $class = lcfirst($class);
+        $class = preg_replace_callback(['/([A-Z])/'], function ($matches) {
+            return '_' . strtolower($matches[1]);
+        }, $class);
+        return $class;
+    }
 }
