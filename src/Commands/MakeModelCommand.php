@@ -30,35 +30,57 @@ class MakeModelCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $name = $input->getArgument('name');
-        $output->writeln("Make model $name");
-        if (!($pos = strrpos($name, '/'))) {
-            $name = ucfirst($name);
-            $file = "app/model/$name.php";
+        $class = $input->getArgument('name');
+        $output->writeln("Make model $class");
+        if (!($pos = strrpos($class, '/'))) {
+            $class = ucfirst($class);
+            $file = "app/model/$class.php";
             $namespace = 'app\model';
         } else {
-            $path = 'app/' . substr($name, 0, $pos) . '/model';
-            $name = ucfirst(substr($name, $pos + 1));
-            $file = "$path/$name.php";
+            $path = 'app/' . substr($class, 0, $pos) . '/model';
+            $class = ucfirst(substr($class, $pos + 1));
+            $file = "$path/$class.php";
             $namespace = str_replace('/', '\\', $path);
         }
-        $this->createModel($name, $namespace, $file);
+        if (!config('database') && config('thinkorm')) {
+            $this->createTpModel($class, $namespace, $file);
+        } else {
+            $this->createModel($class, $namespace, $file);
+        }
 
         return self::SUCCESS;
     }
 
     /**
-     * @param $name
+     * @param $class
      * @param $namespace
      * @param $path
      * @return void
      */
-    protected function createModel($name, $namespace, $file)
+    protected function createModel($class, $namespace, $file)
     {
         $path = pathinfo($file, PATHINFO_DIRNAME);
         if (!is_dir($path)) {
             mkdir($path, 0777, true);
         }
+        $table = Util::classToName($class);
+        $table_val = 'null';
+        $pk = 'id';
+        try {
+            $prefix = config('database.connections.mysql.prefix') ?? '';
+            if (\support\Db::select("show tables like '{$prefix}{$table}s'")) {
+                $table = "{$prefix}{$table}s";
+            } else if (\support\Db::select("show tables like '{$prefix}{$table}'")) {
+                $table_val = "'$table'";
+                $table = "{$prefix}{$table}";
+            }
+            foreach (\support\Db::select("desc `$table`") as $item) {
+                if ($item->Key === 'PRI') {
+                    $pk = $item->Field;
+                    break;
+                }
+            }
+        } catch (\Throwable $e) {}
         $model_content = <<<EOF
 <?php
 
@@ -66,21 +88,21 @@ namespace $namespace;
 
 use support\Model;
 
-class $name extends Model
+class $class extends Model
 {
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected \$table = 'test';
+    protected \$table = $table_val;
 
     /**
      * The primary key associated with the table.
      *
      * @var string
      */
-    protected \$primaryKey = 'id';
+    protected \$primaryKey = '$pk';
 
     /**
      * Indicates if the model should be timestamped.
@@ -89,6 +111,68 @@ class $name extends Model
      */
     public \$timestamps = false;
     
+    
+}
+
+EOF;
+        file_put_contents($file, $model_content);
+    }
+
+
+    /**
+     * @param $class
+     * @param $namespace
+     * @param $path
+     * @return void
+     */
+    protected function createTpModel($class, $namespace, $file)
+    {
+        $path = pathinfo($file, PATHINFO_DIRNAME);
+        if (!is_dir($path)) {
+            mkdir($path, 0777, true);
+        }
+        $table = Util::classToName($class);
+        $table_val = 'null';
+        $pk = 'id';
+        $prefix = config('thinkorm.connections.mysql.prefix') ?? '';
+        if (\think\facade\Db::query("show tables like '{$prefix}{$table}'")) {
+            $table = "{$prefix}{$table}";
+            $table_val = "'$table'";
+        } else if (\think\facade\Db::query("show tables like '{$prefix}{$table}s'")) {
+            $table = "{$prefix}{$table}s";
+            $table_val = "'$table'";
+        }
+        try {
+            foreach (\think\facade\Db::query("desc `$table`") as $item) {
+                if ($item['Key'] === 'PRI') {
+                    $pk = $item['Field'];
+                    break;
+                }
+            }
+        } catch (\Throwable $e) {}
+        $model_content = <<<EOF
+<?php
+
+namespace $namespace;
+
+use think\Model;
+
+class $class extends Model
+{
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected \$table = $table_val;
+
+    /**
+     * The primary key associated with the table.
+     *
+     * @var string
+     */
+    protected \$pk = '$pk';
+
     
 }
 
