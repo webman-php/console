@@ -32,6 +32,12 @@ class MakeControllerCommand extends Command
     {
         $name = $input->getArgument('name');
         $output->writeln("Make controller $name");
+        $suffix = config('app.controller_suffix', '');
+
+        if ($suffix && !strpos($name, $suffix)) {
+            $name .= $suffix;
+        }
+
         if (!($pos = strrpos($name, '/'))) {
             $name = ucfirst($name);
             $file = "app/controller/$name.php";
