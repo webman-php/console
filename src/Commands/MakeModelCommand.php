@@ -134,15 +134,15 @@ EOF;
         $table = Util::classToName($class);
         $table_val = 'null';
         $pk = 'id';
-        $prefix = config('thinkorm.connections.mysql.prefix') ?? '';
-        if (\think\facade\Db::query("show tables like '{$prefix}{$table}'")) {
-            $table = "{$prefix}{$table}";
-            $table_val = "'$table'";
-        } else if (\think\facade\Db::query("show tables like '{$prefix}{$table}s'")) {
-            $table = "{$prefix}{$table}s";
-            $table_val = "'$table'";
-        }
         try {
+            $prefix = config('thinkorm.connections.mysql.prefix') ?? '';
+            if (\think\facade\Db::query("show tables like '{$prefix}{$table}'")) {
+                $table = "{$prefix}{$table}";
+                $table_val = "'$table'";
+            } else if (\think\facade\Db::query("show tables like '{$prefix}{$table}s'")) {
+                $table = "{$prefix}{$table}s";
+                $table_val = "'$table'";
+            }
             foreach (\think\facade\Db::query("desc `$table`") as $item) {
                 if ($item['Key'] === 'PRI') {
                     $pk = $item['Field'];
