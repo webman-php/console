@@ -30,7 +30,9 @@ class Install
      */
     public static function uninstall()
     {
-        unlink(base_path()."/webman");
+        if (is_file(base_path()."/webman")) {
+            unlink(base_path() . "/webman");
+        }
 
         self::uninstallByRelation();
     }
