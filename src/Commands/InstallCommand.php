@@ -36,6 +36,7 @@ class InstallCommand extends Command
             $install_function();
             return self::SUCCESS;
         }
+        $output->writeln('<error>This command requires webman-framework version >= 1.3.0</error>');
         return self::FAILURE;
     }
 
