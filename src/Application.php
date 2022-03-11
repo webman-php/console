@@ -5,6 +5,7 @@ use support\Container;
 use support\Log;
 use support\Request;
 use Webman\App;
+use Webman\Config;
 use Workerman\Connection\TcpConnection;
 use Workerman\Protocols\Http;
 use Workerman\Worker;
@@ -31,6 +32,8 @@ class Application
             }
         }
 
+        Config::load(config_path(), ['route', 'container']);
+
         Worker::$onMasterReload = function (){
             if (function_exists('opcache_get_status')) {
                 if ($status = opcache_get_status()) {
@@ -53,26 +56,29 @@ class Application
             Worker::$statusFile = $config['status_file'] ?? '';
         }
 
-        $worker = new Worker($config['listen'], $config['context']);
-        $property_map = [
-            'name',
-            'count',
-            'user',
-            'group',
-            'reusePort',
-            'transport',
-        ];
-        foreach ($property_map as $property) {
-            if (isset($config[$property])) {
-                $worker->$property = $config[$property];
+        if ($config['listen']) {
+            $worker = new Worker($config['listen'], $config['context']);
+            $property_map = [
+                'name',
+                'count',
+                'user',
+                'group',
+                'reusePort',
+                'transport',
+            ];
+            foreach ($property_map as $property) {
+                if (isset($config[$property])) {
+                    $worker->$property = $config[$property];
+                }
             }
-        }
 
-        $worker->onWorkerStart = function ($worker) {
-            $app = new App($worker, Container::instance(), Log::channel('default'), app_path(), public_path());
-            Http::requestClass(config('server.request_class') ?? Request::class);
-            $worker->onMessage = [$app, 'onMessage'];
-        };
+            $worker->onWorkerStart = function ($worker) {
+                require_once base_path() . '/support/bootstrap.php';
+                $app = new App($worker, Container::instance(), Log::channel('default'), app_path(), public_path());
+                Http::requestClass(config('server.request_class') ?? Request::class);
+                $worker->onMessage = [$app, 'onMessage'];
+            };
+        }
 
         // Windows does not support custom processes.
         if (\DIRECTORY_SEPARATOR === '/') {

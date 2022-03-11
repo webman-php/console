@@ -32,10 +32,6 @@ class PluginInstallCommand extends Command
     {
         $name = $input->getArgument('name');
         $output->writeln("Execute installation for plugin $name");
-        if (!strpos($name, '/')) {
-            $output->writeln('<error>Bad name, name must contain character \'/\' , for example foo/MyAdmin</error>');
-            return self::FAILURE;
-        }
         $namespace = Util::nameToNamespace($name);
         $install_function = "\\{$namespace}\\Install::install";
         $plugin_const = "\\{$namespace}\\Install::WEBMAN_PLUGIN";

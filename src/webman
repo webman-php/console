@@ -3,7 +3,10 @@
 use Webman\Console\Command;
 
 require_once __DIR__ . '/vendor/autoload.php';
-require_once __DIR__ . '/support/bootstrap.php';
+
+if (!in_array($argv[1] ?? '', ['start', 'restart'])) {
+    require_once __DIR__ . '/support/bootstrap.php';
+}
 
 $cli = new Command();
 $cli->setName('webman cli');
