@@ -23,7 +23,6 @@
     "source": "https://github.com/webman-php/console"
   },
   "require": {
-    "workerman/webman-framework": "^1.2",
     "symfony/console": ">=5.0"
   },
   "autoload": {
