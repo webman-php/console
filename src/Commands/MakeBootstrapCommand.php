@@ -43,7 +43,7 @@ class MakeBootstrapCommand extends Command
             $namespace = str_replace('/', '\\', $path);
         }
         $this->createBootstrap($name, $namespace, $file);
-        $this->addConfig("$namespace\\$name", config_path() . '/bootstrap.php');
+        //$this->addConfig("$namespace\\$name", config_path() . '/bootstrap.php');
 
         return self::SUCCESS;
     }
