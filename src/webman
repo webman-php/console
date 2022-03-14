@@ -4,7 +4,7 @@ use Webman\Console\Command;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-if (!in_array($argv[1] ?? '', ['start', 'restart'])) {
+if (!in_array($argv[1] ?? '', ['start', 'restart', 'stop', 'status', 'reload', 'connections'])) {
     require_once __DIR__ . '/support/bootstrap.php';
 }
 
