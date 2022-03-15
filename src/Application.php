@@ -32,7 +32,7 @@ class Application
             }
         }
 
-        Config::load(config_path(), ['route', 'container']);
+        Config::reload(config_path(), ['route', 'container']);
 
         Worker::$onMasterReload = function (){
             if (function_exists('opcache_get_status')) {
