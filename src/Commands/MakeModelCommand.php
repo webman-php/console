@@ -31,9 +31,9 @@ class MakeModelCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $class = $input->getArgument('name');
+        $class = Util::nameToClass($class);
         $output->writeln("Make model $class");
         if (!($pos = strrpos($class, '/'))) {
-            $class = ucfirst($class);
             $file = "app/model/$class.php";
             $namespace = 'app\model';
         } else {
