@@ -21,4 +21,20 @@ class Util
         }, $class);
         return $class;
     }
+
+    public static function nameToClass($class)
+    {
+        $class = preg_replace_callback(['/-([a-zA-Z])/', '/_([a-zA-Z])/'], function ($matches) {
+            return strtoupper($matches[1]);
+        }, $class);
+
+        if (!($pos = strrpos($class, '/'))) {
+            $class = ucfirst($class);
+        } else {
+            $path = substr($class, 0, $pos);
+            $class = ucfirst(substr($class, $pos + 1));
+            $class = "$path/$class";
+        }
+        return $class;
+    }
 }
