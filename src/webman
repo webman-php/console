@@ -1,11 +1,15 @@
 #!/usr/bin/env php
 <?php
+
+use Webman\Config;
 use Webman\Console\Command;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
 if (!in_array($argv[1] ?? '', ['start', 'restart', 'stop', 'status', 'reload', 'connections'])) {
     require_once __DIR__ . '/support/bootstrap.php';
+} else {
+    Config::reload(config_path(), ['route', 'container']);
 }
 
 $cli = new Command();
