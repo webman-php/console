@@ -9,7 +9,7 @@ use Webman\Config;
 use Workerman\Connection\TcpConnection;
 use Workerman\Protocols\Http;
 use Workerman\Worker;
-use Dotenv\Dotenv
+use Dotenv\Dotenv;
 
 ini_set('display_errors', 'on');
 error_reporting(E_ALL);
