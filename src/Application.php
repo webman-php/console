@@ -9,6 +9,7 @@ use Webman\Config;
 use Workerman\Connection\TcpConnection;
 use Workerman\Protocols\Http;
 use Workerman\Worker;
+use Dotenv\Dotenv
 
 ini_set('display_errors', 'on');
 error_reporting(E_ALL);
@@ -32,8 +33,8 @@ class Application
             }
         }
         
-        if (class_exists('\Dotenv\Dotenv') && file_exists(base_path() . '/.env')) {
-            if (method_exists('\Dotenv\Dotenv', 'createUnsafeImmutable')) {
+        if (class_exists('Dotenv\Dotenv') && file_exists(base_path() . '/.env')) {
+            if (method_exists('Dotenv\Dotenv', 'createUnsafeImmutable')) {
                 Dotenv::createUnsafeImmutable(base_path())->load();
             } else {
                 Dotenv::createMutable(base_path())->load();
