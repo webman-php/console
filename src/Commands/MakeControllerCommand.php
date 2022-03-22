@@ -56,7 +56,7 @@ class MakeControllerCommand extends Command
     /**
      * @param $name
      * @param $namespace
-     * @param $path
+     * @param $file
      * @return void
      */
     protected function createController($name, $namespace, $file)
