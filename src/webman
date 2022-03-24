@@ -18,4 +18,13 @@ $cli->installInternalCommands();
 if (is_dir($command_path = app_path(). '/command')) {
     $cli->installCommands($command_path);
 }
+
+foreach (config('plugin', []) as $firm => $projects) {
+    foreach ($projects as $name => $project) {
+        foreach ($project['command'] ?? [] as $command) {
+            $cli->add(new $command);
+        }
+    }
+}
+
 $cli->run();
