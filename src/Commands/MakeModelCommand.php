@@ -28,7 +28,7 @@ class MakeModelCommand extends Command
      * @param OutputInterface $output
      * @return int
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $class = $input->getArgument('name');
         $class = Util::nameToClass($class);
@@ -54,7 +54,7 @@ class MakeModelCommand extends Command
     /**
      * @param $class
      * @param $namespace
-     * @param $path
+     * @param $file
      * @return void
      */
     protected function createModel($class, $namespace, $file)

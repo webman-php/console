@@ -5,9 +5,6 @@ namespace Webman\Console\Commands;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Helper\Table;
-use Webman\Route;
 
 class VersionCommand extends Command
 {
@@ -19,7 +16,7 @@ class VersionCommand extends Command
      * @param OutputInterface $output
      * @return int
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $installed_file = base_path() . '/vendor/composer/installed.php';
         if (is_file($installed_file)) {

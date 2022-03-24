@@ -29,5 +29,8 @@
     "psr-4": {
       "Webman\\Console\\" : "src"
     }
+  },
+  "require-dev": {
+    "workerman/webman": "^1.0"
   }
 }

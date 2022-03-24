@@ -5,9 +5,7 @@ namespace Webman\Console\Commands;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
-use Webman\Console\Util;
 
 
 class MakeBootstrapCommand extends Command
@@ -51,7 +49,7 @@ class MakeBootstrapCommand extends Command
     /**
      * @param $name
      * @param $namespace
-     * @param $path
+     * @param $file
      * @return void
      */
     protected function createBootstrap($name, $namespace, $file)
