@@ -5,9 +5,6 @@ namespace Webman\Console\Commands;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Input\InputArgument;
-use Webman\Console\Util;
 
 
 class InstallCommand extends Command
@@ -28,7 +25,7 @@ class InstallCommand extends Command
      * @param OutputInterface $output
      * @return int
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $output->writeln("Execute installation for webman");
         $install_function = "\\Webman\\Install::install";

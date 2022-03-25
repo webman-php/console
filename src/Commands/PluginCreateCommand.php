@@ -26,7 +26,7 @@ class PluginCreateCommand extends Command
      * @param OutputInterface $output
      * @return int
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $name = strtolower($input->getOption('name'));
         $output->writeln("Create Plugin $name");

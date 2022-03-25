@@ -6,9 +6,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Helper\Table;
 use Webman\Console\Application;
-use Webman\Route;
 
 class ReStartCommand extends Command
 {
@@ -27,7 +25,7 @@ class ReStartCommand extends Command
      * @param OutputInterface $output
      * @return int
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         Application::run();
         return self::SUCCESS;

@@ -5,7 +5,6 @@ namespace Webman\Console\Commands;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Helper\Table;
 use Webman\Route;
 
@@ -19,7 +18,7 @@ class RouteListCommand extends Command
      * @param OutputInterface $output
      * @return int
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         Route::load(config_path());
         $headers = ['uri', 'method', 'callback', 'middleware'];
