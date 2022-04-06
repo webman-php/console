@@ -74,6 +74,7 @@ class Application
                 'group',
                 'reusePort',
                 'transport',
+                'protocol'
             ];
             foreach ($property_map as $property) {
                 if (isset($config[$property])) {
