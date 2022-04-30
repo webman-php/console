@@ -115,6 +115,7 @@ EOF;
   "name": "$name",
   "type": "library",
   "license": "MIT",
+  "description": "Webman plugin $name",
   "require": {
   },
   "autoload": {
