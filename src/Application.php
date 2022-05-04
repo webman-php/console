@@ -65,7 +65,7 @@ class Application
             Worker::$statusFile = $config['status_file'] ?? '';
         }
         if (property_exists(Worker::class, 'stopTimeout')) {
-            Worker::$stopTimeout = $config['stop_timeout'] ?? '';
+            Worker::$stopTimeout = $config['stop_timeout'] ?? 2;
         }
 
         if ($config['listen']) {
