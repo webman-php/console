@@ -10,7 +10,11 @@ require_once __DIR__ . '/vendor/autoload.php';
 if (!in_array($argv[1] ?? '', ['start', 'restart', 'stop', 'status', 'reload', 'connections'])) {
     require_once __DIR__ . '/support/bootstrap.php';
 } else {
-    Support\App::loadAllConfig(['route']);
+    if (class_exists('Support\App')) {
+        Support\App::loadAllConfig(['route']);
+    } else {
+        Config::reload(config_path(), ['route', 'container']);
+    }
 }
 
 $cli = new Command();
