@@ -6,6 +6,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
+use Webman\Console\Util;
 
 
 class MakeCommandCommand extends Command
@@ -30,16 +31,18 @@ class MakeCommandCommand extends Command
     {
         $command = $name = $input->getArgument('name');
         $output->writeln("Make command $name");
-        if (!($pos = strrpos($name, '/'))) {
-            $name = $this->getClassName($name);
-            $file = "app/command/$name.php";
-            $namespace = 'app\command';
-        } else {
-            $path = 'app/' . substr($name, 0, $pos) . '/command';
-            $name = $this->getClassName(substr($name, $pos + 1));
-            $file = "$path/$name.php";
-            $namespace = str_replace('/', '\\', $path);
+
+        // make:command 不支持子目录
+        $name = str_replace(['\\', '/'], '', $name);
+        if (!$command_str = Util::guessPath(app_path(), 'command')) {
+            $command_str = Util::guessPath(app_path(), 'controller') === 'Controller' ? 'Command' : 'command';
         }
+        $upper = $command_str === 'Command';
+        $name = ucfirst($name);
+        $file = app_path() . "/$command_str/$name.php";
+        $namespace = $upper ? 'App\Command' : 'app\command';
+
+        
         $this->createCommand($name, $namespace, $file, $command);
 
         return self::SUCCESS;

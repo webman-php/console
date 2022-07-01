@@ -24,6 +24,10 @@ class StopCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        if (\class_exists(\Support\App::class)) {
+            \Support\App::run();
+            return self::SUCCESS;
+        }
         Application::run();
         return self::SUCCESS;
     }

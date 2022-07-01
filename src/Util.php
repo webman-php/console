@@ -35,4 +35,30 @@ class Util
         }
         return $class;
     }
+
+    public static function guessPath($base_path, $name, $return_full_path = false)
+    {
+        if (!is_dir($base_path)) {
+            return false;
+        }
+        $names = explode('/', trim(strtolower($name), '/'));
+        $realname = [];
+        $path = $base_path;
+        foreach ($names as $name) {
+            $finded = false;
+            foreach (scandir($path) ?: [] as $tmp_name) {
+                if (strtolower($tmp_name) === $name && is_dir("$path/$tmp_name")) {
+                    $path = "$path/$tmp_name";
+                    $realname[] = $tmp_name;
+                    $finded = true;
+                    break;
+                }
+            }
+            if (!$finded) {
+                return false;
+            }
+        }
+        $realname = implode(DIRECTORY_SEPARATOR, $realname);
+        return $return_full_path ? realpath($base_path . DIRECTORY_SEPARATOR . $realname) : $realname;
+    }
 }

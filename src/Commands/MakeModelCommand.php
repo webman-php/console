@@ -30,22 +30,38 @@ class MakeModelCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $class = $input->getArgument('name');
-        $class = Util::nameToClass($class);
-        $output->writeln("Make model $class");
-        if (!($pos = strrpos($class, '/'))) {
-            $file = "app/model/$class.php";
-            $namespace = 'app\model';
+        $name = $input->getArgument('name');
+        $name = Util::nameToClass($name);
+        $output->writeln("Make model $name");
+        if (!($pos = strrpos($name, '/'))) {
+            $name = ucfirst($name);
+            $model_str = Util::guessPath(app_path(), 'model') ?: 'model';
+            $file = app_path() . "/$model_str/$name.php";
+            $namespace = $model_str === 'Model' ? 'App\Model' : 'app\model';
         } else {
-            $path = 'app/' . substr($class, 0, $pos) . '/model';
-            $class = ucfirst(substr($class, $pos + 1));
-            $file = "$path/$class.php";
-            $namespace = str_replace('/', '\\', $path);
+            $name_str = substr($name, 0, $pos);
+            if($real_name_str = Util::guessPath(app_path(), $name_str)) {
+                $name_str = $real_name_str;
+            } else if ($real_section_name = Util::guessPath(app_path(), strstr($name_str, '/', true))) {
+                $upper = strtolower($real_section_name[0]) !== $real_section_name[0];
+            } else if ($real_base_controller = Util::guessPath(app_path(), 'controller')) {
+                $upper = strtolower($real_base_controller[0]) !== $real_base_controller[0];
+            }
+            $upper = $upper ?? strtolower($name_str[0]) !== $name_str[0];
+            if ($upper && !$real_name_str) {
+                $name_str = preg_replace_callback('/\/([a-z])/', function ($matches) {
+                    return '/' . strtoupper($matches[1]);
+                }, ucfirst($name_str));
+            }
+            $path = "$name_str/" . ($upper ? 'Model' : 'model');
+            $name = ucfirst(substr($name, $pos + 1));
+            $file = app_path() . "/$path/$name.php";
+            $namespace = str_replace('/', '\\', ($upper ? 'App/' : 'app/') . $path);
         }
         if (!config('database') && config('thinkorm')) {
-            $this->createTpModel($class, $namespace, $file);
+            $this->createTpModel($name, $namespace, $file);
         } else {
-            $this->createModel($class, $namespace, $file);
+            $this->createModel($name, $namespace, $file);
         }
 
         return self::SUCCESS;
@@ -66,21 +82,26 @@ class MakeModelCommand extends Command
         $table = Util::classToName($class);
         $table_val = 'null';
         $pk = 'id';
+        $properties = '';
         try {
             $prefix = config('database.connections.mysql.prefix') ?? '';
+            $database = config('database.connections.mysql.database');
             if (\support\Db::select("show tables like '{$prefix}{$table}s'")) {
                 $table = "{$prefix}{$table}s";
             } else if (\support\Db::select("show tables like '{$prefix}{$table}'")) {
                 $table_val = "'$table'";
                 $table = "{$prefix}{$table}";
             }
-            foreach (\support\Db::select("desc `$table`") as $item) {
-                if ($item->Key === 'PRI') {
-                    $pk = $item->Field;
-                    break;
+            foreach (\support\Db::select("select COLUMN_NAME,DATA_TYPE,COLUMN_KEY,COLUMN_COMMENT from INFORMATION_SCHEMA.COLUMNS where table_name = '$table' and table_schema = '$database'") as $item) {
+                if ($item->COLUMN_KEY === 'PRI') {
+                    $pk = $item->COLUMN_NAME;
+                    $item->COLUMN_COMMENT .= "(主键)";
                 }
+                $type = $this->getType($item->DATA_TYPE);
+                $properties .= " * @property $type \${$item->COLUMN_NAME} {$item->COLUMN_COMMENT}\n";
             }
         } catch (\Throwable $e) {}
+        $properties = rtrim($properties) ?: ' *';
         $model_content = <<<EOF
 <?php
 
@@ -88,6 +109,9 @@ namespace $namespace;
 
 use support\Model;
 
+/**
+$properties
+ */
 class $class extends Model
 {
     /**
@@ -134,8 +158,10 @@ EOF;
         $table = Util::classToName($class);
         $table_val = 'null';
         $pk = 'id';
+        $properties = '';
         try {
             $prefix = config('thinkorm.connections.mysql.prefix') ?? '';
+            $database = config('thinkorm.connections.mysql.database');
             if (\think\facade\Db::query("show tables like '{$prefix}{$table}'")) {
                 $table = "{$prefix}{$table}";
                 $table_val = "'$table'";
@@ -143,13 +169,16 @@ EOF;
                 $table = "{$prefix}{$table}s";
                 $table_val = "'$table'";
             }
-            foreach (\think\facade\Db::query("desc `$table`") as $item) {
-                if ($item['Key'] === 'PRI') {
-                    $pk = $item['Field'];
-                    break;
+            foreach (\think\facade\Db::query("select COLUMN_NAME,DATA_TYPE,COLUMN_KEY,COLUMN_COMMENT from INFORMATION_SCHEMA.COLUMNS where table_name = '$table' and table_schema = '$database'") as $item) {
+                if ($item['COLUMN_KEY'] === 'PRI') {
+                    $pk = $item['COLUMN_NAME'];
+                    $item['COLUMN_COMMENT'] .= "(主键)";
                 }
+                $type = $this->getType($item['DATA_TYPE']);
+                $properties .= " * @property $type \${$item['COLUMN_NAME']} {$item['COLUMN_COMMENT']}\n";
             }
         } catch (\Throwable $e) {}
+        $properties = rtrim($properties) ?: ' *';
         $model_content = <<<EOF
 <?php
 
@@ -157,6 +186,9 @@ namespace $namespace;
 
 use think\Model;
 
+/**
+$properties
+ */
 class $class extends Model
 {
     /**
@@ -178,6 +210,36 @@ class $class extends Model
 
 EOF;
         file_put_contents($file, $model_content);
+    }
+
+    /**
+     * @param string $type
+     * @return string
+     */
+    protected function getType(string $type)
+    {
+        if (strpos($type, 'int') !== false) {
+            return 'integer';
+        }
+        switch ($type) {
+            case 'varchar':
+            case 'string':
+            case 'text':
+            case 'date':
+            case 'time':
+            case 'guid':
+            case 'datetimetz':
+            case 'datetime':
+            case 'decimal':
+            case 'enum':
+                return 'string';
+            case 'boolean':
+                return 'integer';
+            case 'float':
+                return 'float';
+            default:
+                return 'mixed';
+        }
     }
 
 }

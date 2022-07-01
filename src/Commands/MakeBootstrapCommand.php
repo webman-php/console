@@ -6,6 +6,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
+use Webman\Console\Util;
 
 
 class MakeBootstrapCommand extends Command
@@ -19,6 +20,7 @@ class MakeBootstrapCommand extends Command
     protected function configure()
     {
         $this->addArgument('name', InputArgument::REQUIRED, 'Bootstrap name');
+        $this->addArgument('enable', InputArgument::OPTIONAL, 'Enable or not');
     }
 
     /**
@@ -29,19 +31,37 @@ class MakeBootstrapCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $name = $input->getArgument('name');
+        $enable = in_array($input->getArgument('enable'), ['no', '0', 'false', 'n']) ? false : true;
         $output->writeln("Make bootstrap $name");
+
+        $name = str_replace('\\', '/', $name);
+        if (!$bootstrap_str = Util::guessPath(app_path(), 'bootstrap')) {
+            $bootstrap_str = Util::guessPath(app_path(), 'controller') === 'Controller' ? 'Bootstrap' : 'bootstrap';
+        }
+        $upper = $bootstrap_str === 'Bootstrap';
         if (!($pos = strrpos($name, '/'))) {
             $name = ucfirst($name);
-            $file = "app/bootstrap/$name.php";
-            $namespace = 'app\bootstrap';
+            $file = app_path() . "/$bootstrap_str/$name.php";
+            $namespace = $upper ? 'App\Bootstrap' : 'app\bootstrap';
         } else {
-            $path = 'app/' . substr($name, 0, $pos) . '/bootstrap';
+            if($real_name = Util::guessPath(app_path(), $name)) {
+                $name = $real_name;
+            }
+            if ($upper && !$real_name) {
+                $name = preg_replace_callback('/\/([a-z])/', function ($matches) {
+                    return '/' . strtoupper($matches[1]);
+                }, ucfirst($name));
+            }
+            $path = "$bootstrap_str/" . substr($upper ? ucfirst($name) : $name, 0, $pos);
             $name = ucfirst(substr($name, $pos + 1));
-            $file = "$path/$name.php";
-            $namespace = str_replace('/', '\\', $path);
+            $file = app_path() . "/$path/$name.php";
+            $namespace = str_replace('/', '\\', ($upper ? 'App/' : 'app/') . $path);
         }
+
         $this->createBootstrap($name, $namespace, $file);
-        //$this->addConfig("$namespace\\$name", config_path() . '/bootstrap.php');
+        if ($enable) {
+            $this->addConfig("$namespace\\$name", config_path() . '/bootstrap.php');
+        }
 
         return self::SUCCESS;
     }
