@@ -20,7 +20,6 @@ class RouteListCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        Route::load(config_path());
         $headers = ['uri', 'method', 'callback', 'middleware'];
         $rows = [];
         foreach (Route::getRoutes() as $route) {
