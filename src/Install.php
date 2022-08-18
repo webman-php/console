@@ -20,6 +20,9 @@ class Install
     {
         copy(__DIR__ . "/webman", base_path()."/webman");
         chmod(base_path()."/webman", 0755);
+        
+        copy(__DIR__ . '/command.php', config_path() . '/command.php');
+        chmod(config_path() . '/command.php', 0644);
 
         static::installByRelation();
     }
