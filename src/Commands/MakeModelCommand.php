@@ -21,6 +21,7 @@ class MakeModelCommand extends Command
     protected function configure()
     {
         $this->addArgument('name', InputArgument::REQUIRED, 'Model name');
+        $this->addArgument('type', InputArgument::OPTIONAL, 'Type');
     }
 
     /**
@@ -32,6 +33,7 @@ class MakeModelCommand extends Command
     {
         $name = $input->getArgument('name');
         $name = Util::nameToClass($name);
+        $type = $input->getArgument('type');
         $output->writeln("Make model $name");
         if (!($pos = strrpos($name, '/'))) {
             $name = ucfirst($name);
@@ -58,15 +60,18 @@ class MakeModelCommand extends Command
             $file = app_path() . "/$path/$name.php";
             $namespace = str_replace('/', '\\', ($upper ? 'App/' : 'app/') . $path);
         }
-        $database = config('database');
-        if (isset($database['default']) && strpos($database['default'], 'plugin.') === 0) {
-            $database = false;
+        if (!$type) {
+            $database = config('database');
+            if (isset($database['default']) && strpos($database['default'], 'plugin.') === 0) {
+                $database = false;
+            }
+            $thinkorm = config('thinkorm');
+            if (isset($thinkorm['default']) && strpos($thinkorm['default'], 'plugin.') === 0) {
+                $thinkorm = false;
+            }
+            $type = !$database && $thinkorm ? 'tp' : 'laravel';
         }
-        $thinkorm = config('thinkorm');
-        if (isset($thinkorm['default']) && strpos($thinkorm['default'], 'plugin.') === 0) {
-            $thinkorm = false;
-        }
-        if (!$database && $thinkorm) {
+        if ($type == 'tp') {
             $this->createTpModel($name, $namespace, $file);
         } else {
             $this->createModel($name, $namespace, $file);
