@@ -2,6 +2,7 @@
 
 namespace Webman\Console\Commands;
 
+use Doctrine\Inflector\InflectorFactory;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -99,8 +100,10 @@ class MakeModelCommand extends Command
         try {
             $prefix = config('database.connections.mysql.prefix') ?? '';
             $database = config('database.connections.mysql.database');
-            if (\support\Db::select("show tables like '{$prefix}{$table}s'")) {
-                $table = "{$prefix}{$table}s";
+            $inflector = InflectorFactory::create()->build();
+            $table_plura = $inflector->pluralize($inflector->tableize($class));
+            if (\support\Db::select("show tables like '{$prefix}{$table_plura}'")) {
+                $table = "{$prefix}{$table_plura}";
             } else if (\support\Db::select("show tables like '{$prefix}{$table}'")) {
                 $table_val = "'$table'";
                 $table = "{$prefix}{$table}";

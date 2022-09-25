@@ -16,8 +16,10 @@ class Util
 
     public static function classToName($class)
     {
-        $inflector = InflectorFactory::create()->build();
-        return $inflector->pluralize($inflector->tableize($class));
+        $class = lcfirst($class);
+        return preg_replace_callback(['/([A-Z])/'], function ($matches) {
+            return '_' . strtolower($matches[1]);
+        }, $class);
     }
 
     public static function nameToClass($class)
