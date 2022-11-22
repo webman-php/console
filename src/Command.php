@@ -4,6 +4,7 @@ namespace Webman\Console;
 
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command as Commands;
+use support\Container;
 
 class Command extends Application
 {
@@ -33,7 +34,7 @@ class Command extends Application
             if (!class_exists($class_name) || !is_a($class_name, Commands::class, true)) {
                 continue;
             }
-            $this->add(new $class_name);
+            $this->add(Container::get($class_name));
         }
     }
 }
