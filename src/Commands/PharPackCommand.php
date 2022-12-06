@@ -42,7 +42,7 @@ class PharPackCommand extends Command
             unlink($phar_file);
         }
 
-        $exclude_pattern = config('plugin.webman.console.app.exclude_pattern');
+        $exclude_pattern = config('plugin.webman.console.app.exclude_pattern','');
         $phar = new Phar($phar_file,0,'webman');
 
         $phar->startBuffering();
