@@ -15,6 +15,6 @@ return [
     //'exclude_pattern'   => '#^(?!.*(LICENSE|composer.json|.github|.idea|.git|.setting|runtime|test|test_old|tests|Tests|vendor-bin|.md))(.*)$#',
 
     'exclude_files'     => [
-        '.env', 'LICENSE', 'composer.json', 'composer.lock','start.php'
+        '.env', 'LICENSE', 'composer.json', 'composer.lock', 'start.php', 'webman.phar', 'webman.bin'
     ]
 ];
