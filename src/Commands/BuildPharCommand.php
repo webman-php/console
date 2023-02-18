@@ -2,17 +2,28 @@
 
 namespace Webman\Console\Commands;
 
+use Phar;
+use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Phar;
-use RuntimeException;
 
-class PharPackCommand extends Command
+class BuildPharCommand extends Command
 {
-    protected static $defaultName = 'phar:pack';
+    protected static $defaultName = 'build:phar';
     protected static $defaultDescription = 'Can be easily packaged a project into phar files. Easy to distribute and use.';
 
+    /**
+     * @return void
+     * @deprecated 暂时保留 phar:pack 命令，下一个版本再取消
+     */
+    protected function configure()
+    {
+        $this->setAliases([
+            'phar:pack',
+        ]);
+        parent::configure();
+    }
     /**
      * @param InputInterface $input
      * @param OutputInterface $output
@@ -22,27 +33,25 @@ class PharPackCommand extends Command
     {
         $this->checkEnv();
 
-        $phar_file_output_dir = config('plugin.webman.console.app.phar_file_output_dir');
-        if (empty($phar_file_output_dir)) {
-            throw new RuntimeException('Please set the phar file output directory.');
-        }
-        if (!file_exists($phar_file_output_dir) && !is_dir($phar_file_output_dir)) {
-            if (!mkdir($phar_file_output_dir,0777,true)) {
+        $build_dir = config('plugin.webman.console.app.build_dir', base_path() . '/build');
+        if (!file_exists($build_dir) && !is_dir($build_dir)) {
+            if (!mkdir($build_dir,0777,true)) {
                 throw new RuntimeException("Failed to create phar file output directory. Please check the permission.");
             }
         }
 
-        $phar_filename = config('plugin.webman.console.app.phar_filename');
+        $phar_filename = config('plugin.webman.console.app.phar_filename', 'webman.phar');
         if (empty($phar_filename)) {
             throw new RuntimeException('Please set the phar filename.');
         }
 
-        $phar_file = rtrim($phar_file_output_dir,DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $phar_filename;
+        $phar_file = rtrim($build_dir,DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $phar_filename;
         if (file_exists($phar_file)) {
             unlink($phar_file);
         }
 
         $exclude_pattern = config('plugin.webman.console.app.exclude_pattern','');
+
         $phar = new Phar($phar_file,0,'webman');
 
         $phar->startBuffering();
@@ -66,8 +75,29 @@ class PharPackCommand extends Command
 
         $phar->buildFromDirectory(BASE_PATH,$exclude_pattern);
 
-        $exclude_files = config('plugin.webman.console.app.exclude_files');
 
+        $exclude_files = config('plugin.webman.console.app.exclude_files',[]);
+        // 打包生成的phar和bin文件是面向生产环境的，所以以下这些命令没有任何意义，执行的话甚至会出错，需要排除在外。
+        $exclude_command_files = [
+            'AppPluginCreateCommand.php',
+            'BuildBinCommand.php',
+            'BuildPharCommand.php',
+            'MakeBootstrapCommand.php',
+            'MakeCommandCommand.php',
+            'MakeControllerCommand.php',
+            'MakeMiddlewareCommand.php',
+            'MakeModelCommand.php',
+            'PluginCreateCommand.php',
+            'PluginDisableCommand.php',
+            'PluginEnableCommand.php',
+            'PluginExportCommand.php',
+            'PluginInstallCommand.php',
+            'PluginUninstallCommand.php'
+        ];
+        $exclude_command_files = array_map(function ($cmd_file) {
+            return 'vendor/webman/console/src/Commands/'.$cmd_file;
+        },$exclude_command_files);
+        $exclude_files = array_unique(array_merge($exclude_command_files,$exclude_files));
         foreach ($exclude_files as $file) {
             if($phar->offsetExists($file)){
                 $phar->delete($file);
@@ -94,7 +124,7 @@ __HALT_COMPILER();
     /**
      * @throws RuntimeException
      */
-    private function checkEnv(): void
+    public function checkEnv(): void
     {
         if (!class_exists(Phar::class, false)) {
             throw new RuntimeException("The 'phar' extension is required for build phar package");

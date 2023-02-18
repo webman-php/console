@@ -31,7 +31,9 @@ class BuildBinCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->checkEnv();
+        $command = new BuildPharCommand();
+        $command->checkEnv();
+
         $output->writeln('Phar packing...');
 
         $version = $input->getArgument('version');
@@ -57,7 +59,6 @@ class BuildBinCommand extends Command
         }
 
         // 打包
-        $command = new PharPackCommand();
         $command->execute($input, $output);
 
         // 下载 micro.sfx.zip
@@ -94,7 +95,7 @@ class BuildBinCommand extends Command
             $receiveLength = strlen($bodyBuffer);
             $percent = ceil($receiveLength * 100 / $bodyLength);
             if ($percent != $lastPercent) {
-                echo "[" . str_pad('', $percent, '=') . '>' . str_pad('', 100 - $percent) . "$percent%]";
+                echo '[' . str_pad('', $percent, '=') . '>' . str_pad('', 100 - $percent) . "$percent%]";
                 echo $percent < 100 ? "\r" : "\n";
             }
             $lastPercent = $percent;
@@ -130,21 +131,4 @@ class BuildBinCommand extends Command
 
         return self::SUCCESS;
     }
-
-    /**
-     * @throws RuntimeException
-     */
-    private function checkEnv(): void
-    {
-        if (!class_exists(Phar::class, false)) {
-            throw new RuntimeException("The 'phar' extension is required for build phar package");
-        }
-
-        if (ini_get('phar.readonly')) {
-            throw new RuntimeException(
-                "The 'phar.readonly' is 'On', build phar must setting it 'Off' or exec with 'php -d phar.readonly=0 ./webman build:bin'"
-            );
-        }
-    }
-
 }
