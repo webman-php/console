@@ -11,7 +11,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use ZipArchive;
 
 
-class BuildBinCommand extends Command
+class BuildBinCommand extends BuildPharCommand
 {
     protected static $defaultName = 'build:bin';
     protected static $defaultDescription = 'build bin';
@@ -29,10 +29,9 @@ class BuildBinCommand extends Command
      * @param OutputInterface $output
      * @return int
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $command = new BuildPharCommand();
-        $command->checkEnv();
+        $this->checkEnv();
 
         $output->writeln('Phar packing...');
 
@@ -45,20 +44,15 @@ class BuildBinCommand extends Command
         $microZipFileName = $supportZip ? "php$version.micro.sfx.zip" : "php$version.micro.sfx";
         $pharFileName = config('plugin.webman.console.app.phar_filename', 'webman.phar');
         $binFileName = config('plugin.webman.console.app.bin_filename', 'webman.bin');
-        $buildDir = config('plugin.webman.console.app.build_dir', base_path() . '/build');
+        $this->buildDir = config('plugin.webman.console.app.build_dir', base_path() . '/build');
 
-        $binFile = "$buildDir/$binFileName";
-        $pharFile = "$buildDir/$pharFileName";
-        $zipFile = "$buildDir/$microZipFileName";
-        $sfxFile = "$buildDir/php$version.micro.sfx";
-
-        foreach ([$binFile, $pharFile, $zipFile, $sfxFile] as $file) {
-            if (is_file($file)) {
-                unlink($file);
-            }
-        }
-
+        $binFile = "$this->buildDir/$binFileName";
+        $pharFile = "$this->buildDir/$pharFileName";
+        $zipFile = "$this->buildDir/$microZipFileName";
+        $sfxFile = "$this->buildDir/php$version.micro.sfx";
+        
         // 打包
+        $command = new BuildPharCommand();
         $command->execute($input, $output);
 
         // 下载 micro.sfx.zip
@@ -113,7 +107,7 @@ class BuildBinCommand extends Command
         if ($supportZip) {
             $zip = new ZipArchive;
             $zip->open($zipFile, ZipArchive::CHECKCONS);
-            $zip->extractTo($buildDir);
+            $zip->extractTo($this->buildDir);
         }
 
         // 生成二进制文件
