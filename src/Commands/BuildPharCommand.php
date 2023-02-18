@@ -13,6 +13,14 @@ class BuildPharCommand extends Command
     protected static $defaultName = 'build:phar';
     protected static $defaultDescription = 'Can be easily packaged a project into phar files. Easy to distribute and use.';
 
+    protected $buildDir = '';
+
+    public function __construct(string $name = null)
+    {
+        parent::__construct($name);
+        $this->buildDir = config('plugin.webman.console.app.build_dir', base_path() . '/build');
+    }
+
     /**
      * @return void
      * @deprecated 暂时保留 phar:pack 命令，下一个版本再取消
@@ -24,6 +32,7 @@ class BuildPharCommand extends Command
         ]);
         parent::configure();
     }
+
     /**
      * @param InputInterface $input
      * @param OutputInterface $output
@@ -32,20 +41,19 @@ class BuildPharCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->checkEnv();
-
-        $build_dir = config('plugin.webman.console.app.build_dir', base_path() . '/build');
-        if (!file_exists($build_dir) && !is_dir($build_dir)) {
-            if (!mkdir($build_dir,0777,true)) {
+        if (!file_exists($this->buildDir) && !is_dir($this->buildDir)) {
+            if (!mkdir($this->buildDir,0777,true)) {
                 throw new RuntimeException("Failed to create phar file output directory. Please check the permission.");
             }
         }
+        $this->clearBuildDir();
 
         $phar_filename = config('plugin.webman.console.app.phar_filename', 'webman.phar');
         if (empty($phar_filename)) {
             throw new RuntimeException('Please set the phar filename.');
         }
 
-        $phar_file = rtrim($build_dir,DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $phar_filename;
+        $phar_file = rtrim($this->buildDir,DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $phar_filename;
         if (file_exists($phar_file)) {
             unlink($phar_file);
         }
@@ -131,9 +139,22 @@ __HALT_COMPILER();
         }
 
         if (ini_get('phar.readonly')) {
+            $command = static::$defaultName;
             throw new RuntimeException(
-                "The 'phar.readonly' is 'On', build phar must setting it 'Off' or exec with 'php -d phar.readonly=0 ./webman phar:pack'"
+                "The 'phar.readonly' is 'On', build phar must setting it 'Off' or exec with 'php -d phar.readonly=0 ./webman $command'"
             );
+        }
+    }
+
+    /**
+     * @return void
+     */
+    protected function clearBuildDir()
+    {
+        foreach (glob("$this->buildDir/*") as $file) {
+            if (is_file($file)) {
+                unlink($file);
+            }
         }
     }
 }
