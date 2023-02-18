@@ -52,7 +52,7 @@ class BuildBinCommand extends Command
 
         foreach ([$binFile, $pharFile, $zipFile, $sfxFile] as $file) {
             if (is_file($file)) {
-                unlink($binFile);
+                unlink($file);
             }
         }
 
@@ -82,8 +82,9 @@ class BuildBinCommand extends Command
                         $output->writeln("Download php$version.micro.sfx.zip failed");
                         return self::FAILURE;
                     }
-                    if (preg_match('/404 Not Found/', $bodyBuffer)) {
-                        $output->writeln("Download php$version.micro.sfx.zip failed, 404 Not Found");
+                    $firstLine = substr($bodyBuffer, 9, strpos($bodyBuffer, "\r\n") - 9);
+                    if (!preg_match('/200 /', $bodyBuffer)) {
+                        $output->writeln("Download php$version.micro.sfx.zip failed, $firstLine");
                         return self::FAILURE;
                     }
                     $bodyLength = (int)$match[1];
