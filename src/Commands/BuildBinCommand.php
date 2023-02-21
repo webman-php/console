@@ -56,55 +56,59 @@ class BuildBinCommand extends BuildPharCommand
         $command->execute($input, $output);
 
         // 下载 micro.sfx.zip
-        $domain = 'download.workerman.net';
-        $output->writeln("\r\nDownloading PHP$version ...");
-        if (extension_loaded('openssl')) {
-            $client = stream_socket_client("ssl://$domain:443");
-        } else {
-            $client = stream_socket_client("tcp://$domain:80");
-        }
+        if (!is_file($sfxFile) && !is_file($zipFile)) {
+            $domain = 'download.workerman.net';
+            $output->writeln("\r\nDownloading PHP$version ...");
+            if (extension_loaded('openssl')) {
+                $client = stream_socket_client("ssl://$domain:443");
+            } else {
+                $client = stream_socket_client("tcp://$domain:80");
+            }
 
-        fwrite($client, "GET /php/$microZipFileName HTTP/1.0\r\nAccept: text/html\r\nHost: $domain\r\nUser-Agent: webman/console\r\n\r\n");
-        $bodyLength = 0;
-        $bodyBuffer = '';
-        $lastPercent = 0;
-        while (true) {
-            $buffer = fread($client, 65535);
-            if ($buffer !== false) {
-                $bodyBuffer .= $buffer;
-                if (!$bodyLength && $pos = strpos($bodyBuffer, "\r\n\r\n")) {
-                    if (!preg_match('/Content-Length: (\d+)\r\n/', $bodyBuffer, $match)) {
-                        $output->writeln("Download php$version.micro.sfx.zip failed");
-                        return self::FAILURE;
+            fwrite($client, "GET /php/$microZipFileName HTTP/1.0\r\nAccept: text/html\r\nHost: $domain\r\nUser-Agent: webman/console\r\n\r\n");
+            $bodyLength = 0;
+            $bodyBuffer = '';
+            $lastPercent = 0;
+            while (true) {
+                $buffer = fread($client, 65535);
+                if ($buffer !== false) {
+                    $bodyBuffer .= $buffer;
+                    if (!$bodyLength && $pos = strpos($bodyBuffer, "\r\n\r\n")) {
+                        if (!preg_match('/Content-Length: (\d+)\r\n/', $bodyBuffer, $match)) {
+                            $output->writeln("Download php$version.micro.sfx.zip failed");
+                            return self::FAILURE;
+                        }
+                        $firstLine = substr($bodyBuffer, 9, strpos($bodyBuffer, "\r\n") - 9);
+                        if (!preg_match('/200 /', $bodyBuffer)) {
+                            $output->writeln("Download php$version.micro.sfx.zip failed, $firstLine");
+                            return self::FAILURE;
+                        }
+                        $bodyLength = (int)$match[1];
+                        $bodyBuffer = substr($bodyBuffer, $pos + 4);
                     }
-                    $firstLine = substr($bodyBuffer, 9, strpos($bodyBuffer, "\r\n") - 9);
-                    if (!preg_match('/200 /', $bodyBuffer)) {
-                        $output->writeln("Download php$version.micro.sfx.zip failed, $firstLine");
-                        return self::FAILURE;
-                    }
-                    $bodyLength = (int)$match[1];
-                    $bodyBuffer = substr($bodyBuffer, $pos + 4);
+                }
+                $receiveLength = strlen($bodyBuffer);
+                $percent = ceil($receiveLength * 100 / $bodyLength);
+                if ($percent != $lastPercent) {
+                    echo '[' . str_pad('', $percent, '=') . '>' . str_pad('', 100 - $percent) . "$percent%]";
+                    echo $percent < 100 ? "\r" : "\n";
+                }
+                $lastPercent = $percent;
+                if ($bodyLength && $receiveLength >= $bodyLength) {
+                    file_put_contents($zipFile, $bodyBuffer);
+                    break;
+                }
+                if ($buffer === false || !is_resource($client) || feof($client)) {
+                    $output->writeln("Fail donwload PHP$version ...");
+                    return self::FAILURE;
                 }
             }
-            $receiveLength = strlen($bodyBuffer);
-            $percent = ceil($receiveLength * 100 / $bodyLength);
-            if ($percent != $lastPercent) {
-                echo '[' . str_pad('', $percent, '=') . '>' . str_pad('', 100 - $percent) . "$percent%]";
-                echo $percent < 100 ? "\r" : "\n";
-            }
-            $lastPercent = $percent;
-            if ($bodyLength && $receiveLength >= $bodyLength) {
-                file_put_contents($zipFile, $bodyBuffer);
-                break;
-            }
-            if ($buffer === false || !is_resource($client) || feof($client)) {
-                $output->writeln("Fail donwload PHP$version ...");
-                return self::FAILURE;
-            }
+        } else {
+            $output->writeln("\r\nUse PHP$version ...");
         }
 
         // 解压
-        if ($supportZip) {
+        if (!is_file($sfxFile) && $supportZip) {
             $zip = new ZipArchive;
             $zip->open($zipFile, ZipArchive::CHECKCONS);
             $zip->extractTo($this->buildDir);
@@ -113,10 +117,6 @@ class BuildBinCommand extends BuildPharCommand
         // 生成二进制文件
         file_put_contents($binFile, file_get_contents($sfxFile));
         file_put_contents($binFile, file_get_contents($pharFile), FILE_APPEND);
-        if ($supportZip) {
-            unlink($zipFile);
-        }
-        unlink($sfxFile);
         unlink($pharFile);
 
         // 添加执行权限
