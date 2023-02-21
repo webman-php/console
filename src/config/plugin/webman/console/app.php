@@ -12,7 +12,7 @@ return [
 
     'private_key_file'  => '', // The file path for certificate or OpenSSL private key file.
 
-    //'exclude_pattern'   => '#^(?!.*(LICENSE|composer.json|.github|.idea|.git|.setting|runtime|test|test_old|tests|Tests|vendor-bin|.md))(.*)$#',
+    'exclude_pattern'   => '#^(?!.*(composer.json|/.github/|/.idea/|/.git/|/.setting/|/runtime/|/vendor-bin/|/build/))(.*)$#',
 
     'exclude_files'     => [
         '.env', 'LICENSE', 'composer.json', 'composer.lock', 'start.php', 'webman.phar', 'webman.bin'
