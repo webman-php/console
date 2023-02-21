@@ -117,7 +117,6 @@ class BuildBinCommand extends BuildPharCommand
         // 生成二进制文件
         file_put_contents($binFile, file_get_contents($sfxFile));
         file_put_contents($binFile, file_get_contents($pharFile), FILE_APPEND);
-        unlink($pharFile);
 
         // 添加执行权限
         chmod($binFile, 0755);
