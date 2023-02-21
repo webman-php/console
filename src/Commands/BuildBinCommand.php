@@ -111,7 +111,8 @@ class BuildBinCommand extends BuildPharCommand
         }
 
         // 生成二进制文件
-        file_put_contents($binFile, file_get_contents($sfxFile) . file_get_contents($pharFile));
+        file_put_contents($binFile, file_get_contents($sfxFile));
+        file_put_contents($binFile, file_get_contents($pharFile), FILE_APPEND);
         if ($supportZip) {
             unlink($zipFile);
         }
