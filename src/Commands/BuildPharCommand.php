@@ -46,7 +46,6 @@ class BuildPharCommand extends Command
                 throw new RuntimeException("Failed to create phar file output directory. Please check the permission.");
             }
         }
-        $this->clearBuildDir();
 
         $phar_filename = config('plugin.webman.console.app.phar_filename', 'webman.phar');
         if (empty($phar_filename)) {
@@ -145,16 +144,5 @@ __HALT_COMPILER();
             );
         }
     }
-
-    /**
-     * @return void
-     */
-    protected function clearBuildDir()
-    {
-        foreach (glob("$this->buildDir/*") as $file) {
-            if (is_file($file)) {
-                unlink($file);
-            }
-        }
-    }
+    
 }
