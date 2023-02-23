@@ -236,7 +236,7 @@ class Install
     {
         // 删除菜单
         foreach (static::getMenus() as \$menu) {
-            Menu::delete(\$menu['name']);
+            Menu::delete(\$menu['key']);
         }
     }
 
