@@ -29,6 +29,7 @@ class Command extends Application
             $relativePath = str_replace(str_replace('/', '\\', $path . '\\'), '', str_replace('/', '\\', $file->getRealPath()));
             // app\command\abc
             $realNamespace = trim($namspace . '\\' . trim(dirname(str_replace('\\', DIRECTORY_SEPARATOR, $relativePath)), '.'), '\\');
+            $realNamespace =  str_replace('/', '\\', $realNamespace);
             // app\command\doc\def
             $class_name = trim($realNamespace . '\\' . $file->getBasename('.php'), '\\');
             if (!class_exists($class_name) || !is_a($class_name, Commands::class, true)) {
