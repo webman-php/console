@@ -38,4 +38,18 @@ class Command extends Application
             $this->add(Container::get($class_name));
         }
     }
+    
+    public function installUserCommands()
+    {
+        //get command from config
+        $commands = config('command', []);
+
+        foreach ($commands as $command) {
+            // check command class whether instanceof SymfonyCommand
+            if (!is_a($command, Commands::class, true)) {
+                continue;
+            }
+            $this->add(new $command);
+        }
+    }
 }
