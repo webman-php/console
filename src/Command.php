@@ -32,7 +32,7 @@ class Command extends Application
             $realNamespace =  str_replace('/', '\\', $realNamespace);
             // app\command\doc\def
             $class_name = trim($realNamespace . '\\' . $file->getBasename('.php'), '\\');
-            if (!class_exists($class_name) || !is_a($class_name, Commands::class, true)) {
+            if (!class_exists($class_name) || !is_a($class_name, Commands::class, true) || (new \ReflectionClass($class_name))->isAbstract()) {
                 continue;
             }
             $this->add(Container::get($class_name));
