@@ -62,6 +62,7 @@ class FixDisbaleFunctionsCommand extends Command
             "proc_get_status",
             "proc_close",
             "shell_exec",
+            "exec",
         ];
 
         $has_disbaled_functions = false;
