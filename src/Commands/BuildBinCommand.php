@@ -60,7 +60,13 @@ class BuildBinCommand extends BuildPharCommand
             $domain = 'download.workerman.net';
             $output->writeln("\r\nDownloading PHP$version ...");
             if (extension_loaded('openssl')) {
-                $client = stream_socket_client("ssl://$domain:443");
+                $context = stream_context_create([
+                    'ssl' => [
+                        'verify_peer' => false,
+                        'verify_peer_name' => false,
+                    ]
+                ]);
+                $client = stream_socket_client("ssl://$domain:443", $context);
             } else {
                 $client = stream_socket_client("tcp://$domain:80");
             }
