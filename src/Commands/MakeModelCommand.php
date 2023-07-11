@@ -103,6 +103,7 @@ class MakeModelCommand extends Command
             $inflector = InflectorFactory::create()->build();
             $table_plura = $inflector->pluralize($inflector->tableize($class));
             if (\support\Db::select("show tables like '{$prefix}{$table_plura}'")) {
+                $table_val = "'$table'";
                 $table = "{$prefix}{$table_plura}";
             } else if (\support\Db::select("show tables like '{$prefix}{$table}'")) {
                 $table_val = "'$table'";
