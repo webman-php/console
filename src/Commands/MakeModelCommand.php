@@ -109,6 +109,11 @@ class MakeModelCommand extends Command
                 $table_val = "'$table'";
                 $table = "{$prefix}{$table}";
             }
+            $tableComment = \support\Db::select('SELECT table_comment FROM information_schema.`TABLES` WHERE table_schema = ? AND table_name = ?', [$database, $table]);
+            if (!empty($tableComment)) {
+                $comments = $tableComment[0]->table_comment ?? $tableComment[0]->TABLE_COMMENT;
+                $properties .= " * {$table} {$comments}" . PHP_EOL;
+            }
             foreach (\support\Db::select("select COLUMN_NAME,DATA_TYPE,COLUMN_KEY,COLUMN_COMMENT from INFORMATION_SCHEMA.COLUMNS where table_name = '$table' and table_schema = '$database'") as $item) {
                 if ($item->COLUMN_KEY === 'PRI') {
                     $pk = $item->COLUMN_NAME;
@@ -185,6 +190,11 @@ EOF;
             } else if (\think\facade\Db::query("show tables like '{$prefix}{$table}s'")) {
                 $table = "{$prefix}{$table}s";
                 $table_val = "'$table'";
+            }
+            $tableComment = \support\Db::select('SELECT table_comment FROM information_schema.`TABLES` WHERE table_schema = ? AND table_name = ?', [$database, $table]);
+            if (!empty($tableComment)) {
+                $comments = $tableComment[0]->table_comment ?? $tableComment[0]->TABLE_COMMENT;
+                $properties .= " * {$table} {$comments}" . PHP_EOL;
             }
             foreach (\think\facade\Db::query("select COLUMN_NAME,DATA_TYPE,COLUMN_KEY,COLUMN_COMMENT from INFORMATION_SCHEMA.COLUMNS where table_name = '$table' and table_schema = '$database'") as $item) {
                 if ($item['COLUMN_KEY'] === 'PRI') {
