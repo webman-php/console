@@ -19,6 +19,6 @@ return [
     ],
 
     'custom_ini' => '
-memory_limit = 128M
+memory_limit = 256M
     ',
 ];
