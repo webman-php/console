@@ -21,7 +21,8 @@ if (!in_array($argv[1] ?? '', ['start', 'restart', 'stop', 'status', 'reload', '
 $cli = new Command();
 $cli->setName('webman cli');
 $cli->installInternalCommands();
-if (is_dir($command_path = Util::guessPath(app_path(), '/command', true))) {
+if (is_dir($command_path = config('plugin.webman.console.app.command_dir'))) {
+    $command_namespace = config('plugin.webman.console.app.command_namespace');
     $cli->installCommands($command_path);
 }
 
