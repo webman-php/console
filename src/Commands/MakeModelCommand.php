@@ -191,9 +191,9 @@ EOF;
                 $table = "{$prefix}{$table}s";
                 $table_val = "'$table'";
             }
-            $tableComment = \support\Db::select('SELECT table_comment FROM information_schema.`TABLES` WHERE table_schema = ? AND table_name = ?', [$database, $table]);
+            $tableComment = \think\facade\Db::query('SELECT table_comment FROM information_schema.`TABLES` WHERE table_schema = ? AND table_name = ?', [$database, $table]);
             if (!empty($tableComment)) {
-                $comments = $tableComment[0]->table_comment ?? $tableComment[0]->TABLE_COMMENT;
+                $comments = $tableComment[0]['table_comment'] ?? $tableComment[0]['TABLE_COMMENT'];
                 $properties .= " * {$table} {$comments}" . PHP_EOL;
             }
             foreach (\think\facade\Db::query("select COLUMN_NAME,DATA_TYPE,COLUMN_KEY,COLUMN_COMMENT from INFORMATION_SCHEMA.COLUMNS where table_name = '$table' and table_schema = '$database'") as $item) {
