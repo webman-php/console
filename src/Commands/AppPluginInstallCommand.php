@@ -15,8 +15,6 @@ class AppPluginInstallCommand extends Command
     protected static $defaultName = 'app-plugin:install';
     protected static $defaultDescription = 'App Plugin Install';
 
-    protected  $name = 'app-plugin:install';
-
     /**
      * @return void
      */
