@@ -28,7 +28,7 @@ class MakeBootstrapCommand extends Command
      * @param OutputInterface $output
      * @return int
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $name = $input->getArgument('name');
         $enable = in_array($input->getArgument('enable'), ['no', '0', 'false', 'n']) ? false : true;

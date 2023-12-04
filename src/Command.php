@@ -32,10 +32,18 @@ class Command extends Application
             $realNamespace =  str_replace('/', '\\', $realNamespace);
             // app\command\doc\def
             $class_name = trim($realNamespace . '\\' . $file->getBasename('.php'), '\\');
-            if (!class_exists($class_name) || !is_a($class_name, Commands::class, true) || (new \ReflectionClass($class_name))->isAbstract()) {
+            if (!class_exists($class_name) || !is_a($class_name, Commands::class, true)) {
                 continue;
             }
-            $this->add(Container::get($class_name));
+            $reflection = new \ReflectionClass($class_name);
+            if ($reflection->isAbstract()) {
+                continue;
+            }
+            $name = $reflection->getStaticPropertyValue('defaultName');
+            $description = $reflection->getStaticPropertyValue('defaultDescription');
+            $command = Container::get($class_name);
+            $command->setName($name)->setDescription($description);
+            $this->add($command);
         }
     }
 }

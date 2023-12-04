@@ -37,7 +37,15 @@ foreach (config('plugin', []) as $firm => $projects) {
             continue;
         }
         foreach ($project['command'] ?? [] as $command) {
-            $cli->add(Container::get($command));
+            $reflection = new \ReflectionClass($command);
+            if ($reflection->isAbstract()) {
+                continue;
+            }
+            $name = $reflection->getStaticPropertyValue('defaultName');
+            $description = $reflection->getStaticPropertyValue('defaultDescription');
+            $command = Container::get($command);
+            $command->setName($name)->setDescription($description);
+            $cli->add($command);
         }
     }
 }
