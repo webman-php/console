@@ -39,8 +39,9 @@ class Command extends Application
             if ($reflection->isAbstract()) {
                 continue;
             }
-            $name = $reflection->getStaticPropertyValue('defaultName');
-            $description = $reflection->getStaticPropertyValue('defaultDescription');
+            $properties = $reflection->getStaticProperties();
+            $name = $properties['defaultName'];
+            $description = $properties['defaultDescription'];
             $command = Container::get($class_name);
             $command->setName($name)->setDescription($description);
             $this->add($command);
