@@ -41,8 +41,9 @@ foreach (config('plugin', []) as $firm => $projects) {
             if ($reflection->isAbstract()) {
                 continue;
             }
-            $name = $reflection->getStaticPropertyValue('defaultName');
-            $description = $reflection->getStaticPropertyValue('defaultDescription');
+            $properties = $reflection->getStaticProperties();
+            $name = $properties['defaultName'];
+            $description = $properties['defaultDescription'];
             $command = Container::get($command);
             $command->setName($name)->setDescription($description);
             $cli->add($command);
