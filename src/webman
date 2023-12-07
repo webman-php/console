@@ -36,15 +36,18 @@ foreach (config('plugin', []) as $firm => $projects) {
         if (!is_array($project)) {
             continue;
         }
-        foreach ($project['command'] ?? [] as $command) {
-            $reflection = new \ReflectionClass($command);
+        foreach ($project['command'] ?? [] as $class_name) {
+            $reflection = new \ReflectionClass($class_name);
             if ($reflection->isAbstract()) {
                 continue;
             }
             $properties = $reflection->getStaticProperties();
             $name = $properties['defaultName'];
-            $description = $properties['defaultDescription'];
-            $command = Container::get($command);
+            if (!$name) {
+                throw new RuntimeException("Command {$class_name} has no defaultName");
+            }
+            $description = $properties['defaultDescription'] ?? '';
+            $command = Container::get($class_name);
             $command->setName($name)->setDescription($description);
             $cli->add($command);
         }
