@@ -3,6 +3,7 @@
 namespace Webman\Console\Commands;
 
 use Doctrine\Inflector\InflectorFactory;
+use support\Db;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -23,6 +24,7 @@ class MakeModelCommand extends Command
     {
         $this->addArgument('name', InputArgument::REQUIRED, 'Model name');
         $this->addArgument('type', InputArgument::OPTIONAL, 'Type');
+        $this->addOption('connection', 'c', InputOption::VALUE_OPTIONAL, 'Select database connection. ');
     }
 
     /**
@@ -35,6 +37,7 @@ class MakeModelCommand extends Command
         $name = $input->getArgument('name');
         $name = Util::nameToClass($name);
         $type = $input->getArgument('type');
+        $connection = $input->getOption('connection');
         $output->writeln("Make model $name");
         if (!($pos = strrpos($name, '/'))) {
             $name = ucfirst($name);
@@ -73,9 +76,9 @@ class MakeModelCommand extends Command
             $type = !$database && $thinkorm ? 'tp' : 'laravel';
         }
         if ($type == 'tp') {
-            $this->createTpModel($name, $namespace, $file);
+            $this->createTpModel($name, $namespace, $file, $connection);
         } else {
-            $this->createModel($name, $namespace, $file);
+            $this->createModel($name, $namespace, $file, $connection);
         }
 
         return self::SUCCESS;
@@ -85,9 +88,10 @@ class MakeModelCommand extends Command
      * @param $class
      * @param $namespace
      * @param $file
+     * @param string|null $connection
      * @return void
      */
-    protected function createModel($class, $namespace, $file)
+    protected function createModel($class, $namespace, $file, $connection = null)
     {
         $path = pathinfo($file, PATHINFO_DIRNAME);
         if (!is_dir($path)) {
@@ -97,24 +101,26 @@ class MakeModelCommand extends Command
         $table_val = 'null';
         $pk = 'id';
         $properties = '';
+        $connection = $connection ?: 'mysql';
         try {
-            $prefix = config('database.connections.mysql.prefix') ?? '';
-            $database = config('database.connections.mysql.database');
+            $prefix = config("database.connections.$connection.prefix") ?? '';
+            $database = config("database.connections.$connection.database");
             $inflector = InflectorFactory::create()->build();
             $table_plura = $inflector->pluralize($inflector->tableize($class));
-            if (\support\Db::select("show tables like '{$prefix}{$table_plura}'")) {
+            $con = Db::connection($connection);
+            if ($con->select("show tables like '{$prefix}{$table_plura}'")) {
                 $table_val = "'$table'";
                 $table = "{$prefix}{$table_plura}";
-            } else if (\support\Db::select("show tables like '{$prefix}{$table}'")) {
+            } else if ($con->select("show tables like '{$prefix}{$table}'")) {
                 $table_val = "'$table'";
                 $table = "{$prefix}{$table}";
             }
-            $tableComment = \support\Db::select('SELECT table_comment FROM information_schema.`TABLES` WHERE table_schema = ? AND table_name = ?', [$database, $table]);
+            $tableComment = $con->select('SELECT table_comment FROM information_schema.`TABLES` WHERE table_schema = ? AND table_name = ?', [$database, $table]);
             if (!empty($tableComment)) {
                 $comments = $tableComment[0]->table_comment ?? $tableComment[0]->TABLE_COMMENT;
                 $properties .= " * {$table} {$comments}" . PHP_EOL;
             }
-            foreach (\support\Db::select("select COLUMN_NAME,DATA_TYPE,COLUMN_KEY,COLUMN_COMMENT from INFORMATION_SCHEMA.COLUMNS where table_name = '$table' and table_schema = '$database' ORDER BY ordinal_position") as $item) {
+            foreach ($con->select("select COLUMN_NAME,DATA_TYPE,COLUMN_KEY,COLUMN_COMMENT from INFORMATION_SCHEMA.COLUMNS where table_name = '$table' and table_schema = '$database' ORDER BY ordinal_position") as $item) {
                 if ($item->COLUMN_KEY === 'PRI') {
                     $pk = $item->COLUMN_NAME;
                     $item->COLUMN_COMMENT .= "(主键)";
@@ -122,7 +128,9 @@ class MakeModelCommand extends Command
                 $type = $this->getType($item->DATA_TYPE);
                 $properties .= " * @property $type \${$item->COLUMN_NAME} {$item->COLUMN_COMMENT}\n";
             }
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+            echo $e->getMessage() . PHP_EOL;
+        }
         $properties = rtrim($properties) ?: ' *';
         $model_content = <<<EOF
 <?php
@@ -136,6 +144,13 @@ $properties
  */
 class $class extends Model
 {
+    /**
+     * The connection name for the model.
+     *
+     * @var string|null
+     */
+    protected \$connection = '$connection';
+    
     /**
      * The table associated with the model.
      *
@@ -168,10 +183,11 @@ EOF;
     /**
      * @param $class
      * @param $namespace
-     * @param $path
+     * @param $file
+     * @param string|null $connection
      * @return void
      */
-    protected function createTpModel($class, $namespace, $file)
+    protected function createTpModel($class, $namespace, $file, $connection = null)
     {
         $path = pathinfo($file, PATHINFO_DIRNAME);
         if (!is_dir($path)) {
@@ -181,22 +197,24 @@ EOF;
         $table_val = 'null';
         $pk = 'id';
         $properties = '';
+        $connection = $connection ?: 'mysql';
         try {
-            $prefix = config('thinkorm.connections.mysql.prefix') ?? '';
-            $database = config('thinkorm.connections.mysql.database');
-            if (\think\facade\Db::query("show tables like '{$prefix}{$table}'")) {
+            $prefix = config("thinkorm.connections.$connection.prefix") ?? '';
+            $database = config("thinkorm.connections.$connection.database");
+            $con = \think\facade\Db::connect($connection);
+            if ($con->query("show tables like '{$prefix}{$table}'")) {
                 $table = "{$prefix}{$table}";
                 $table_val = "'$table'";
-            } else if (\think\facade\Db::query("show tables like '{$prefix}{$table}s'")) {
+            } else if ($con->query("show tables like '{$prefix}{$table}s'")) {
                 $table = "{$prefix}{$table}s";
                 $table_val = "'$table'";
             }
-            $tableComment = \think\facade\Db::query('SELECT table_comment FROM information_schema.`TABLES` WHERE table_schema = ? AND table_name = ?', [$database, $table]);
+            $tableComment = $con->query('SELECT table_comment FROM information_schema.`TABLES` WHERE table_schema = ? AND table_name = ?', [$database, $table]);
             if (!empty($tableComment)) {
                 $comments = $tableComment[0]['table_comment'] ?? $tableComment[0]['TABLE_COMMENT'];
                 $properties .= " * {$table} {$comments}" . PHP_EOL;
             }
-            foreach (\think\facade\Db::query("select COLUMN_NAME,DATA_TYPE,COLUMN_KEY,COLUMN_COMMENT from INFORMATION_SCHEMA.COLUMNS where table_name = '$table' and table_schema = '$database' ORDER BY ordinal_position") as $item) {
+            foreach ($con->query("select COLUMN_NAME,DATA_TYPE,COLUMN_KEY,COLUMN_COMMENT from INFORMATION_SCHEMA.COLUMNS where table_name = '$table' and table_schema = '$database' ORDER BY ordinal_position") as $item) {
                 if ($item['COLUMN_KEY'] === 'PRI') {
                     $pk = $item['COLUMN_NAME'];
                     $item['COLUMN_COMMENT'] .= "(主键)";
@@ -204,7 +222,9 @@ EOF;
                 $type = $this->getType($item['DATA_TYPE']);
                 $properties .= " * @property $type \${$item['COLUMN_NAME']} {$item['COLUMN_COMMENT']}\n";
             }
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+            echo $e->getMessage() . PHP_EOL;
+        }
         $properties = rtrim($properties) ?: ' *';
         $model_content = <<<EOF
 <?php
@@ -218,6 +238,13 @@ $properties
  */
 class $class extends Model
 {
+    /**
+     * The connection name for the model.
+     *
+     * @var string|null
+     */
+    protected \$connection = '$connection';
+    
     /**
      * The table associated with the model.
      *
