@@ -177,6 +177,12 @@ use Throwable;
 
 class Install
 {
+
+    /**
+     * 数据库连接
+     */
+    protected static \$connection = 'plugin.admin.mysql';
+    
     /**
      * 安装
      *
@@ -329,7 +335,7 @@ class Install
         foreach (explode(';', file_get_contents(\$mysqlDumpFile)) as \$sql) {
             if (\$sql = trim(\$sql)) {
                 try {
-                    Db::connection('plugin.admin.mysql')->statement(\$sql);
+                    Db::connection(static::\$connection)->statement(\$sql);
                 } catch (Throwable \$e) {}
             }
         }
