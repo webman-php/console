@@ -84,9 +84,9 @@ use Webman\Http\Request;
 
 class $name implements MiddlewareInterface
 {
-    public function process(Request \$request, callable \$next) : Response
+    public function process(Request \$request, callable \$handler) : Response
     {
-        return \$next(\$request);
+        return \$handler(\$request);
     }
     
 }
