@@ -43,16 +43,21 @@ class AppPluginZipCommand extends Command
             $output->writeln("Plugin $name not exists");
             return self::FAILURE;
         }
-        $this->zipDirectory($sourceDir, $zipFilePath);
+        if (is_file($zipFilePath)) {
+            unlink($zipFilePath);
+        }
+        $this->zipDirectory($name, $sourceDir, $zipFilePath);
         return self::SUCCESS;
     }
 
     /**
+     * @param $name
      * @param $sourceDir
      * @param $zipFilePath
-     * @return mixed
+     * @return bool
+     * @throws Exception
      */
-    protected function zipDirectory($sourceDir, $zipFilePath) {
+    protected function zipDirectory($name, $sourceDir, $zipFilePath) {
         $zip = new ZipArchive();
 
         if ($zip->open($zipFilePath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== TRUE) {
@@ -69,7 +74,7 @@ class AppPluginZipCommand extends Command
         foreach ($files as $file) {
             if (!$file->isDir()) {
                 $filePath = $file->getRealPath();
-                $relativePath = substr($filePath, strlen($sourceDir) + 1);
+                $relativePath = $name . DIRECTORY_SEPARATOR . substr($filePath, strlen($sourceDir) + 1);
                 $zip->addFile($filePath, $relativePath);
             }
         }
