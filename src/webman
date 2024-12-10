@@ -6,6 +6,7 @@ use Webman\Console\Command;
 use Webman\Console\Util;
 use support\Container;
 
+chdir(__DIR__);
 require_once __DIR__ . '/vendor/autoload.php';
 
 if (!$appConfigFile = config_path('app.php')) {
