@@ -18,6 +18,11 @@ if ($timezone = $appConfig['default_timezone'] ?? '') {
     date_default_timezone_set($timezone);
 }
 
+$errorReporting = $appConfig['error_reporting'];
+if (isset($errorReporting)) {
+    error_reporting($errorReporting);
+}
+
 if (!in_array($argv[1] ?? '', ['start', 'restart', 'stop', 'status', 'reload', 'connections'])) {
     require_once __DIR__ . '/support/bootstrap.php';
 } else {
