@@ -70,7 +70,7 @@ class MakeModelCommand extends Command
             if (isset($database['default']) && strpos($database['default'], 'plugin.') === 0) {
                 $database = false;
             }
-            $thinkorm = config('thinkorm');
+            $thinkorm = config('think-orm') ?: config('thinkorm');
             if (isset($thinkorm['default']) && strpos($thinkorm['default'], 'plugin.') === 0) {
                 $thinkorm = false;
             }
@@ -204,14 +204,21 @@ EOF;
             mkdir($path, 0777, true);
         }
         $table = Util::classToName($class);
+        $is_thinkorm_v2 = class_exists(\support\think\Db::class);
         $table_val = 'null';
         $pk = 'id';
         $properties = '';
         $connection = $connection ?: 'mysql';
         try {
-            $prefix = config("thinkorm.connections.$connection.prefix") ?? '';
-            $database = config("thinkorm.connections.$connection.database");
-            $con = \think\facade\Db::connect($connection);
+            $config_name = $is_thinkorm_v2 ? 'think-orm' : 'thinkorm';
+            $prefix = config("$config_name.connections.$connection.prefix") ?? '';
+            $database = config("$config_name.connections.$connection.database");
+            if ($is_thinkorm_v2) {
+                $con = \support\think\Db::connect($connection);
+            } else {
+                $con = \think\facade\Db::connect($connection);
+            }
+
             if ($con->query("show tables like '{$prefix}{$table}'")) {
                 $table = "{$prefix}{$table}";
                 $table_val = "'$table'";
@@ -233,15 +240,16 @@ EOF;
                 $properties .= " * @property $type \${$item['COLUMN_NAME']} {$item['COLUMN_COMMENT']}\n";
             }
         } catch (\Throwable $e) {
-            echo $e->getMessage() . PHP_EOL;
+            echo $e;
         }
         $properties = rtrim($properties) ?: ' *';
+        $modelNamespace = $is_thinkorm_v2 ? 'support\think\Model' : 'think\Model';
         $model_content = <<<EOF
 <?php
 
 namespace $namespace;
 
-use think\Model;
+use $modelNamespace;
 
 /**
 $properties
