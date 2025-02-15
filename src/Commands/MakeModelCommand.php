@@ -37,6 +37,11 @@ class MakeModelCommand extends Command
     {
         $name = $input->getArgument('name');
         $name = Util::nameToClass($name);
+        $suffix = config('app.model_suffix', '');
+        if ($suffix && !strpos($name, $suffix)) {
+            $name .= $suffix;
+        }
+
         $type = $input->getArgument('type');
         $connection = $input->getOption('connection');
         $output->writeln("Make model $name");
@@ -108,6 +113,11 @@ class MakeModelCommand extends Command
             mkdir($path, 0777, true);
         }
         $table = Util::classToName($class);
+        $suffix = config('app.model_suffix', '');
+        if ($suffix) {
+            $table = rtrim($table, '_'. strtolower($suffix));
+        }
+
         $table_val = 'null';
         $pk = 'id';
         $properties = '';
