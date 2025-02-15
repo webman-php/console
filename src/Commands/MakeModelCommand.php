@@ -37,6 +37,11 @@ class MakeModelCommand extends Command
     {
         $name = $input->getArgument('name');
         $name = Util::nameToClass($name);
+        $suffix = config('app.model_suffix', '');
+        if ($suffix && !strpos($name, $suffix)) {
+            $name .= $suffix;
+        }
+
         $type = $input->getArgument('type');
         $connection = $input->getOption('connection');
         $output->writeln("Make model $name");
@@ -47,7 +52,7 @@ class MakeModelCommand extends Command
             $namespace = $model_str === 'Model' ? 'App\Model' : 'app\model';
         } else {
             $name_str = substr($name, 0, $pos);
-            if($real_name_str = Util::guessPath(app_path(), $name_str)) {
+            if ($real_name_str = Util::guessPath(app_path(), $name_str)) {
                 $name_str = $real_name_str;
             } else if ($real_section_name = Util::guessPath(app_path(), strstr($name_str, '/', true))) {
                 $upper = strtolower($real_section_name[0]) !== $real_section_name[0];
@@ -108,6 +113,7 @@ class MakeModelCommand extends Command
             mkdir($path, 0777, true);
         }
         $table = Util::classToName($class);
+        $table = $this->getTable($table); // 移除模型后缀的表名
         $table_val = 'null';
         $pk = 'id';
         $properties = '';
@@ -116,10 +122,10 @@ class MakeModelCommand extends Command
             $prefix = config("database.connections.$connection.prefix") ?? '';
             $database = config("database.connections.$connection.database");
             $inflector = InflectorFactory::create()->build();
-            $table_plura = $inflector->pluralize($inflector->tableize($class));
+            $table_plura = $inflector->pluralize($inflector->tableize($table));
             $con = Db::connection($connection);
             if ($con->select("show tables like '{$prefix}{$table_plura}'")) {
-                $table_val = "'$table'";
+                $table_val = "'$table_plura'";
                 $table = "{$prefix}{$table_plura}";
             } else if ($con->select("show tables like '{$prefix}{$table}'")) {
                 $table_val = "'$table'";
@@ -142,6 +148,7 @@ class MakeModelCommand extends Command
             echo $e->getMessage() . PHP_EOL;
         }
         $properties = rtrim($properties) ?: ' *';
+        list($file, $class, $codeFile, $codeClass) = $this->getModelSeparateInfo($class, $file);
         $model_content = <<<EOF
 <?php
 
@@ -187,6 +194,7 @@ class $class extends Model
 
 EOF;
         file_put_contents($file, $model_content);
+        $this->createSeparateModel($codeClass, $codeFile, $namespace, $class);
     }
 
 
@@ -204,6 +212,7 @@ EOF;
             mkdir($path, 0777, true);
         }
         $table = Util::classToName($class);
+        $table = $this->getTable($table); // 移除模型后缀的表名
         $table_val = 'null';
         $pk = 'id';
         $properties = '';
@@ -236,6 +245,7 @@ EOF;
             echo $e->getMessage() . PHP_EOL;
         }
         $properties = rtrim($properties) ?: ' *';
+        list($file, $class, $codeFile, $codeClass) = $this->getModelSeparateInfo($class, $file);
         $model_content = <<<EOF
 <?php
 
@@ -274,6 +284,7 @@ class $class extends Model
 
 EOF;
         file_put_contents($file, $model_content);
+        $this->createSeparateModel($codeClass, $codeFile, $namespace, $class);
     }
 
     /**
@@ -306,4 +317,72 @@ EOF;
         }
     }
 
+
+    /**
+     * 去掉模型后缀的表名
+     * @param $table
+     * @return string
+     */
+    protected function getTable($table)
+    {
+        $suffix = config('app.model_suffix', '');
+        if ($suffix) {
+            $table = substr($table, 0, strlen($table) - strlen($suffix) - 1);
+        }
+        return $table;
+    }
+
+    /**
+     * 获取模型分离信息
+     * @param $class
+     * @param $file
+     * @return array
+     */
+    protected function getModelSeparateInfo($class, $file)
+    {
+        $configSuffix = config('app.model_config_suffix', '');
+        $suffix = config('app.model_suffix', '');
+        if (empty($configSuffix)) {
+            return [$file, $class, null, null];
+        }
+
+        $codeFile    = $file;   // 模型业务代码文件
+        $codeClass   = $class;  // 模型业务代码类名
+        $configClass = rtrim($class, $suffix) . $suffix . $configSuffix;         // 模型配置类名
+        $configFile  = str_replace($class . '.php', $configClass . '.php', $file);  // 模型配置文件
+
+        return [$configFile, $configClass, $codeFile, $codeClass];
+    }
+
+
+    /**
+     * 生成模型分离文件
+     * @param $codeClass
+     * @param $codeFile
+     * @param $namespace
+     * @param $class
+     */
+    protected function createSeparateModel($codeClass, $codeFile, $namespace, $class)
+    {
+        // 生成业务逻辑文件, 如果文件已经存在，则不生成
+        if ($codeClass && !is_file($codeFile)) {
+            $codeModeContent = <<<EOF
+<?php
+
+namespace $namespace;
+
+/**
+* $codeClass 业务逻辑
+*/
+class $codeClass extends $class
+{
+
+    // todo something
+
+}
+
+EOF;
+            file_put_contents($codeFile, $codeModeContent);
+        }
+    }
 }
