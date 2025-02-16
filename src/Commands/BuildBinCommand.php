@@ -39,7 +39,7 @@ class BuildBinCommand extends BuildPharCommand
         if (!$version) {
             $version = (float)PHP_VERSION;
         }
-        $version = $version >= 8.0 ? $version : 8.1;
+        $version = max($version, 8.1);
         $supportZip = class_exists(ZipArchive::class);
         $microZipFileName = $supportZip ? "php$version.micro.sfx.zip" : "php$version.micro.sfx";
         $pharFileName = config('plugin.webman.console.app.phar_filename', 'webman.phar');
@@ -73,7 +73,7 @@ class BuildBinCommand extends BuildPharCommand
                 $client = stream_socket_client("tcp://$domain:80");
             }
 
-            fwrite($client, "GET /php/$microZipFileName HTTP/1.0\r\nAccept: text/html\r\nHost: $domain\r\nUser-Agent: webman/console\r\n\r\n");
+            fwrite($client, "GET /php/$microZipFileName HTTP/1.1\r\nAccept: text/html\r\nHost: $domain\r\nUser-Agent: webman/console\r\n\r\n");
             $bodyLength = 0;
             $bodyBuffer = '';
             $lastPercent = 0;
