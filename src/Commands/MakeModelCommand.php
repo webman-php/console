@@ -111,7 +111,7 @@ class MakeModelCommand extends Command
         $table_val = 'null';
         $pk = 'id';
         $properties = '';
-        $connection = $connection ?: 'mysql';
+        $connection = $connection ?: config('database.default');
         try {
             $prefix = config("database.connections.$connection.prefix") ?? '';
             $database = config("database.connections.$connection.database");
