@@ -21,4 +21,7 @@ return [
     'custom_ini' => '
 memory_limit = 256M
     ',
+
+    'command_dir' => app_path('command'),
+    'command_namespace' => 'app\\command'
 ];
