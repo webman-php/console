@@ -112,6 +112,9 @@ class MakeModelCommand extends Command
         $pk = 'id';
         $properties = '';
         $connection = $connection ?: config('database.default');
+        $timestamps = 'false';
+        $hasCreatedAt = false;
+        $hasUpdatedAt = false;
         try {
             $prefix = config("database.connections.$connection.prefix") ?? '';
             $database = config("database.connections.$connection.database");
@@ -136,12 +139,19 @@ class MakeModelCommand extends Command
                     $item->COLUMN_COMMENT .= "(主键)";
                 }
                 $type = $this->getType($item->DATA_TYPE);
+                if ($item->COLUMN_NAME === 'created_at') {
+                    $hasCreatedAt = true;
+                }
+                if ($item->COLUMN_NAME === 'updated_at') {
+                    $hasUpdatedAt = true;
+                }
                 $properties .= " * @property $type \${$item->COLUMN_NAME} {$item->COLUMN_COMMENT}\n";
             }
         } catch (\Throwable $e) {
             echo $e->getMessage() . PHP_EOL;
         }
         $properties = rtrim($properties) ?: ' *';
+        $timestamps = $hasCreatedAt && $hasUpdatedAt ? 'true' : 'false';
         $model_content = <<<EOF
 <?php
 
@@ -180,7 +190,7 @@ class $class extends Model
      *
      * @var bool
      */
-    public \$timestamps = false;
+    public \$timestamps = $timestamps;
     
     
 }
