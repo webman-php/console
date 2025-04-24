@@ -122,16 +122,16 @@ class MakeModelCommand extends Command
             $inflector = InflectorFactory::create()->build();
             $table_plura = $inflector->pluralize($inflector->tableize($class));
             $con = Db::connection($connection);
-            
+
             // 检查表是否存在（兼容MySQL和PostgreSQL）
             if ($driver === 'pgsql') {
                 // PostgreSQL 表检查
                 $schema = config("database.connections.$connection.schema") ?? 'public';
                 $exists_plura = $con->select("SELECT to_regclass('{$schema}.{$prefix}{$table_plura}') as table_exists");
                 $exists = $con->select("SELECT to_regclass('{$schema}.{$prefix}{$table}') as table_exists");
-                
+
                 if (!empty($exists_plura[0]->table_exists)) {
-                    $table_val = "'$table'";
+                    $table_val = "'$table_plura'";
                     $table = "{$prefix}{$table_plura}";
                 } else if (!empty($exists[0]->table_exists)) {
                     $table_val = "'$table'";
@@ -140,7 +140,7 @@ class MakeModelCommand extends Command
             } else {
                 // MySQL 表检查
                 if ($con->select("show tables like '{$prefix}{$table_plura}'")) {
-                    $table_val = "'$table'";
+                    $table_val = "'$table_plura'";
                     $table = "{$prefix}{$table_plura}";
                 } else if ($con->select("show tables like '{$prefix}{$table}'")) {
                     $table_val = "'$table'";
@@ -157,7 +157,7 @@ class MakeModelCommand extends Command
                     $comments = $tableComment[0]->table_comment;
                     $properties .= " * {$table} {$comments}" . PHP_EOL;
                 }
-                
+
                 // PostgreSQL 列信息
                 $columns = $con->select("
                     SELECT 
@@ -172,7 +172,7 @@ class MakeModelCommand extends Command
                     AND a.attnum > 0 AND NOT a.attisdropped
                     ORDER BY a.attnum
                 ");
-                
+
                 foreach ($columns as $item) {
                     if ($item->column_key === 'PRI') {
                         $pk = $item->column_name;
@@ -187,7 +187,7 @@ class MakeModelCommand extends Command
                     }
                     $properties .= " * @property $type \${$item->column_name} " . ($item->column_comment ?? '') . "\n";
                 }
-                
+
             } else {
                 // MySQL 表注释
                 $tableComment = $con->select('SELECT table_comment FROM information_schema.`TABLES` WHERE table_schema = ? AND table_name = ?', [$database, $table]);
@@ -195,7 +195,7 @@ class MakeModelCommand extends Command
                     $comments = $tableComment[0]->table_comment ?? $tableComment[0]->TABLE_COMMENT;
                     $properties .= " * {$table} {$comments}" . PHP_EOL;
                 }
-                
+
                 // MySQL 列信息
                 foreach ($con->select("select COLUMN_NAME,DATA_TYPE,COLUMN_KEY,COLUMN_COMMENT from INFORMATION_SCHEMA.COLUMNS where table_name = '$table' and table_schema = '$database' ORDER BY ordinal_position") as $item) {
                     if ($item->COLUMN_KEY === 'PRI') {
@@ -289,7 +289,7 @@ EOF;
             $prefix = config("$config_name.connections.$connection.prefix") ?? '';
             $database = config("$config_name.connections.$connection.database");
             $driver = config("$config_name.connections.$connection.type") ?? 'mysql';
-            
+
             if ($is_thinkorm_v2) {
                 $con = \support\think\Db::connect($connection);
             } else {
@@ -302,7 +302,7 @@ EOF;
                 $schema = config("$config_name.connections.$connection.schema") ?? 'public';
                 $exists = $con->query("SELECT to_regclass('{$schema}.{$prefix}{$table}') as table_exists");
                 $exists_plural = $con->query("SELECT to_regclass('{$schema}.{$prefix}{$table}s') as table_exists");
-                
+
                 if (!empty($exists[0]['table_exists'])) {
                     $table = "{$prefix}{$table}";
                     $table_val = "'$table'";
@@ -330,7 +330,7 @@ EOF;
                     $comments = $tableComment[0]['table_comment'];
                     $properties .= " * {$table} {$comments}" . PHP_EOL;
                 }
-                
+
                 // PostgreSQL 列信息
                 $columns = $con->query("
                     SELECT 
@@ -345,7 +345,7 @@ EOF;
                     AND a.attnum > 0 AND NOT a.attisdropped
                     ORDER BY a.attnum
                 ");
-                
+
                 foreach ($columns as $item) {
                     if ($item['column_key'] === 'PRI') {
                         $pk = $item['column_name'];
@@ -361,7 +361,7 @@ EOF;
                     $comments = $tableComment[0]['table_comment'] ?? $tableComment[0]['TABLE_COMMENT'];
                     $properties .= " * {$table} {$comments}" . PHP_EOL;
                 }
-                
+
                 // MySQL 列信息
                 foreach ($con->query("select COLUMN_NAME,DATA_TYPE,COLUMN_KEY,COLUMN_COMMENT from INFORMATION_SCHEMA.COLUMNS where table_name = '$table' and table_schema = '$database' ORDER BY ordinal_position") as $item) {
                     if ($item['COLUMN_KEY'] === 'PRI') {
@@ -426,15 +426,15 @@ EOF;
         if (strpos($type, 'int') !== false) {
             return 'integer';
         }
-        
+
         if (strpos($type, 'character varying') !== false || strpos($type, 'varchar') !== false) {
             return 'string';
         }
-        
+
         if (strpos($type, 'timestamp') !== false) {
             return 'string';
         }
-        
+
         switch ($type) {
             case 'varchar':
             case 'string':
