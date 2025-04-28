@@ -6,6 +6,8 @@ return [
 
     'phar_filename' => 'webman.phar',
 
+    'phar_compress' => Phar::NONE,
+
     'bin_filename' => 'webman.bin',
 
     'signature_algorithm'=> Phar::SHA256, //set the signature algorithm for a phar and apply it. The signature algorithm must be one of Phar::MD5, Phar::SHA1, Phar::SHA256, Phar::SHA512, or Phar::OPENSSL.

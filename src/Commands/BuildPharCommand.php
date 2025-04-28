@@ -111,6 +111,14 @@ class BuildPharCommand extends Command
             }
         }
 
+        $compress = config('plugin.webman.console.app.phar_compress', Phar::NONE);
+        if (!in_array($compress,[Phar::GZ, Phar::BZ2, Phar::NONE])) {
+            throw new RuntimeException('The compress algorithm must be one of Phar::GZ, Phar::BZ2, or Phar::NONE.');
+        }
+        if($compress != Phar::NONE) {
+            $phar->compressFiles($compress);
+        }
+
         $output->writeln('Files collect complete, begin add file to Phar.');
 
         $phar->setStub("#!/usr/bin/env php
