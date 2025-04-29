@@ -46,7 +46,10 @@ class AppPluginZipCommand extends Command
         if (is_file($zipFilePath)) {
             unlink($zipFilePath);
         }
-        $this->zipDirectory($name, $sourceDir, $zipFilePath);
+
+        $excludePaths = ['node_modules', '.git', '.idea', '.vscode', '__pycache__'];
+
+        $this->zipDirectory($name, $sourceDir, $zipFilePath, $excludePaths);
         return self::SUCCESS;
     }
 
@@ -54,10 +57,12 @@ class AppPluginZipCommand extends Command
      * @param $name
      * @param $sourceDir
      * @param $zipFilePath
+     * @param array $excludePaths
      * @return bool
      * @throws Exception
      */
-    protected function zipDirectory($name, $sourceDir, $zipFilePath) {
+    protected function zipDirectory($name, $sourceDir, $zipFilePath, array $excludePaths = []): bool
+    {
         $zip = new ZipArchive();
 
         if ($zip->open($zipFilePath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== TRUE) {
@@ -67,7 +72,7 @@ class AppPluginZipCommand extends Command
         $sourceDir = realpath($sourceDir);
 
         $files = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($sourceDir),
+            new RecursiveDirectoryIterator($sourceDir, RecursiveDirectoryIterator::SKIP_DOTS),
             RecursiveIteratorIterator::LEAVES_ONLY
         );
 
@@ -75,11 +80,26 @@ class AppPluginZipCommand extends Command
             if (!$file->isDir()) {
                 $filePath = $file->getRealPath();
                 $relativePath = $name . DIRECTORY_SEPARATOR . substr($filePath, strlen($sourceDir) + 1);
+
+                // 修正排除目录的判断逻辑，确保所有层级都能排除
+                $shouldExclude = false;
+                foreach ($excludePaths as $excludePath) {
+                    // 统一路径分隔符为正斜杠，兼容 Windows
+                    $normalizedRelativePath = str_replace('\\', '/', $relativePath);
+                    $normalizedExcludePath = str_replace('\\', '/', $excludePath);
+                    if (preg_match('#/(?:' . preg_quote($normalizedExcludePath, '#') . ')(/|$)#i', $normalizedRelativePath)) {
+                        $shouldExclude = true;
+                        break;
+                    }
+                }
+                if ($shouldExclude) {
+                    continue;
+                }
+
                 $zip->addFile($filePath, $relativePath);
             }
         }
 
         return $zip->close();
     }
-
 }
