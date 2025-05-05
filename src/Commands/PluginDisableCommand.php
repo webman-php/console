@@ -2,17 +2,15 @@
 
 namespace Webman\Console\Commands;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 
-
+#[AsCommand('plugin:disable', 'Disable plugin by name')]
 class PluginDisableCommand extends Command
 {
-    protected static $defaultName = 'plugin:disable';
-    protected static $defaultDescription = 'Disable plugin by name';
-
     /**
      * @return void
      */

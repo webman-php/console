@@ -2,25 +2,20 @@
 
 namespace Webman\Console\Commands;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Webman\Console\Util;
 
+#[AsCommand('app-plugin:install', 'Install App Plugin')]
 class AppPluginInstallCommand extends Command
 {
-
-    protected static $defaultName = 'app-plugin:install';
-    protected static $defaultDescription = 'App Plugin Install';
-
     /**
      * @return void
      */
     protected function configure()
     {
-        $this->setName(static::$defaultName)->setDescription(static::$defaultDescription);
         $this->addArgument('name', InputArgument::REQUIRED, 'App plugin name');
     }
 

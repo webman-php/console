@@ -2,17 +2,16 @@
 
 namespace Webman\Console\Commands;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Webman\Console\Util;
 
+#[AsCommand('plugin:export', 'Plugin export')]
 class PluginExportCommand extends Command
 {
-    protected static $defaultName = 'plugin:export';
-    protected static $defaultDescription = 'Plugin export';
-
     /**
      * @return void
      */

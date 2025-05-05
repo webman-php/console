@@ -2,17 +2,16 @@
 
 namespace Webman\Console\Commands;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Webman\Console\Util;
 
+#[AsCommand('plugin:create', 'Create plugin')]
 class PluginCreateCommand extends Command
 {
-    protected static $defaultName = 'plugin:create';
-    protected static $defaultDescription = 'Plugin create';
-
     /**
      * @return void
      */

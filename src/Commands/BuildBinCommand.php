@@ -2,20 +2,15 @@
 
 namespace Webman\Console\Commands;
 
-use Phar;
-use RuntimeException;
-use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use ZipArchive;
 
-
+#[AsCommand('build:bin', 'build bin')]
 class BuildBinCommand extends BuildPharCommand
 {
-    protected static $defaultName = 'build:bin';
-    protected static $defaultDescription = 'build bin';
-
     /**
      * @return void
      */
