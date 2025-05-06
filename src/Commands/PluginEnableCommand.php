@@ -2,17 +2,15 @@
 
 namespace Webman\Console\Commands;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 
-
+#[AsCommand('plugin:enable', 'Enable plugin by name')]
 class PluginEnableCommand extends Command
 {
-    protected static $defaultName = 'plugin:enable';
-    protected static $defaultDescription = 'Enable plugin by name';
-
     /**
      * @return void
      */

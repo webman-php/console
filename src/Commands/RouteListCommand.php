@@ -2,17 +2,16 @@
 
 namespace Webman\Console\Commands;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Helper\Table;
 use Webman\Route;
 
+#[AsCommand('route:list', 'Route list')]
 class RouteListCommand extends Command
 {
-    protected static $defaultName = 'route:list';
-    protected static $defaultDescription = 'Route list';
-
     /**
      * @param InputInterface $input
      * @param OutputInterface $output

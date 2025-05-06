@@ -2,24 +2,14 @@
 
 namespace Webman\Console\Commands;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-
+#[AsCommand('fix-disable-functions', 'Fix disbale_functions in php.ini')]
 class FixDisbaleFunctionsCommand extends Command
 {
-    protected static $defaultName = 'fix-disable-functions';
-    protected static $defaultDescription = 'Fix disbale_functions in php.ini';
-
-    /**
-     * @return void
-     */
-    protected function configure()
-    {
-
-    }
-
     /**
      * @param InputInterface $input
      * @param OutputInterface $output

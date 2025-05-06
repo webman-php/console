@@ -2,6 +2,7 @@
 
 namespace Webman\Console\Commands;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -9,12 +10,9 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Webman\Console\Util;
 
-
+#[AsCommand('make:bootstrap', 'Make a bootstrap.')]
 class MakeBootstrapCommand extends Command
 {
-    protected static $defaultName = 'make:bootstrap';
-    protected static $defaultDescription = 'Make bootstrap';
-
     /**
      * @return void
      */

@@ -2,15 +2,14 @@
 
 namespace Webman\Console\Commands;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+#[AsCommand('version', 'Show webman version')]
 class VersionCommand extends Command
 {
-    protected static $defaultName = 'version';
-    protected static $defaultDescription = 'Show webman version';
-
     /**
      * @param InputInterface $input
      * @param OutputInterface $output

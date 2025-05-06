@@ -2,18 +2,16 @@
 
 namespace Webman\Console\Commands;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Webman\Console\Util;
 
-
+#[AsCommand('plugin:uninstall', 'Execute plugin uninstall script')]
 class PluginUninstallCommand extends Command
 {
-    protected static $defaultName = 'plugin:uninstall';
-    protected static $defaultDescription = 'Execute plugin uninstall script';
-
     /**
      * @return void
      */

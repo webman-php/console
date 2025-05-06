@@ -2,16 +2,15 @@
 
 namespace Webman\Console\Commands;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webman\Console\Application;
 
+#[AsCommand('connections', 'Get worker connections.')]
 class ConnectionsCommand extends Command
 {
-    protected static $defaultName = 'connections';
-    protected static $defaultDescription = 'Get worker connections.';
-
     /**
      * @param InputInterface $input
      * @param OutputInterface $output
