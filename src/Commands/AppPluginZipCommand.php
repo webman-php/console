@@ -20,7 +20,6 @@ class AppPluginZipCommand extends Command
      */
     protected function configure()
     {
-        $this->setName(static::$defaultName)->setDescription(static::$defaultDescription);
         $this->addArgument('name', InputArgument::REQUIRED, 'App plugin name');
     }
 
