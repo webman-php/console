@@ -9,8 +9,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-//暂时保留 phar:pack 命令，下一个版本再取消
-#[AsCommand('build:phar', 'Can be easily packaged a project into phar files. Easy to distribute and use.', ['phar:pack'])]
+#[AsCommand('build:phar', 'Can be easily packaged a project into phar files. Easy to distribute and use.')]
 class BuildPharCommand extends Command
 {
     protected $buildDir = '';
@@ -126,7 +125,7 @@ __HALT_COMPILER();
         }
 
         if (ini_get('phar.readonly')) {
-            $command = static::$defaultName;
+            $command = $this->getName();
             throw new RuntimeException(
                 "The 'phar.readonly' is 'On', build phar must setting it 'Off' or exec with 'php -d phar.readonly=0 ./webman $command'"
             );
