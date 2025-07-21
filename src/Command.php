@@ -60,10 +60,13 @@ class Command extends Application
             if (!$name) {
                 throw new RuntimeException("Command {$class_name} has no defaultName");
             }
-            $description = $properties['defaultDescription'] ?? '';
+            $description = $properties['defaultDescription'] ?? null;
         }
         $command = Container::get($class_name);
-        $command->setName($name)->setDescription($description);
+        $command->setName($name);
+        if ($description) {
+            $command->setDescription($description);
+        }
         $this->add($command);
         return $command;
     }
