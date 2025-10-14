@@ -74,7 +74,8 @@ class AppPluginZipCommand extends Command
         foreach ($files as $file) {
             if (!$file->isDir()) {
                 $filePath = $file->getRealPath();
-                $relativePath = $name . DIRECTORY_SEPARATOR . substr($filePath, strlen($sourceDir) + 1);
+                // 关键修复：统一使用正斜杠 '/'，避免 Windows 反斜杠污染 ZIP
+                $relativePath = $name . '/' . str_replace('\\', '/', substr($filePath, strlen($sourceDir) + 1));
 
                 // 修正排除目录的判断逻辑，确保所有层级都能排除
                 $shouldExclude = false;
