@@ -12,12 +12,21 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[AsCommand('build:phar', 'Can be easily packaged a project into phar files. Easy to distribute and use.')]
 class BuildPharCommand extends Command
 {
-    protected $buildDir = '';
+    protected string $pharFileName;
 
-    public function __construct(?string $name = null)
+    protected string $buildDir;
+
+    protected int $pharFormat;
+
+    protected int $pharCompression;
+
+    public function __construct()
     {
-        parent::__construct($name);
-        $this->buildDir = config('plugin.webman.console.app.build_dir', base_path() . '/build');
+        parent::__construct();
+        $this->pharFileName = config('plugin.webman.console.app.phar_filename', 'webman.phar');
+        $this->buildDir = rtrim(config('plugin.webman.console.app.build_dir', base_path() . '/build'), DIRECTORY_SEPARATOR);
+        $this->pharFormat = config('plugin.webman.console.app.phar_format', Phar::PHAR);
+        $this->pharCompression = config('plugin.webman.console.app.phar_compression', Phar::NONE);
     }
 
     /**
@@ -34,19 +43,17 @@ class BuildPharCommand extends Command
             }
         }
 
-        $phar_filename = config('plugin.webman.console.app.phar_filename', 'webman.phar');
-        if (empty($phar_filename)) {
-            throw new RuntimeException('Please set the phar filename.');
-        }
-
-        $phar_file = rtrim($this->buildDir,DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $phar_filename;
+        $phar_file = $this->buildDir . DIRECTORY_SEPARATOR . $this->getPharFileName();
         if (file_exists($phar_file)) {
             unlink($phar_file);
         }
 
         $exclude_pattern = config('plugin.webman.console.app.exclude_pattern','');
 
-        $phar = new Phar($phar_file,0,'webman');
+        $phar = new Phar($this->buildDir . DIRECTORY_SEPARATOR . $this->pharFileName,0 , 'webman');
+        if(!str_ends_with($this->getPharFileName(), '.phar')) {
+            $phar = $phar->convertToExecutable($this->pharFormat, $this->pharCompression);
+        }
 
         $phar->startBuffering();
 
@@ -62,9 +69,9 @@ class BuildPharCommand extends Command
             $private = openssl_get_privatekey(file_get_contents($private_key_file));
             $pkey = '';
             openssl_pkey_export($private, $pkey);
-            $phar->setSignatureAlgorithm($signature_algorithm, $pkey);
+            !$phar->getSignature() && $phar->setSignatureAlgorithm($signature_algorithm, $pkey);
         } else {
-            $phar->setSignatureAlgorithm($signature_algorithm);
+            !$phar->getSignature() && $phar->setSignatureAlgorithm($signature_algorithm);
         }
 
         $phar->buildFromDirectory(BASE_PATH,$exclude_pattern);
@@ -98,6 +105,10 @@ class BuildPharCommand extends Command
             }
         }
 
+        if ($this->pharCompression != Phar::NONE) {
+            $phar->addFromString('vendor/composer/ClassLoader.php', $this->getClassLoaderContents());
+            $phar->addFromString('/vendor/workerman/workerman/src/Worker.php', $this->getWorkerContents());
+        }
         $output->writeln('Files collect complete, begin add file to Phar.');
 
         $phar->setStub("#!/usr/bin/env php
@@ -111,6 +122,7 @@ __HALT_COMPILER();
         $output->writeln('Write requests to the Phar archive, save changes to disk.');
 
         $phar->stopBuffering();
+
         unset($phar);
         return self::SUCCESS;
     }
@@ -131,5 +143,48 @@ __HALT_COMPILER();
             );
         }
     }
-    
+
+    public function getPharFileName(): string
+    {
+        $phar_filename = $this->pharFileName;
+        if (empty($phar_filename)) {
+            throw new RuntimeException('Please set the phar filename.');
+        }
+        $phar_filename .= match ($this->pharFormat) {
+            Phar::TAR => '.tar',
+            Phar::ZIP => 'zip',
+            default => ''
+        };
+        $phar_filename .= match ($this->pharCompression) {
+            Phar::GZ => '.gz',
+            Phar::BZ2 => '.bz2',
+            default => ''
+        };
+        return $phar_filename;
+    }
+
+    public function getClassLoaderContents(): string
+    {
+        $fileContents = file_get_contents(BASE_PATH . '/vendor/composer/ClassLoader.php');
+        $replaceContents = <<<'PHP'
+            if (str_starts_with($file, 'phar://')) {
+                $lockFile = sys_get_temp_dir() . '/phar_' . md5($file) . '.lock';
+                $fp = fopen($lockFile, 'c');
+                flock($fp, LOCK_EX) && include $file;
+                fclose($fp);
+                file_exists($lockFile) && @unlink($lockFile);
+            } else {
+                include $file;
+            }
+PHP;
+        return str_replace('            include $file;', $replaceContents, $fileContents);
+    }
+    public function getWorkerContents(): string
+    {
+        $fileContents = file_get_contents(BASE_PATH . '/vendor/workerman/workerman/src/Worker.php');
+        $replaceContents = <<<'PHP'
+        static::forkOneWorkerForLinux($worker); php_sapi_name() == 'micro' && usleep(50000);
+        PHP;
+        return str_replace('static::forkOneWorkerForLinux($worker);', $replaceContents, $fileContents);
+    }
 }

@@ -11,6 +11,14 @@ use ZipArchive;
 #[AsCommand('build:bin', 'build bin')]
 class BuildBinCommand extends BuildPharCommand
 {
+    protected string $binFileName;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->binFileName = config('plugin.webman.console.app.bin_filename', 'webman.bin');
+    }
+
     /**
      * @return void
      */
@@ -37,16 +45,13 @@ class BuildBinCommand extends BuildPharCommand
         $version = max($version, 8.1);
         $supportZip = class_exists(ZipArchive::class);
         $microZipFileName = $supportZip ? "php$version.micro.sfx.zip" : "php$version.micro.sfx";
-        $pharFileName = config('plugin.webman.console.app.phar_filename', 'webman.phar');
-        $binFileName = config('plugin.webman.console.app.bin_filename', 'webman.bin');
-        $this->buildDir = config('plugin.webman.console.app.build_dir', base_path() . '/build');
         $customIni = config('plugin.webman.console.app.custom_ini', '');
 
-        $binFile = "$this->buildDir/$binFileName";
-        $pharFile = "$this->buildDir/$pharFileName";
-        $zipFile = "$this->buildDir/$microZipFileName";
-        $sfxFile = "$this->buildDir/php$version.micro.sfx";
-        $customIniHeaderFile = "$this->buildDir/custominiheader.bin";
+        $binFile = $this->buildDir. DIRECTORY_SEPARATOR . $this->binFileName;
+        $pharFile = $this->buildDir . DIRECTORY_SEPARATOR . $this->getPharFileName();
+        $zipFile = $this->buildDir. DIRECTORY_SEPARATOR . $microZipFileName;
+        $sfxFile = $this->buildDir. DIRECTORY_SEPARATOR . "php$version.micro.sfx";
+        $customIniHeaderFile = $this->buildDir. DIRECTORY_SEPARATOR . "custominiheader.bin";
 
         // 打包
         $command = new BuildPharCommand();
@@ -137,7 +142,7 @@ class BuildBinCommand extends BuildPharCommand
         // 添加执行权限
         chmod($binFile, 0755);
 
-        $output->writeln("\r\nSaved $binFileName to $binFile\r\nBuild Success!\r\n");
+        $output->writeln("\r\nSaved $this->binFileName to $binFile\r\nBuild Success!\r\n");
 
         return self::SUCCESS;
     }
