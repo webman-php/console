@@ -57,7 +57,7 @@ class MakeControllerCommand extends Command
                     return '/' . strtoupper($matches[1]);
                 }, ucfirst($name_str));
             }
-            $path = "$name_str/" . ($upper ? 'Controller' : 'controller');
+            $path = ($upper ? 'Controller' : 'controller') . "/$name_str";
             $name = ucfirst(substr($name, $pos + 1));
             $file = app_path() . DIRECTORY_SEPARATOR . $path . DIRECTORY_SEPARATOR . "$name.php";
             $namespace = str_replace('/', '\\', ($upper ? 'App/' : 'app/') . $path);
