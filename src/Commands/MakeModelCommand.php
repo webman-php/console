@@ -24,6 +24,7 @@ class MakeModelCommand extends Command
         $this->addArgument('name', InputArgument::REQUIRED, 'Model name');
         $this->addArgument('type', InputArgument::OPTIONAL, 'Type');
         $this->addOption('connection', 'c', InputOption::VALUE_OPTIONAL, 'Select database connection. ');
+        $this->addOption('yes', 'y', InputOption::VALUE_NONE, 'Skip confirmation');
     }
 
     /**
@@ -75,7 +76,7 @@ class MakeModelCommand extends Command
             $type = !$database && $thinkorm ? 'tp' : 'laravel';
         }
 
-        if (is_file($file)) {
+        if (is_file($file) && !$input->getOption('yes')) {
             $helper = $this->getHelper('question');
             $question = new ConfirmationQuestion("$file already exists. Do you want to override it? (yes/no)", false);
             if (!$helper->ask($input, $output, $question)) {
