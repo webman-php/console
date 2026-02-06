@@ -13,10 +13,13 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
 use Webman\Console\Util;
+use Webman\Console\Commands\Concerns\MakeCommandHelpers;
 
 #[AsCommand('make:model', 'Make model')]
 class MakeModelCommand extends Command
 {
+    use MakeCommandHelpers;
+
     private const ORM_LARAVEL = 'laravel';
     private const ORM_THINKORM = 'tp';
 
@@ -119,6 +122,15 @@ class MakeModelCommand extends Command
 
         $output->writeln($this->msg('make_model', ['{name}' => $name]));
         $type = $this->resolveOrm($orm, $type, $output);
+        // Resolve & validate DB connection:
+        // - When --plugin/-p is provided and --connection/-c is provided, use the plugin's connection config.
+        //   e.g. "-p admin -c mysql" => "plugin.admin.mysql"
+        // - When no plugin is provided, validate that the given --connection/-c exists.
+        // - When --connection/-c is omitted, prefer plugin default connection when plugin has DB config.
+        [$ok, $connection] = $this->resolveAndValidateConnection($type, $plugin, $connection, $output);
+        if (!$ok) {
+            return Command::FAILURE;
+        }
 
         if (is_file($file) && !$force) {
             $helper = $this->getHelper('question');
@@ -212,9 +224,10 @@ class MakeModelCommand extends Command
         $hasCreatedAt = false;
         $hasUpdatedAt = false;
         try {
-            $prefix = config("database.connections.$connection.prefix") ?? '';
-            $database = config("database.connections.$connection.database");
-            $driver = config("database.connections.$connection.driver") ?? 'mysql';
+            $connectionConfig = $this->getLaravelConnectionConfig((string)$connection);
+            $prefix = (string)($connectionConfig['prefix'] ?? '');
+            $database = (string)($connectionConfig['database'] ?? '');
+            $driver = (string)($connectionConfig['driver'] ?? 'mysql');
             $inflector = InflectorFactory::create()->build();
             $table_plura = $inflector->pluralize($inflector->tableize($class));
             $con = Db::connection($connection);
@@ -228,7 +241,7 @@ class MakeModelCommand extends Command
             } else {
                 // 检查表是否存在（兼容MySQL和PostgreSQL）
                 if ($driver === 'pgsql') {
-                    $schema = config("database.connections.$connection.schema") ?? 'public';
+                    $schema = (string)($connectionConfig['schema'] ?? 'public');
                     $exists_plura = $con->select("SELECT to_regclass('{$schema}.{$prefix}{$table_plura}') as table_exists");
                     $exists = $con->select("SELECT to_regclass('{$schema}.{$prefix}{$table_base}') as table_exists");
 
@@ -253,7 +266,7 @@ class MakeModelCommand extends Command
             // 获取表注释和列信息（兼容MySQL和PostgreSQL）
             if ($meta_table) {
                 if ($driver === 'pgsql') {
-                    $schema = config("database.connections.$connection.schema") ?? 'public';
+                    $schema = (string)($connectionConfig['schema'] ?? 'public');
                     $tableComment = $con->select("SELECT obj_description('{$schema}.{$meta_table}'::regclass) as table_comment");
                     if (!empty($tableComment) && !empty($tableComment[0]->table_comment)) {
                         $comments = $tableComment[0]->table_comment;
@@ -394,9 +407,10 @@ EOF;
         try {
             $config_name = $is_thinkorm_v2 ? 'think-orm' : 'thinkorm';
             $connection = $connection ?: (config("$config_name.default") ?: 'mysql');
-            $prefix = config("$config_name.connections.$connection.prefix") ?? '';
-            $database = config("$config_name.connections.$connection.database");
-            $driver = config("$config_name.connections.$connection.type") ?? 'mysql';
+            $connectionConfig = $this->getThinkOrmConnectionConfig($config_name, (string)$connection);
+            $prefix = (string)($connectionConfig['prefix'] ?? '');
+            $database = (string)($connectionConfig['database'] ?? '');
+            $driver = (string)($connectionConfig['type'] ?? 'mysql');
             $inflector = InflectorFactory::create()->build();
             $table_plural = $inflector->pluralize($inflector->tableize($class));
 
@@ -417,7 +431,7 @@ EOF;
             } else {
                 // 检查表是否存在（兼容MySQL和PostgreSQL）
                 if ($driver === 'pgsql') {
-                    $schema = config("$config_name.connections.$connection.schema") ?? 'public';
+                    $schema = (string)($connectionConfig['schema'] ?? 'public');
                     $exists_plural = $con->query("SELECT to_regclass('{$schema}.{$prefix}{$table_plural}') as table_exists");
                     $exists = $con->query("SELECT to_regclass('{$schema}.{$prefix}{$table_base}') as table_exists");
 
@@ -442,7 +456,7 @@ EOF;
             // 获取表注释和列信息（兼容MySQL和PostgreSQL）
             if ($meta_table) {
                 if ($driver === 'pgsql') {
-                    $schema = config("$config_name.connections.$connection.schema") ?? 'public';
+                    $schema = (string)($connectionConfig['schema'] ?? 'public');
                     $tableComment = $con->query("SELECT obj_description('{$schema}.{$meta_table}'::regclass) as table_comment");
                     if (!empty($tableComment) && !empty($tableComment[0]['table_comment'])) {
                         $comments = $tableComment[0]['table_comment'];
@@ -553,23 +567,6 @@ EOF;
     }
 
     /**
-     * Symfony short options on some environments may return value like "=foo" for "-t=foo".
-     * Normalize to "foo".
-     *
-     * @param mixed $value
-     * @return string|null
-     */
-    protected function normalizeOptionValue(mixed $value): ?string
-    {
-        if ($value === null) {
-            return null;
-        }
-        $value = trim((string)$value);
-        $value = ltrim($value, '=');
-        return $value === '' ? null : $value;
-    }
-
-    /**
      * Resolve model namespace/file path by --plugin/-p or --path/-P.
      * - --plugin/-p: generate under plugin/<plugin>/app/model by default.
      * - --path/-P: generate under the specified directory (relative to base path).
@@ -637,76 +634,6 @@ EOF;
         $appDir = base_path('plugin' . DIRECTORY_SEPARATOR . $plugin . DIRECTORY_SEPARATOR . 'app');
         $modelDir = Util::guessPath($appDir, 'model') ?: 'model';
         return $this->normalizeRelativePath("plugin/{$plugin}/app/{$modelDir}");
-    }
-
-    /**
-     * Normalize a relative path to use "/" separators and no leading/trailing slashes.
-     *
-     * @param string $path
-     * @return string
-     */
-    protected function normalizeRelativePath(string $path): string
-    {
-        $path = trim($path);
-        $path = str_replace('\\', '/', $path);
-        $path = preg_replace('#^\\./+#', '', $path);
-        $path = trim($path, '/');
-        return $path;
-    }
-
-    /**
-     * @param string $path
-     * @return bool
-     */
-    protected function isAbsolutePath(string $path): bool
-    {
-        $path = trim($path);
-        if ($path === '') {
-            return false;
-        }
-        // Windows drive letter, UNC path, or root slash.
-        if (preg_match('/^[a-zA-Z]:[\\\\\\/]/', $path)) {
-            return true;
-        }
-        if (str_starts_with($path, '\\\\') || str_starts_with($path, '//')) {
-            return true;
-        }
-        return str_starts_with($path, '/') || str_starts_with($path, '\\');
-    }
-
-    /**
-     * Compare two relative paths on Windows-friendly rules.
-     *
-     * @param string $a
-     * @param string $b
-     * @return bool
-     */
-    protected function pathsEqual(string $a, string $b): bool
-    {
-        $a = strtolower($this->normalizeRelativePath($a));
-        $b = strtolower($this->normalizeRelativePath($b));
-        return $a === $b;
-    }
-
-    /**
-     * Convert an absolute path to a workspace-relative path.
-     * Falls back to the original path if BASE_PATH is not a prefix.
-     *
-     * @param string $path
-     * @return string
-     */
-    protected function toRelativePath(string $path): string
-    {
-        $base = base_path();
-        $baseNorm = rtrim(str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $base), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-        $pathNorm = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $path);
-        if (str_starts_with(strtolower($pathNorm), strtolower($baseNorm))) {
-            $rel = substr($pathNorm, strlen($baseNorm));
-        } else {
-            $rel = $pathNorm;
-        }
-        // Use forward slashes for nicer CLI output.
-        return str_replace(DIRECTORY_SEPARATOR, '/', $rel);
     }
 
     /**
@@ -861,27 +788,6 @@ EOF;
     }
 
     /**
-     * Get current locale for CLI messages.
-     * Default is zh_CN.
-     *
-     * @return string
-     */
-    protected function getLocale(): string
-    {
-        $locale = config('translation.locale') ?: config('app.locale');
-        $locale = is_string($locale) ? trim($locale) : '';
-        return $locale !== '' ? $locale : 'zh_CN';
-    }
-
-    /**
-     * @return bool
-     */
-    protected function isZhLocale(): bool
-    {
-        return str_starts_with(strtolower($this->getLocale()), 'zh');
-    }
-
-    /**
      * Hardcoded CLI messages without translation module.
      *
      * @param string $key
@@ -891,13 +797,17 @@ EOF;
     protected function msg(string $key, array $replace = []): string
     {
         $zh = [
-            'make_model' => "创建模型 {name}",
+            'make_model' => "<info>创建模型</info> <comment>{name}</comment>",
             'created' => '<info>已创建：</info> {path}',
             'deprecated_type' => '<comment>[Deprecated]</comment> `type` 位置参数已过时，请使用 `--orm`/`-o`，例如：php webman make:model User -o=thinkorm',
             'override_prompt' => "<fg=blue>文件已存在：{path}\n是否覆盖？[Y/n]（回车=Y）</>\n",
             'invalid_plugin' => '<error>插件名无效：{plugin}。`--plugin/-p` 只能是 plugin/ 目录下的目录名，不能包含 / 或 \\。</error>',
             'plugin_path_conflict' => "<error>`--plugin/-p` 与 `--path/-P` 同时指定且不一致。\n期望路径：{expected}\n实际路径：{actual}\n请二选一或保持一致。</error>",
             'invalid_path' => '<error>路径无效：{path}。`--path/-P` 必须是相对路径（相对于项目根目录），不能是绝对路径。</error>',
+            'connection_not_found' => '<error>数据库连接不存在：{connection}</error>',
+            'connection_not_found_plugin' => '<error>插件 {plugin} 未配置数据库连接：{connection}</error>',
+            'connection_plugin_mismatch' => '<error>数据库连接与插件不匹配：当前插件={plugin}，连接={connection}</error>',
+            'plugin_default_connection_invalid' => '<error>插件 {plugin} 的默认数据库连接无效：{connection}</error>',
             'db_unavailable' => '<comment>[Warning]</comment> 数据库不可用或无权限读取表信息，将生成空模型（可使用 -t/--table 指定）。',
             'table_list_failed' => '<comment>[Warning]</comment> 无法获取数据表列表，将生成空模型（可使用 -t/--table 指定）。',
             'no_match' => '<comment>[Info]</comment> 未找到与模型名匹配的表（按约定推断失败）。',
@@ -915,13 +825,17 @@ EOF;
         ];
 
         $en = [
-            'make_model' => "Make model {name}",
+            'make_model' => "<info>Make model</info> <comment>{name}</comment>",
             'created' => '<info>Created:</info> {path}',
             'deprecated_type' => '<comment>[Deprecated]</comment> The positional `type` argument is deprecated. Please use `--orm`/`-o` instead. Example: php webman make:model User -o=thinkorm',
             'override_prompt' => "<fg=blue>File already exists: {path}\nOverride? [Y/n] (Enter = Y)</>\n",
             'invalid_plugin' => '<error>Invalid plugin name: {plugin}. `--plugin/-p` must be a directory name under plugin/ and must not contain / or \\.</error>',
             'plugin_path_conflict' => "<error>`--plugin/-p` and `--path/-P` are both provided but inconsistent.\nExpected: {expected}\nActual: {actual}\nPlease provide only one, or make them identical.</error>",
             'invalid_path' => '<error>Invalid path: {path}. `--path/-P` must be a relative path (to project root) and must not be an absolute path.</error>',
+            'connection_not_found' => '<error>Database connection not found: {connection}</error>',
+            'connection_not_found_plugin' => '<error>Plugin {plugin} has no database connection configured: {connection}</error>',
+            'connection_plugin_mismatch' => '<error>Database connection does not match plugin: plugin={plugin}, connection={connection}</error>',
+            'plugin_default_connection_invalid' => '<error>Invalid default database connection for plugin {plugin}: {connection}</error>',
             'db_unavailable' => '<comment>[Warning]</comment> Database is not accessible or permission denied. Generating an empty model (use -t/--table to specify).',
             'table_list_failed' => '<comment>[Warning]</comment> Unable to fetch table list. Generating an empty model (use -t/--table to specify).',
             'no_match' => '<comment>[Info]</comment> No table matched the model name by convention.',
@@ -1068,11 +982,12 @@ EOF;
     protected function listLaravelTables(?string $connection): array
     {
         $connection = $connection ?: config('database.default');
-        $driver = config("database.connections.$connection.driver") ?? 'mysql';
+        $conn = $this->getLaravelConnectionConfig((string)$connection);
+        $driver = (string)($conn['driver'] ?? 'mysql');
         $con = Db::connection($connection);
 
         if ($driver === 'pgsql') {
-            $schema = config("database.connections.$connection.schema") ?? 'public';
+            $schema = (string)($conn['schema'] ?? 'public');
             $rows = $con->select('SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname = ?', [$schema]);
             return array_values(array_filter(array_map(static function ($row) {
                 $arr = (array)$row;
@@ -1097,7 +1012,8 @@ EOF;
         $is_thinkorm_v2 = class_exists(\support\think\Db::class);
         $config_name = $is_thinkorm_v2 ? 'think-orm' : 'thinkorm';
         $connection = $connection ?: (config("$config_name.default") ?: 'mysql');
-        $driver = config("$config_name.connections.$connection.type") ?? 'mysql';
+        $conn = $this->getThinkOrmConnectionConfig($config_name, (string)$connection);
+        $driver = (string)($conn['type'] ?? 'mysql');
 
         if ($is_thinkorm_v2) {
             $con = \support\think\Db::connect($connection);
@@ -1106,7 +1022,7 @@ EOF;
         }
 
         if ($driver === 'pgsql') {
-            $schema = config("$config_name.connections.$connection.schema") ?? 'public';
+            $schema = (string)($conn['schema'] ?? 'public');
             $rows = $con->query('SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname = ?', [$schema]);
             return array_values(array_filter(array_map(static function ($row) {
                 return $row['tablename'] ?? (array_values($row)[0] ?? null);
@@ -1183,10 +1099,12 @@ EOF;
             $is_thinkorm_v2 = class_exists(\support\think\Db::class);
             $config_name = $is_thinkorm_v2 ? 'think-orm' : 'thinkorm';
             $connection = $connection ?: (config("$config_name.default") ?: 'mysql');
-            return config("$config_name.connections.$connection.prefix") ?? '';
+            $conn = $this->getThinkOrmConnectionConfig($config_name, (string)$connection);
+            return (string)($conn['prefix'] ?? '');
         }
         $connection = $connection ?: config('database.default');
-        return config("database.connections.$connection.prefix") ?? '';
+        $conn = $this->getLaravelConnectionConfig((string)$connection);
+        return (string)($conn['prefix'] ?? '');
     }
 
     /**
@@ -1197,12 +1115,13 @@ EOF;
     protected function laravelTableExists(?string $connection, string $tableNoPrefix): bool
     {
         $connection = $connection ?: config('database.default');
-        $driver = config("database.connections.$connection.driver") ?? 'mysql';
-        $prefix = config("database.connections.$connection.prefix") ?? '';
+        $conn = $this->getLaravelConnectionConfig((string)$connection);
+        $driver = (string)($conn['driver'] ?? 'mysql');
+        $prefix = (string)($conn['prefix'] ?? '');
         $con = Db::connection($connection);
 
         if ($driver === 'pgsql') {
-            $schema = config("database.connections.$connection.schema") ?? 'public';
+            $schema = (string)($conn['schema'] ?? 'public');
             $rows = $con->select("SELECT to_regclass('{$schema}.{$prefix}{$tableNoPrefix}') as table_exists");
             return !empty($rows[0]->table_exists);
         }
@@ -1219,8 +1138,9 @@ EOF;
         $is_thinkorm_v2 = class_exists(\support\think\Db::class);
         $config_name = $is_thinkorm_v2 ? 'think-orm' : 'thinkorm';
         $connection = $connection ?: (config("$config_name.default") ?: 'mysql');
-        $driver = config("$config_name.connections.$connection.type") ?? 'mysql';
-        $prefix = config("$config_name.connections.$connection.prefix") ?? '';
+        $conn = $this->getThinkOrmConnectionConfig($config_name, (string)$connection);
+        $driver = (string)($conn['type'] ?? 'mysql');
+        $prefix = (string)($conn['prefix'] ?? '');
 
         if ($is_thinkorm_v2) {
             $con = \support\think\Db::connect($connection);
@@ -1229,11 +1149,182 @@ EOF;
         }
 
         if ($driver === 'pgsql') {
-            $schema = config("$config_name.connections.$connection.schema") ?? 'public';
+            $schema = (string)($conn['schema'] ?? 'public');
             $rows = $con->query("SELECT to_regclass('{$schema}.{$prefix}{$tableNoPrefix}') as table_exists");
             return !empty($rows[0]['table_exists']);
         }
         return (bool)$con->query("SHOW TABLES LIKE '{$prefix}{$tableNoPrefix}'");
+    }
+
+    /**
+     * Resolve the database connection name with plugin priority.
+     *
+     * Rules:
+     * - If user explicitly provides --connection/-c, always respect it.
+     * - If --plugin/-p is provided and that plugin has DB config, prefer the plugin default connection.
+     * - If plugin has no DB config, fall back to main project config.
+     *
+     * Note:
+     * Plugin connections are merged into global config with names like "plugin.<plugin>.<connection>".
+     *
+     * @param string $ormType
+     * @param string|null $plugin
+     * @param string|null $connectionOption
+     * @return string|null
+     */
+    protected function resolveConnectionByPlugin(string $ormType, ?string $plugin, ?string $connectionOption): ?string
+    {
+        $connectionOption = $this->normalizeOptionValue($connectionOption);
+        if ($connectionOption) {
+            return $connectionOption;
+        }
+        $plugin = $this->normalizeOptionValue($plugin);
+        if (!$plugin) {
+            return null;
+        }
+
+        if ($ormType === self::ORM_THINKORM) {
+            $is_thinkorm_v2 = class_exists(\support\think\Db::class);
+            $configName = $is_thinkorm_v2 ? 'think-orm' : 'thinkorm';
+            $pluginDefault = $this->normalizeOptionValue(config("plugin.$plugin.$configName.default"));
+            if ($pluginDefault) {
+                return str_starts_with($pluginDefault, 'plugin.') ? $pluginDefault : "plugin.$plugin.$pluginDefault";
+            }
+            $pluginConnections = config("plugin.$plugin.$configName.connections", []);
+            if (is_array($pluginConnections) && $pluginConnections) {
+                $first = array_key_first($pluginConnections);
+                return $first ? "plugin.$plugin.$first" : null;
+            }
+            return null;
+        }
+
+        // Laravel ORM (webman/database)
+        $pluginDefault = $this->normalizeOptionValue(config("plugin.$plugin.database.default"));
+        if ($pluginDefault) {
+            return str_starts_with($pluginDefault, 'plugin.') ? $pluginDefault : "plugin.$plugin.$pluginDefault";
+        }
+        $pluginConnections = config("plugin.$plugin.database.connections", []);
+        if (is_array($pluginConnections) && $pluginConnections) {
+            $first = array_key_first($pluginConnections);
+            return $first ? "plugin.$plugin.$first" : null;
+        }
+        return null;
+    }
+
+    /**
+     * Resolve and validate the final connection name for model generation.
+     *
+     * @param string $ormType
+     * @param string|null $plugin
+     * @param string|null $connectionOption
+     * @param OutputInterface $output
+     * @return array{0:bool,1:?string} [ok, connectionName]
+     */
+    protected function resolveAndValidateConnection(string $ormType, ?string $plugin, ?string $connectionOption, OutputInterface $output): array
+    {
+        $plugin = $this->normalizeOptionValue($plugin);
+        $connectionOption = $this->normalizeOptionValue($connectionOption);
+
+        // Determine which config set to validate against.
+        $isThink = $ormType === self::ORM_THINKORM;
+        $thinkConfigName = null;
+        if ($isThink) {
+            $is_thinkorm_v2 = class_exists(\support\think\Db::class);
+            $thinkConfigName = $is_thinkorm_v2 ? 'think-orm' : 'thinkorm';
+        }
+
+        // Case A: plugin + explicit connection => MUST use plugin connection config.
+        if ($plugin && $connectionOption) {
+            if (str_starts_with($connectionOption, 'plugin.')) {
+                if (!str_starts_with($connectionOption, "plugin.$plugin.")) {
+                    $output->writeln($this->msg('connection_plugin_mismatch', [
+                        '{plugin}' => $plugin,
+                        '{connection}' => $connectionOption,
+                    ]));
+                    return [false, null];
+                }
+                $final = $connectionOption;
+            } else {
+                $final = "plugin.$plugin.$connectionOption";
+            }
+
+            $exists = $isThink
+                ? (bool)$this->getThinkOrmConnectionConfig((string)$thinkConfigName, $final)
+                : (bool)$this->getLaravelConnectionConfig($final);
+
+            if (!$exists) {
+                $output->writeln($this->msg('connection_not_found_plugin', [
+                    '{plugin}' => $plugin,
+                    '{connection}' => $final,
+                ]));
+                return [false, null];
+            }
+            return [true, $final];
+        }
+
+        // Case B: no plugin + explicit connection => validate it exists.
+        if (!$plugin && $connectionOption) {
+            $final = $connectionOption;
+            $exists = $isThink
+                ? (bool)$this->getThinkOrmConnectionConfig((string)$thinkConfigName, $final)
+                : (bool)$this->getLaravelConnectionConfig($final);
+            if (!$exists) {
+                $output->writeln($this->msg('connection_not_found', [
+                    '{connection}' => $final,
+                ]));
+                return [false, null];
+            }
+            return [true, $final];
+        }
+
+        // Case C: no explicit connection => prefer plugin default (if plugin has DB config), else null.
+        $final = $this->resolveConnectionByPlugin($ormType, $plugin, null);
+        if ($plugin && $final) {
+            $exists = $isThink
+                ? (bool)$this->getThinkOrmConnectionConfig((string)$thinkConfigName, $final)
+                : (bool)$this->getLaravelConnectionConfig($final);
+            if (!$exists) {
+                $output->writeln($this->msg('plugin_default_connection_invalid', [
+                    '{plugin}' => $plugin,
+                    '{connection}' => $final,
+                ]));
+                return [false, null];
+            }
+        }
+        return [true, $final];
+    }
+
+    /**
+     * Get laravel database connection config by name (dot-safe).
+     *
+     * @param string $connectionName
+     * @return array
+     */
+    protected function getLaravelConnectionConfig(string $connectionName): array
+    {
+        $all = config('database.connections', []);
+        if (!is_array($all)) {
+            return [];
+        }
+        $cfg = $all[$connectionName] ?? null;
+        return is_array($cfg) ? $cfg : [];
+    }
+
+    /**
+     * Get thinkorm connection config by name (dot-safe).
+     *
+     * @param string $configName "think-orm" or "thinkorm"
+     * @param string $connectionName
+     * @return array
+     */
+    protected function getThinkOrmConnectionConfig(string $configName, string $connectionName): array
+    {
+        $all = config("$configName.connections", []);
+        if (!is_array($all)) {
+            return [];
+        }
+        $cfg = $all[$connectionName] ?? null;
+        return is_array($cfg) ? $cfg : [];
     }
 
     /**

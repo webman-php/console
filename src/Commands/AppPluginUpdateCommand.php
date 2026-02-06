@@ -6,17 +6,23 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Webman\Console\Commands\Concerns\AppPluginCommandHelpers;
 
 #[AsCommand('app-plugin:update', 'Update App Plugin')]
 class AppPluginUpdateCommand extends Command
 {
+    use AppPluginCommandHelpers;
+
     /**
      * @return void
      */
     protected function configure()
     {
         $this->addArgument('name', InputArgument::REQUIRED, 'App plugin name');
+        $this->addOption('from', 'f', InputOption::VALUE_REQUIRED, 'From version (default: current version)');
+        $this->addOption('to', 't', InputOption::VALUE_REQUIRED, 'To version (default: current version)');
     }
 
     /**
@@ -26,14 +32,58 @@ class AppPluginUpdateCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $name = $input->getArgument('name');
-        $output->writeln("Update App Plugin $name");
-        $class = "\\plugin\\$name\\api\\Install";
-        if (!method_exists($class, 'update')) {
-            throw new \RuntimeException("Method $class::update not exists");
+        $name = $this->normalizeAppPluginName($input->getArgument('name'));
+        $this->writeln($output, $this->msg('update_title', ['{name}' => $name]));
+
+        if (!$this->isValidAppPluginName($name)) {
+            $this->writeln($output, $this->msg('bad_name', ['{name}' => $name]));
+            return Command::FAILURE;
         }
-        call_user_func([$class, 'update'], config("plugin.$name.app.version"), config("plugin.$name.app.version"));
-        return self::SUCCESS;
+
+        $pluginBase = $this->appPluginBasePath($name);
+        if (!is_dir($pluginBase)) {
+            $this->writeln($output, $this->msg('plugin_not_exists', ['{path}' => $this->toRelativePath($pluginBase)]));
+            return Command::FAILURE;
+        }
+
+        $current = $this->appPluginVersion($name);
+        $from = trim((string)$input->getOption('from'));
+        $to = trim((string)$input->getOption('to'));
+        $from = $from !== '' ? $from : $current;
+        $to = $to !== '' ? $to : $current;
+
+        if ($from === $to) {
+            $this->writeln($output, $this->msg('version_same', ['{version}' => $from]));
+        }
+
+        $class = $this->appPluginInstallClass($name);
+        try {
+            $context = null;
+            if (method_exists($class, 'beforeUpdate')) {
+                $this->writeln($output, $this->msg('running', [
+                    '{class}' => $class,
+                    '{method}' => 'beforeUpdate',
+                    '{args}' => var_export([$from, $to], true),
+                ]));
+                $context = $this->callInstallMethod($class, 'beforeUpdate', [$from, $to]);
+            }
+
+            $this->writeln($output, $this->msg('running', [
+                '{class}' => $class,
+                '{method}' => 'update',
+                '{args}' => var_export([$from, $to, $context], true),
+            ]));
+            $this->callInstallMethod($class, 'update', [$from, $to, $context]);
+        } catch (\Throwable $e) {
+            if ($this->isScriptMissingThrowable($e)) {
+                $this->writeln($output, $this->msg('script_missing', ['{class}' => $class]));
+            }
+            $this->writeln($output, $this->msg('failed', ['{error}' => $e->getMessage()]));
+            return Command::FAILURE;
+        }
+
+        $this->writeln($output, $this->msg('done'));
+        return Command::SUCCESS;
     }
 
 }

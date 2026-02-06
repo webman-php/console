@@ -7,10 +7,13 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Webman\Console\Commands\Concerns\AppPluginCommandHelpers;
 
 #[AsCommand('app-plugin:create', 'Create App Plugin')]
 class AppPluginCreateCommand extends Command
 {
+    use AppPluginCommandHelpers;
+
     /**
      * @return void
      */
@@ -26,66 +29,81 @@ class AppPluginCreateCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $name = $input->getArgument('name');
-        $output->writeln("Create App Plugin $name");
+        $name = $this->normalizeAppPluginName($input->getArgument('name'));
+        $this->writeln($output, $this->msg('create_title', ['{name}' => $name]));
 
-        if (strpos($name, '/') !== false) {
-            $output->writeln('<error>Bad name, name must not contain character \'/\'</error>');
-            return self::FAILURE;
+        if (!$this->isValidAppPluginName($name)) {
+            $this->writeln($output, $this->msg('bad_name', ['{name}' => $name]));
+            return Command::FAILURE;
         }
 
-        // Create dir config/plugin/$name
-        if (is_dir($plugin_config_path = base_path()."/plugin/$name")) {
-            $output->writeln("<error>Dir $plugin_config_path already exists</error>");
-            return self::FAILURE;
+        $pluginBase = $this->appPluginBasePath($name);
+        if (is_dir($pluginBase)) {
+            $this->writeln($output, $this->msg('dir_exists', ['{path}' => $this->toRelativePath($pluginBase)]));
+            return Command::FAILURE;
         }
 
-        $this->createAll($name);
+        try {
+            $this->createAll($name, $output);
+        } catch (\Throwable $e) {
+            $this->writeln($output, $this->msg('failed', ['{error}' => $e->getMessage()]));
+            return Command::FAILURE;
+        }
 
-        return self::SUCCESS;
+        $this->writeln($output, $this->msg('done'));
+        return Command::SUCCESS;
     }
 
     /**
      * @param $name
+     * @param OutputInterface $output
      * @return void
      */
-    protected function createAll($name)
+    protected function createAll($name, OutputInterface $output): void
     {
-        $base_path = base_path();
-        $this->mkdir("$base_path/plugin/$name/app/controller", 0777, true);
-        $this->mkdir("$base_path/plugin/$name/app/model", 0777, true);
-        $this->mkdir("$base_path/plugin/$name/app/middleware", 0777, true);
-        $this->mkdir("$base_path/plugin/$name/app/view/index", 0777, true);
-        $this->mkdir("$base_path/plugin/$name/config", 0777, true);
-        $this->mkdir("$base_path/plugin/$name/public", 0777, true);
-        $this->mkdir("$base_path/plugin/$name/api", 0777, true);
-        $this->createFunctionsFile("$base_path/plugin/$name/app/functions.php");
-        $this->createControllerFile("$base_path/plugin/$name/app/controller/IndexController.php", $name);
-        $this->createViewFile("$base_path/plugin/$name/app/view/index/index.html");
-        $this->createConfigFiles("$base_path/plugin/$name/config", $name);
-        $this->createApiFiles("$base_path/plugin/$name/api", $name);
-        $this->createInstallSqlFile("$base_path/plugin/$name/install.sql");
+        $base = $this->appPluginBasePath($name);
+
+        $this->mkdir($base . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'controller', 0777, true, $output);
+        $this->mkdir($base . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'model', 0777, true, $output);
+        $this->mkdir($base . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'middleware', 0777, true, $output);
+        $this->mkdir($base . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'view' . DIRECTORY_SEPARATOR . 'index', 0777, true, $output);
+        $this->mkdir($base . DIRECTORY_SEPARATOR . 'config', 0777, true, $output);
+        $this->mkdir($base . DIRECTORY_SEPARATOR . 'public', 0777, true, $output);
+        $this->mkdir($base . DIRECTORY_SEPARATOR . 'api', 0777, true, $output);
+
+        $this->createFunctionsFile($base . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'functions.php', $output);
+        $this->createControllerFile($base . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'controller' . DIRECTORY_SEPARATOR . 'IndexController.php', $name, $output);
+        $this->createViewFile($base . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'view' . DIRECTORY_SEPARATOR . 'index' . DIRECTORY_SEPARATOR . 'index.html', $output);
+        $this->createConfigFiles($base . DIRECTORY_SEPARATOR . 'config', $name, $output);
+        $this->createApiFiles($base . DIRECTORY_SEPARATOR . 'api', $name, $output);
+        $this->createInstallSqlFile($base . DIRECTORY_SEPARATOR . 'install.sql', $output);
     }
 
     /**
      * @param $path
+     * @param int $mode
+     * @param bool $recursive
+     * @param OutputInterface $output
      * @return void
      */
-    protected function mkdir($path)
+    protected function mkdir($path, int $mode, bool $recursive, OutputInterface $output): void
     {
         if (is_dir($path)) {
             return;
         }
-        echo "Create $path\r\n";
-        mkdir($path, 0777, true);
+        if (!mkdir($path, $mode, $recursive) && !is_dir($path)) {
+            throw new \RuntimeException("Unable to create directory: $path");
+        }
+        $this->writeln($output, $this->msg('created_dir', ['{path}' => $this->toRelativePath($path)]));
     }
 
     /**
      * @param $path
      * @param $name
+     * @param OutputInterface $output
      * @return void
      */
-    protected function createControllerFile($path, $name)
+    protected function createControllerFile($path, $name, OutputInterface $output): void
     {
         $content = <<<EOF
 <?php
@@ -105,15 +123,16 @@ class IndexController
 }
 
 EOF;
-        file_put_contents($path, $content);
+        $this->writeFile($path, $content, $output);
 
     }
 
     /**
      * @param $path
+     * @param OutputInterface $output
      * @return void
      */
-    protected function createViewFile($path)
+    protected function createViewFile($path, OutputInterface $output): void
     {
         $content = <<<EOF
 <!doctype html>
@@ -133,16 +152,17 @@ hello <?=htmlspecialchars(\$name)?>
 
 
 EOF;
-        file_put_contents($path, $content);
+        $this->writeFile($path, $content, $output);
 
     }
 
 
     /**
      * @param $file
+     * @param OutputInterface $output
      * @return void
      */
-    protected function createFunctionsFile($file)
+    protected function createFunctionsFile($file, OutputInterface $output): void
     {
         $content = <<<EOF
 <?php
@@ -153,20 +173,21 @@ EOF;
 
 
 EOF;
-        file_put_contents($file, $content);
+        $this->writeFile($file, $content, $output);
     }
 
     /**
      * @param $base
      * @param $name
+     * @param OutputInterface $output
      * @return void
      */
-    protected function createApiFiles($base, $name)
+    protected function createApiFiles($base, $name, OutputInterface $output): void
     {
         $content = <<<EOF
 <?php
 
-namespace plugin\\$name\api;
+namespace plugin\\$name\\api;
 
 use plugin\admin\api\Menu;
 use support\Db;
@@ -341,24 +362,27 @@ class Install
 }
 EOF;
 
-        file_put_contents("$base/Install.php", $content);
+        $this->writeFile($base . DIRECTORY_SEPARATOR . 'Install.php', $content, $output);
 
     }
 
     /**
+     * @param string $file
+     * @param OutputInterface $output
      * @return void
      */
-    protected function createInstallSqlFile($file)
+    protected function createInstallSqlFile($file, OutputInterface $output): void
     {
-        file_put_contents($file, '');
+        $this->writeFile($file, '', $output);
     }
 
     /**
      * @param $base
      * @param $name
+     * @param OutputInterface $output
      * @return void
      */
-    protected function createConfigFiles($base, $name)
+    protected function createConfigFiles($base, $name, OutputInterface $output): void
     {
         // app.php
         $content = <<<EOF
@@ -374,7 +398,7 @@ return [
 ];
 
 EOF;
-        file_put_contents("$base/app.php", $content);
+        $this->writeFile($base . DIRECTORY_SEPARATOR . 'app.php', $content, $output);
 
         // menu.php
         $content = <<<EOF
@@ -383,7 +407,7 @@ EOF;
 return [];
 
 EOF;
-        file_put_contents("$base/menu.php", $content);
+        $this->writeFile($base . DIRECTORY_SEPARATOR . 'menu.php', $content, $output);
 
         // autoload.php
         $content = <<<EOF
@@ -394,7 +418,7 @@ return [
     ]
 ];
 EOF;
-        file_put_contents("$base/autoload.php", $content);
+        $this->writeFile($base . DIRECTORY_SEPARATOR . 'autoload.php', $content, $output);
 
         // container.php
         $content = <<<EOF
@@ -402,7 +426,7 @@ EOF;
 return new Webman\\Container;
 
 EOF;
-        file_put_contents("$base/container.php", $content);
+        $this->writeFile($base . DIRECTORY_SEPARATOR . 'container.php', $content, $output);
 
 
         // database.php
@@ -411,7 +435,7 @@ EOF;
 return  [];
 
 EOF;
-        file_put_contents("$base/database.php", $content);
+        $this->writeFile($base . DIRECTORY_SEPARATOR . 'database.php', $content, $output);
 
         // exception.php
         $content = <<<EOF
@@ -422,7 +446,7 @@ return [
 ];
 
 EOF;
-        file_put_contents("$base/exception.php", $content);
+        $this->writeFile($base . DIRECTORY_SEPARATOR . 'exception.php', $content, $output);
 
         // log.php
         $content = <<<EOF
@@ -448,7 +472,7 @@ return [
 ];
 
 EOF;
-        file_put_contents("$base/log.php", $content);
+        $this->writeFile($base . DIRECTORY_SEPARATOR . 'log.php', $content, $output);
 
         // middleware.php
         $content = <<<EOF
@@ -461,7 +485,7 @@ return [
 ];
 
 EOF;
-        file_put_contents("$base/middleware.php", $content);
+        $this->writeFile($base . DIRECTORY_SEPARATOR . 'middleware.php', $content, $output);
 
         // process.php
         $content = <<<EOF
@@ -469,7 +493,7 @@ EOF;
 return [];
 
 EOF;
-        file_put_contents("$base/process.php", $content);
+        $this->writeFile($base . DIRECTORY_SEPARATOR . 'process.php', $content, $output);
 
         // redis.php
         $content = <<<EOF
@@ -484,7 +508,7 @@ return [
 ];
 
 EOF;
-        file_put_contents("$base/redis.php", $content);
+        $this->writeFile($base . DIRECTORY_SEPARATOR . 'redis.php', $content, $output);
 
         // route.php
         $content = <<<EOF
@@ -494,7 +518,7 @@ use Webman\\Route;
 
 
 EOF;
-        file_put_contents("$base/route.php", $content);
+        $this->writeFile($base . DIRECTORY_SEPARATOR . 'route.php', $content, $output);
 
         // static.php
         $content = <<<EOF
@@ -506,7 +530,7 @@ return [
 ];
 
 EOF;
-        file_put_contents("$base/static.php", $content);
+        $this->writeFile($base . DIRECTORY_SEPARATOR . 'static.php', $content, $output);
 
         // translation.php
         $content = <<<EOF
@@ -522,7 +546,7 @@ return [
 ];
 
 EOF;
-        file_put_contents("$base/translation.php", $content);
+        $this->writeFile($base . DIRECTORY_SEPARATOR . 'translation.php', $content, $output);
 
         // view.php
         $content = <<<EOF
@@ -538,7 +562,7 @@ return [
 ];
 
 EOF;
-        file_put_contents("$base/view.php", $content);
+        $this->writeFile($base . DIRECTORY_SEPARATOR . 'view.php', $content, $output);
 
         // thinkorm.php
         $content = <<<EOF
@@ -547,8 +571,28 @@ EOF;
 return [];
 
 EOF;
-        file_put_contents("$base/thinkorm.php", $content);
+        $this->writeFile($base . DIRECTORY_SEPARATOR . 'thinkorm.php', $content, $output);
 
+    }
+
+    /**
+     * @param string $file
+     * @param string $content
+     * @param OutputInterface $output
+     * @return void
+     */
+    protected function writeFile(string $file, string $content, OutputInterface $output): void
+    {
+        $dir = pathinfo($file, PATHINFO_DIRNAME);
+        if (!is_dir($dir)) {
+            if (!mkdir($dir, 0777, true) && !is_dir($dir)) {
+                throw new \RuntimeException("Unable to create directory: $dir");
+            }
+        }
+        if (file_put_contents($file, $content) === false) {
+            throw new \RuntimeException("Unable to write file: $file");
+        }
+        $this->writeln($output, $this->msg('created_file', ['{path}' => $this->toRelativePath($file)]));
     }
 
 }

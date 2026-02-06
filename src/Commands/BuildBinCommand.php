@@ -36,7 +36,7 @@ class BuildBinCommand extends BuildPharCommand
     {
         $this->checkEnv();
 
-        $output->writeln('Phar packing...');
+        $output->writeln($this->msg('phar_packing'));
 
         $version = $input->getArgument('version');
         if (!$version) {
@@ -60,7 +60,7 @@ class BuildBinCommand extends BuildPharCommand
         // 下载 micro.sfx.zip
         if (!is_file($sfxFile) && !is_file($zipFile)) {
             $domain = 'download.workerman.net';
-            $output->writeln("\r\nDownloading PHP$version ...");
+            $output->writeln($this->msg('downloading_php', ['{version}' => (string)$version]));
             if (extension_loaded('openssl')) {
                 $context = stream_context_create([
                     'ssl' => [
@@ -71,6 +71,10 @@ class BuildBinCommand extends BuildPharCommand
                 $client = stream_socket_client("ssl://$domain:443", $context);
             } else {
                 $client = stream_socket_client("tcp://$domain:80");
+            }
+            if (!$client) {
+                $output->writeln($this->msg('download_stream_failed'));
+                return self::FAILURE;
             }
 
             fwrite($client, "GET /php/$microZipFileName HTTP/1.1\r\nAccept: text/html\r\nHost: $domain\r\nUser-Agent: webman/console\r\n\r\n");
@@ -83,12 +87,12 @@ class BuildBinCommand extends BuildPharCommand
                     $bodyBuffer .= $buffer;
                     if (!$bodyLength && $pos = strpos($bodyBuffer, "\r\n\r\n")) {
                         if (!preg_match('/Content-Length: (\d+)\r\n/', $bodyBuffer, $match)) {
-                            $output->writeln("Download php$version.micro.sfx.zip failed");
+                            $output->writeln($this->msg('download_failed', ['{message}' => "php{$version}.micro.sfx.zip: missing Content-Length"]));
                             return self::FAILURE;
                         }
                         $firstLine = substr($bodyBuffer, 9, strpos($bodyBuffer, "\r\n") - 9);
                         if (!preg_match('/200 /', $bodyBuffer)) {
-                            $output->writeln("Download php$version.micro.sfx.zip failed, $firstLine");
+                            $output->writeln($this->msg('download_failed', ['{message}' => "php{$version}.micro.sfx.zip: {$firstLine}"]));
                             return self::FAILURE;
                         }
                         $bodyLength = (int)$match[1];
@@ -107,12 +111,12 @@ class BuildBinCommand extends BuildPharCommand
                     break;
                 }
                 if ($buffer === false || !is_resource($client) || feof($client)) {
-                    $output->writeln("Fail donwload PHP$version ...");
+                    $output->writeln($this->msg('download_failed', ['{message}' => "PHP{$version}"]));
                     return self::FAILURE;
                 }
             }
         } else {
-            $output->writeln("\r\nUse PHP$version ...");
+            $output->writeln($this->msg('use_php', ['{version}' => (string)$version]));
         }
 
         // 解压
@@ -142,7 +146,7 @@ class BuildBinCommand extends BuildPharCommand
         // 添加执行权限
         chmod($binFile, 0755);
 
-        $output->writeln("\r\nSaved $this->binFileName to $binFile\r\nBuild Success!\r\n");
+        $output->writeln($this->msg('saved_bin', ['{name}' => $this->binFileName, '{path}' => $binFile]));
 
         return self::SUCCESS;
     }

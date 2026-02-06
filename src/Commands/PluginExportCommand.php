@@ -6,19 +6,28 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Webman\Console\Util;
+use Webman\Console\Commands\Concerns\PluginCommandHelpers;
 
 #[AsCommand('plugin:export', 'Plugin export')]
 class PluginExportCommand extends Command
 {
+    use PluginCommandHelpers;
+
     /**
      * @return void
      */
     protected function configure()
     {
-        $this->addOption('name', 'name', InputOption::VALUE_REQUIRED, 'Plugin name, for example foo/my-admin');
-        $this->addOption('source', 'source', InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, 'Directories to export');
+        // Do NOT use "-n": Symfony Console already reserves "-n" for "--no-interaction".
+        $this->addArgument('name', InputArgument::OPTIONAL, 'Plugin name, for example foo/my-admin');
+        $this->addOption('name', null, InputOption::VALUE_REQUIRED, 'Plugin name, for example foo/my-admin');
+        $this->addOption('source', 's', InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, 'Directories to export');
+        $this->setHelp($this->buildHelpText());
+        $this->addUsage('foo/my-admin --source app --source config');
+        $this->addUsage('--name foo/my-admin --source app --source config');
     }
 
     /**
@@ -28,33 +37,63 @@ class PluginExportCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $output->writeln('Export Plugin');
-        $name = strtolower($input->getOption('name'));
-        if (!strpos($name, '/')) {
-            $output->writeln('<error>Bad name, name must contain character \'/\' , for example foo/MyAdmin</error>');
-            return self::INVALID;
+        $nameArg = $this->normalizePluginName($input->getArgument('name'));
+        $nameOpt = $this->normalizePluginName($input->getOption('name'));
+        if ($nameArg && $nameOpt && $nameArg !== $nameOpt) {
+            $output->writeln($this->pluginMsg('name_conflict', ['{arg}' => $nameArg, '{opt}' => $nameOpt]));
+            return Command::FAILURE;
         }
-        $namespace = Util::nameToNamespace($name);
-        $path_relations = $input->getOption('source');
-        if (!in_array("config/plugin/$name", $path_relations)) {
-            if (is_dir("config/plugin/$name")) {
-                $path_relations[] = "config/plugin/$name";
+        $nameRaw = $nameOpt ?: $nameArg;
+        if (!$nameRaw) {
+            $output->writeln($this->pluginMsg('missing_name'));
+            return Command::INVALID;
+        }
+        if (!$this->isValidComposerPackageName($nameRaw)) {
+            $output->writeln($this->pluginMsg('bad_name', ['{name}' => (string)$nameRaw]));
+            return Command::INVALID;
+        }
+
+        $output->writeln($this->pluginMsg('export_title', ['{name}' => $nameRaw]));
+
+        $namespace = Util::nameToNamespace($nameRaw);
+
+        $pathRelations = $input->getOption('source');
+        $pathRelations = is_array($pathRelations) ? $pathRelations : [];
+        $pathRelations = array_values(array_filter(array_map('trim', $pathRelations), static fn($v) => $v !== ''));
+
+        $pluginConfigDir = "config/plugin/{$nameRaw}";
+        if (!in_array($pluginConfigDir, $pathRelations, true) && is_dir($pluginConfigDir)) {
+            $pathRelations[] = $pluginConfigDir;
+        }
+
+        $originalDest = base_path() . "/vendor/{$nameRaw}";
+        $dest = $originalDest . '/src';
+
+        $this->writeInstallFile($namespace, $pathRelations, $dest);
+        $output->writeln($this->pluginMsg('export_install_created', ['{path}' => $this->toRelativePath($dest . '/Install.php')]));
+
+        foreach ($pathRelations as $source) {
+            $source = $this->normalizeRelativePath((string)$source);
+            if ($source === '' || (!is_dir($source) && !is_file($source))) {
+                $output->writeln($this->pluginMsg('export_skip_missing', ['{path}' => $source]));
+                continue;
             }
-        }
-        $original_dest = $dest = base_path()."/vendor/$name";
-        $dest .= '/src';
-        $this->writeInstallFile($namespace, $path_relations, $dest);
-        $output->writeln("<info>Create $dest/Install.php</info>");
-        foreach ($path_relations as $source) {
-            $base_path = pathinfo("$dest/$source", PATHINFO_DIRNAME);
-            if (!is_dir($base_path)) {
-                mkdir($base_path, 0777, true);
+            $basePath = pathinfo("{$dest}/{$source}", PATHINFO_DIRNAME);
+            if (!is_dir($basePath)) {
+                mkdir($basePath, 0777, true);
             }
-            $output->writeln("<info>Copy $source to $dest/$source </info>");
-            copy_dir($source, "$dest/$source");
+            $output->writeln($this->pluginMsg('export_copy', [
+                '{src}' => $source,
+                '{dest}' => $this->toRelativePath("{$dest}/{$source}"),
+            ]));
+            copy_dir($source, "{$dest}/{$source}");
         }
-        $output->writeln("<info>Saved $name to $original_dest</info>");
-        return self::SUCCESS;
+
+        $output->writeln($this->pluginMsg('export_saved', [
+            '{name}' => $nameRaw,
+            '{dest}' => $this->toRelativePath($originalDest),
+        ]));
+        return Command::SUCCESS;
     }
 
     /**
@@ -146,6 +185,35 @@ class Install
 }
 EOT;
         file_put_contents("$dest_dir/Install.php", $install_php_content);
+    }
+
+    protected function buildHelpText(): string
+    {
+        if ($this->isZhLocale()) {
+            return <<<'EOF'
+将指定目录打包导出到 vendor/<vendor>/<name>/src，并生成 Install.php（用于 plugin:install / plugin:uninstall）。
+
+用法：
+  php webman plugin:export foo/my-admin --source app --source config
+  php webman plugin:export --name foo/my-admin --source app --source config
+
+说明：
+  - `--source/-s` 可重复多次指定要导出的目录/文件（相对项目根目录）。
+  - 若存在 `config/plugin/<vendor>/<name>` 且未显式包含，会自动追加到导出列表。
+EOF;
+        }
+
+        return <<<'EOF'
+Export directories into vendor/<vendor>/<name>/src and generate Install.php (for plugin:install / plugin:uninstall).
+
+Usage:
+  php webman plugin:export foo/my-admin --source app --source config
+  php webman plugin:export --name foo/my-admin --source app --source config
+
+Notes:
+  - `--source/-s` can be provided multiple times (relative to project root).
+  - If `config/plugin/<vendor>/<name>` exists and not provided, it will be appended automatically.
+EOF;
     }
 
 }
