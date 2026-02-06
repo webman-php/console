@@ -1002,11 +1002,7 @@ class {$class}
      * @return void
      */
     public function onWebSocketConnect(TcpConnection \$connection, Request \$request)
-    {
-        \$token = \$request->get('token');
-        if (!\$token) {
-            \$connection->close('Unauthorized');
-        }
+    {        
     }
 
     /**
