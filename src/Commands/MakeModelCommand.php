@@ -47,7 +47,7 @@ class MakeModelCommand extends Command
         $this->addOption('path', 'P', InputOption::VALUE_REQUIRED, 'Target directory (relative to base path). e.g. plugin/admin/app/model');
         $this->addOption('table', 't', InputOption::VALUE_REQUIRED, 'Specify table name. e.g. wa_users');
         $this->addOption('orm', 'o', InputOption::VALUE_REQUIRED, 'Select orm: laravel|thinkorm');
-        $this->addOption('connection', 'c', InputOption::VALUE_OPTIONAL, 'Select database connection.');
+        $this->addOption('database', 'd', InputOption::VALUE_OPTIONAL, 'Select database connection.');
         $this->addOption('force', 'f', InputOption::VALUE_NONE, 'Override existing file without confirmation.');
 
         // Symfony Console built-in help:
@@ -61,7 +61,7 @@ class MakeModelCommand extends Command
         $this->addUsage('User -P plugin/admin/app/model');
         $this->addUsage('User -t wa_users -o laravel');
         $this->addUsage('User -t=wa_users -o=thinkorm -f');
-        $this->addUsage('Admin/User --table=wa_admin_users --orm=laravel --connection=mysql');
+        $this->addUsage('Admin/User --table=wa_admin_users --orm=laravel --database=mysql');
     }
 
     /**
@@ -76,7 +76,7 @@ class MakeModelCommand extends Command
         $plugin = $this->normalizeOptionValue($input->getOption('plugin'));
         $path = $this->normalizeOptionValue($input->getOption('path'));
         $orm = $this->normalizeOptionValue($input->getOption('orm'));
-        $connection = $this->normalizeOptionValue($input->getOption('connection'));
+        $connection = $this->normalizeOptionValue($input->getOption('database'));
         $table = $this->normalizeOptionValue($input->getOption('table'));
         $force = (bool)$input->getOption('force');
 
@@ -123,10 +123,10 @@ class MakeModelCommand extends Command
         $output->writeln($this->msg('make_model', ['{name}' => $name]));
         $type = $this->resolveOrm($orm, $type, $output);
         // Resolve & validate DB connection:
-        // - When --plugin/-p is provided and --connection/-c is provided, use the plugin's connection config.
-        //   e.g. "-p admin -c mysql" => "plugin.admin.mysql"
-        // - When no plugin is provided, validate that the given --connection/-c exists.
-        // - When --connection/-c is omitted, prefer plugin default connection when plugin has DB config.
+        // - When --plugin/-p is provided and --database/-d is provided, use the plugin's connection config.
+        //   e.g. "-p admin -d mysql" => "plugin.admin.mysql"
+        // - When no plugin is provided, validate that the given --database/-d exists.
+        // - When --database/-d is omitted, prefer plugin default connection when plugin has DB config.
         [$ok, $connection] = $this->resolveAndValidateConnection($type, $plugin, $connection, $output);
         if (!$ok) {
             return Command::FAILURE;
@@ -1160,7 +1160,7 @@ EOF;
      * Resolve the database connection name with plugin priority.
      *
      * Rules:
-     * - If user explicitly provides --connection/-c, always respect it.
+     * - If user explicitly provides --database/-d, always respect it.
      * - If --plugin/-p is provided and that plugin has DB config, prefer the plugin default connection.
      * - If plugin has no DB config, fall back to main project config.
      *
