@@ -23,8 +23,15 @@ class MakeCrudCommand extends Command
     protected function configure(): void
     {
         $this->addOption('table', 't', InputOption::VALUE_REQUIRED, 'Table name. e.g. users');
+        $this->addOption('model', 'm', InputOption::VALUE_REQUIRED, 'Model name. e.g. User, admin/User');
         $this->addOption('model-path', 'M', InputOption::VALUE_REQUIRED, 'Model path (relative to base path). e.g. plugin/admin/app/model');
+        $this->addOption('controller', 'c', InputOption::VALUE_REQUIRED, 'Controller name. e.g. UserController, admin/UserController');
         $this->addOption('controller-path', 'C', InputOption::VALUE_REQUIRED, 'Controller path (relative to base path). e.g. plugin/admin/app/controller');
+        // NOTE:
+        // - `-v/-vv/-vvv` is reserved for Symfony Console verbosity (global option).
+        // - `-V` is reserved for Symfony Console version (global option).
+        // So validator name only supports long option `--validator`.
+        $this->addOption('validator', null, InputOption::VALUE_REQUIRED, 'Validator name. e.g. UserValidator, admin/UserValidator');
         $this->addOption('validator-path', null, InputOption::VALUE_REQUIRED, 'Validator path (relative to base path). e.g. plugin/admin/app/validation');
         $this->addOption('plugin', 'p', InputOption::VALUE_REQUIRED, 'Plugin name under plugin/. e.g. admin');
         $this->addOption('orm', 'o', InputOption::VALUE_REQUIRED, 'Select orm: laravel|thinkorm');
@@ -45,20 +52,32 @@ class MakeCrudCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $table = $this->normalizeOptionValue($input->getOption('table'));
+        $modelOpt = $this->normalizeOptionValue($input->getOption('model'));
         $modelPath = $this->normalizeOptionValue($input->getOption('model-path'));
+        $controllerOpt = $this->normalizeOptionValue($input->getOption('controller'));
         $controllerPath = $this->normalizeOptionValue($input->getOption('controller-path'));
+        $validatorOpt = $this->normalizeOptionValue($input->getOption('validator'));
         $validatorPath = $this->normalizeOptionValue($input->getOption('validator-path'));
-        $plugin = $this->normalizeOptionValue($input->getOption('plugin'));
+        $pluginOpt = $this->normalizeOptionValue($input->getOption('plugin'));
         $orm = $this->normalizeOptionValue($input->getOption('orm'));
         $database = $this->normalizeOptionValue($input->getOption('database'));
         $force = (bool)$input->getOption('force');
         $noValidator = (bool)$input->getOption('no-validator');
         $noInteraction = (bool)$input->getOption('no-interaction');
 
-        if ($plugin && (str_contains($plugin, '/') || str_contains($plugin, '\\'))) {
-            $output->writeln($this->msg('invalid_plugin', ['{plugin}' => $plugin]));
+        if ($pluginOpt && (str_contains($pluginOpt, '/') || str_contains($pluginOpt, '\\'))) {
+            $output->writeln($this->msg('invalid_plugin', ['{plugin}' => $pluginOpt]));
             return Command::FAILURE;
         }
+
+        $pluginByPath = $this->inferPluginFromPath($controllerPath)
+            ?: $this->inferPluginFromPath($modelPath)
+            ?: $this->inferPluginFromPath($validatorPath);
+        $pluginOpt = $this->resolvePluginMismatchIfNeeded($input, $output, $noInteraction, $pluginOpt, $pluginByPath);
+        if ($pluginOpt === false) {
+            return Command::FAILURE;
+        }
+        $plugin = $pluginOpt ?: $pluginByPath;
 
         $validationEnabled = $this->isValidationEnabled();
         if ($validatorPath && !$validationEnabled && !$noValidator) {
@@ -84,38 +103,95 @@ class MakeCrudCommand extends Command
             }
         }
 
-        $modelName = $this->generateModelNameFromTable($table);
-        $controllerName = $this->applySuffixToLastSegment(
-            $modelName,
-            $plugin ? (string)config("plugin.$plugin.app.controller_suffix", 'Controller') : (string)config('app.controller_suffix', 'Controller')
-        );
-        $validatorName = $modelName . 'Validator';
-
-        $shouldGenerateValidator = false;
-        if ($validationEnabled && !$noValidator) {
-            if ($noInteraction) {
-                $shouldGenerateValidator = true;
-            } else {
-                $shouldGenerateValidator = $this->promptForValidator($input, $output);
-            }
+        $modelNameDefault = $this->generateModelNameFromTable($table);
+        $modelName = $this->resolveName($input, $output, $noInteraction, $modelOpt, $modelNameDefault, 'model');
+        if (!$modelName) {
+            $output->writeln($this->msg('invalid_name', ['{type}' => 'model']));
+            return Command::FAILURE;
         }
 
-        if (!$noInteraction) {
-            if (!$modelPath) {
-                $modelPath = $this->promptForPath($input, $output, 'model', $plugin);
+        // Defer "Add validator?" prompt until right before validator name/path.
+        // If user explicitly sets validator options, treat it as "yes" (unless --no-validator).
+        $validatorExplicit = (bool)($validatorOpt || $validatorPath);
+        $shouldAskValidator = $validationEnabled && !$noValidator && !$noInteraction && !$validatorExplicit;
+        $shouldGenerateValidator = $validationEnabled && !$noValidator && ($noInteraction || $validatorExplicit);
+
+        // Step 1: resolve model path
+        $modelPathDefault = $this->getDefaultPath('model', $plugin);
+        if (!$modelPath) {
+            if ($noInteraction) {
+                $modelPath = $modelPathDefault;
+            } else {
+                $modelPath = $this->promptForPathWithDefault($input, $output, 'model', $modelPathDefault);
             }
-            if (!$controllerPath) {
-                $controllerPath = $this->promptForPath($input, $output, 'controller', $plugin);
+        }
+        $modelPath = $this->normalizeRelativePath($modelPath);
+
+        // After model path is known, infer plugin if not explicitly provided.
+        $pluginByModelPath = $this->inferPluginFromPath($modelPath);
+        if (!$plugin && $pluginByModelPath) {
+            $plugin = $pluginByModelPath;
+        }
+
+        // Step 2: resolve controller name (depends on model name + suffix rules)
+        $controllerPathDefault = $this->deriveSiblingPath($modelPath, 'model', 'controller');
+        $controllerPlugin = $plugin ?: $this->inferPluginFromPath($controllerPathDefault);
+        $suffix = $controllerPlugin
+            ? (string)config("plugin.$controllerPlugin.app.controller_suffix", 'Controller')
+            : (string)config('app.controller_suffix', 'Controller');
+        $controllerNameDefault = $this->applySuffixToLastSegment($modelName, $suffix);
+        $controllerName = $this->resolveName($input, $output, $noInteraction, $controllerOpt, $controllerNameDefault, 'controller');
+        if (!$controllerName) {
+            $output->writeln($this->msg('invalid_name', ['{type}' => 'controller']));
+            return Command::FAILURE;
+        }
+        // Always ensure the controller suffix is applied once.
+        $controllerName = $this->applySuffixToLastSegment($controllerName, $suffix);
+
+        // Step 3: resolve controller path (default derived from model path)
+        if (!$controllerPath) {
+            if ($noInteraction) {
+                $controllerPath = $controllerPathDefault;
+            } else {
+                $controllerPath = $this->promptForPathWithDefault($input, $output, 'controller', $controllerPathDefault);
             }
-            if ($shouldGenerateValidator && !$validatorPath) {
-                $validatorPath = $this->promptForPath($input, $output, 'validation', $plugin);
+        }
+        $controllerPath = $this->normalizeRelativePath($controllerPath);
+
+        // If plugin is not explicitly provided, infer it from controller path (as required).
+        $pluginByControllerPath = $this->inferPluginFromPath($controllerPath);
+        if (!$plugin && $pluginByControllerPath) {
+            $plugin = $pluginByControllerPath;
+        }
+        $pluginOpt = $this->resolvePluginMismatchIfNeeded($input, $output, $noInteraction, $pluginOpt, $pluginByControllerPath);
+        if ($pluginOpt === false) {
+            return Command::FAILURE;
+        }
+
+        if ($shouldAskValidator) {
+            $shouldGenerateValidator = $this->promptForValidator($input, $output);
+        }
+
+        // Step 4: resolve validator name + path (derived from controller)
+        $validatorName = '';
+        if ($shouldGenerateValidator) {
+            $baseForValidator = $this->stripSuffixFromLastSegment($controllerName, $suffix);
+            $validatorNameDefault = $this->applySuffixToLastSegment($baseForValidator, 'Validator');
+            $validatorName = $this->resolveName($input, $output, $noInteraction, $validatorOpt, $validatorNameDefault, 'validator');
+            if (!$validatorName) {
+                $output->writeln($this->msg('invalid_name', ['{type}' => 'validator']));
+                return Command::FAILURE;
             }
-        } else {
-            $modelPath = $modelPath ?: $this->getDefaultPath('model', $plugin);
-            $controllerPath = $controllerPath ?: $this->getDefaultPath('controller', $plugin);
-            if ($shouldGenerateValidator) {
-                $validatorPath = $validatorPath ?: $this->getDefaultPath('validation', $plugin);
+
+            $validatorPathDefault = $this->deriveSiblingPath($controllerPath, 'controller', 'validation');
+            if (!$validatorPath) {
+                if ($noInteraction) {
+                    $validatorPath = $validatorPathDefault;
+                } else {
+                    $validatorPath = $this->promptForPathWithDefault($input, $output, 'validation', $validatorPathDefault);
+                }
             }
+            $validatorPath = $this->normalizeRelativePath($validatorPath);
         }
 
         $resolvedModel = $this->resolveTargetByPath($modelName, $modelPath, $output);
@@ -139,9 +215,9 @@ class MakeCrudCommand extends Command
         }
 
         $validatorNamespace = null;
-        if ($shouldGenerateValidator && $validatorPath) {
+        if ($shouldGenerateValidator && $validatorPath && $validatorName) {
             $validatorResult = $this->generateValidator(
-            $validatorName,
+                $validatorName,
                 $validatorPath,
                 $table,
                 $ormType,
@@ -235,12 +311,170 @@ class MakeCrudCommand extends Command
     protected function promptForPath(InputInterface $input, OutputInterface $output, string $type, ?string $plugin): string
     {
         $defaultPath = $this->getDefaultPath($type, $plugin);
+        return $this->promptForPathWithDefault($input, $output, $type, $defaultPath);
+    }
+
+    protected function promptForPathWithDefault(InputInterface $input, OutputInterface $output, string $type, string $defaultPath): string
+    {
+        $defaultPath = $this->normalizeRelativePath($defaultPath);
         $label = $this->getTypeLabel($type);
         $helper = $this->getHelper('question');
-        $question = new Question("{$label}" . $this->msg('path_prompt_suffix', ['{default}' => $defaultPath]), $defaultPath);
+        $question = new Question($this->msg('enter_path_prompt', ['{label}' => $label, '{default}' => $defaultPath]), $defaultPath);
         $path = $helper->ask($input, $output, $question);
         $path = is_string($path) ? $path : $defaultPath;
         return $this->normalizeRelativePath($path ?: $defaultPath);
+    }
+
+    /**
+     * If --plugin conflicts with inferred plugin from a path:
+     * - Non-interactive: error (cannot ask).
+     * - Interactive: ask to continue; if user rejects, prompt for a new plugin name and re-check.
+     *
+     * @return string|false|null resolved plugin option (null means "no plugin")
+     */
+    protected function resolvePluginMismatchIfNeeded(
+        InputInterface $input,
+        OutputInterface $output,
+        bool $noInteraction,
+        string|null $pluginOpt,
+        string|null $inferred
+    ): string|false|null {
+        $pluginOpt = $this->normalizeOptionValue($pluginOpt);
+        $inferred = $this->normalizeOptionValue($inferred);
+        if (!$pluginOpt || !$inferred || $pluginOpt === $inferred) {
+            return $pluginOpt;
+        }
+        if ($noInteraction) {
+            $output->writeln($this->msg('plugin_path_mismatch', [
+                '{plugin}' => $pluginOpt,
+                '{path_plugin}' => $inferred,
+            ]));
+            return false;
+        }
+
+        $helper = $this->getHelper('question');
+        while (true) {
+            $confirm = new ConfirmationQuestion(
+                $this->msg('plugin_path_mismatch_confirm', [
+                    '{plugin}' => $pluginOpt,
+                    '{path_plugin}' => $inferred,
+                ]),
+                true
+            );
+            if ($helper->ask($input, $output, $confirm)) {
+                return $pluginOpt;
+            }
+
+            $q = new Question($this->msg('plugin_reinput_prompt', ['{default}' => $inferred]), $inferred);
+            $new = $helper->ask($input, $output, $q);
+            $new = is_string($new) ? trim($new) : '';
+            $new = $new !== '' ? $new : $inferred;
+            if ($new && (str_contains($new, '/') || str_contains($new, '\\'))) {
+                $output->writeln($this->msg('invalid_plugin', ['{plugin}' => $new]));
+                continue;
+            }
+            $pluginOpt = $new !== '' ? $new : null;
+            if (!$pluginOpt || $pluginOpt === $inferred) {
+                return $pluginOpt;
+            }
+            // Still mismatched -> loop again.
+        }
+    }
+
+    protected function resolveName(
+        InputInterface $input,
+        OutputInterface $output,
+        bool $noInteraction,
+        ?string $provided,
+        string $default,
+        string $type
+    ): string {
+        $provided = $this->normalizeOptionValue($provided);
+        $default = $this->normalizeOptionValue($default) ?: $default;
+        if ($provided) {
+            return $this->normalizeClassLikeName($provided);
+        }
+        if ($noInteraction) {
+            return $this->normalizeClassLikeName($default);
+        }
+        $label = $this->getNameLabel($type);
+        $helper = $this->getHelper('question');
+        $question = new Question($this->msg('enter_name_prompt', ['{label}' => $label, '{default}' => $default]), $default);
+        $answer = $helper->ask($input, $output, $question);
+        $answer = is_string($answer) ? trim($answer) : '';
+        $answer = $answer !== '' ? $answer : $default;
+        return $this->normalizeClassLikeName($answer);
+    }
+
+    protected function getNameLabel(string $type): string
+    {
+        $labels = [
+            'model' => $this->isZhLocale() ? '模型名' : 'Model name',
+            'controller' => $this->isZhLocale() ? '控制器名' : 'Controller name',
+            'validator' => $this->isZhLocale() ? '验证器名' : 'Validator name',
+        ];
+        return $labels[$type] ?? $type;
+    }
+
+    protected function normalizeClassLikeName(string $name): string
+    {
+        $name = trim($name);
+        if ($name === '') {
+            return '';
+        }
+        // Normalize separators for Windows/Unix inputs.
+        $name = str_replace('\\', '/', $name);
+        $name = trim($name, '/');
+        // Keep segments but normalize each segment to StudlyCase.
+        $segments = array_values(array_filter(explode('/', $name), static fn(string $s): bool => $s !== ''));
+        $segments = array_map(static fn(string $seg): string => Util::nameToClass($seg), $segments);
+        return implode('/', $segments);
+    }
+
+    protected function inferPluginFromPath(?string $path): ?string
+    {
+        $path = $this->normalizeOptionValue($path);
+        if (!$path) {
+            return null;
+        }
+        $path = $this->normalizeRelativePath($path);
+        $path = trim($path, '/');
+        if (preg_match('#^plugin/([^/]+)/#', $path, $m)) {
+            return $m[1] !== '' ? $m[1] : null;
+        }
+        return null;
+    }
+
+    protected function deriveSiblingPath(string $path, string $from, string $to): string
+    {
+        $path = $this->normalizeRelativePath($path);
+        $path = trim($path, '/');
+        $from = trim($from);
+        $to = trim($to);
+        if ($from !== '' && preg_match('#/' . preg_quote($from, '#') . '$#i', $path)) {
+            return preg_replace('#/' . preg_quote($from, '#') . '$#i', '/' . $to, $path) ?: $path;
+        }
+        return $path . '/' . $to;
+    }
+
+    protected function stripSuffixFromLastSegment(string $name, string $suffix): string
+    {
+        $name = str_replace('\\', '/', $name);
+        $name = trim($name, '/');
+        $suffix = trim($suffix);
+        if ($suffix === '') {
+            return $name;
+        }
+        $pos = strrpos($name, '/');
+        if ($pos === false) {
+            return str_ends_with($name, $suffix) ? substr($name, 0, -strlen($suffix)) : $name;
+        }
+        $prefix = substr($name, 0, $pos + 1);
+        $last = substr($name, $pos + 1);
+        if (str_ends_with($last, $suffix)) {
+            $last = substr($last, 0, -strlen($suffix));
+        }
+        return $prefix . $last;
     }
 
     protected function getTypeLabel(string $type): string
@@ -257,7 +491,9 @@ class MakeCrudCommand extends Command
     {
         $helper = $this->getHelper('question');
         $question = new ConfirmationQuestion(
-            $this->isZhLocale() ? '是否添加验证器？[Y/n]: ' : 'Add validator? [Y/n]: ',
+            $this->isZhLocale()
+                ? '是否添加验证器？[Y/n] (回车=Y): '
+                : 'Add validator? [Y/n] (Enter = Y): ',
             true
         );
         return (bool)$helper->ask($input, $output, $question);
@@ -914,7 +1150,12 @@ EOF;
             'connection_not_found_plugin' => '<error>插件 {plugin} 未配置数据库连接：{connection}</error>',
             'connection_plugin_mismatch' => '<error>数据库连接与插件不匹配：当前插件={plugin}，连接={connection}</error>',
             'plugin_default_connection_invalid' => '<error>插件 {plugin} 的默认数据库连接无效：{connection}</error>',
-            'path_prompt_suffix' => '路径 [{default}]: ',
+            'enter_name_prompt' => '输入{label} (回车默认 {default}): ',
+            'enter_path_prompt' => '输入{label}路径 (回车默认 {default}): ',
+            'invalid_name' => '<error>名称无效：{type}</error>',
+            'plugin_path_mismatch' => '<error>插件与路径不一致：--plugin={plugin}，但路径推断插件={path_plugin}。</error>',
+            'plugin_path_mismatch_confirm' => "<fg=blue>插件与路径不一致：--plugin={plugin}，但路径推断插件={path_plugin}\n是否继续使用 --plugin？[Y/n]（回车=Y）</>\n",
+            'plugin_reinput_prompt' => '请重新输入插件名 [{default}]: ',
             'reference_only' => '<comment>提示：生成代码仅供参考，请根据实际业务完善。</comment>',
         ];
 
@@ -944,7 +1185,12 @@ EOF;
             'connection_not_found_plugin' => '<error>Plugin {plugin} has no database connection configured: {connection}</error>',
             'connection_plugin_mismatch' => '<error>Database connection does not match plugin: plugin={plugin}, connection={connection}</error>',
             'plugin_default_connection_invalid' => '<error>Invalid default database connection for plugin {plugin}: {connection}</error>',
-            'path_prompt_suffix' => ' path [{default}]: ',
+            'enter_name_prompt' => 'Enter {label} (Enter for default: {default}): ',
+            'enter_path_prompt' => 'Enter {label} path (Enter for default: {default}): ',
+            'invalid_name' => '<error>Invalid {type} name.</error>',
+            'plugin_path_mismatch' => '<error>Plugin and path mismatch: --plugin={plugin}, but inferred plugin from path={path_plugin}.</error>',
+            'plugin_path_mismatch_confirm' => "<fg=blue>Plugin and path mismatch: --plugin={plugin}, inferred from path={path_plugin}\nContinue using --plugin? [Y/n] (Enter = Y)</>\n",
+            'plugin_reinput_prompt' => 'Re-enter plugin name [{default}]: ',
             'reference_only' => '<comment>Note: Generated code is for reference only. Please adapt it to your business needs.</comment>',
         ];
 
