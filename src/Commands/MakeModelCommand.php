@@ -598,7 +598,7 @@ EOF;
         $zh = [
             'make_model' => "<info>创建模型</info> <comment>{name}</comment>",
             'created' => '<info>已创建：</info> {path}',
-            'override_prompt' => "<fg=blue>文件已存在：{path}\n是否覆盖？[Y/n]（回车=Y）</>\n",
+            'override_prompt' => "<question>文件已存在：{path}</question>\n<question>是否覆盖？[Y/n]（回车=Y）</question>\n",
             'invalid_plugin' => '<error>插件名无效：{plugin}。`--plugin/-p` 只能是 plugin/ 目录下的目录名，不能包含 / 或 \\。</error>',
             'plugin_path_conflict' => "<error>`--plugin/-p` 与 `--path/-P` 同时指定且不一致。\n期望路径：{expected}\n实际路径：{actual}\n请二选一或保持一致。</error>",
             'invalid_path' => '<error>路径无效：{path}。`--path/-P` 必须是相对路径（相对于项目根目录），不能是绝对路径。</error>',
@@ -625,7 +625,7 @@ EOF;
         $en = [
             'make_model' => "<info>Make model</info> <comment>{name}</comment>",
             'created' => '<info>Created:</info> {path}',
-            'override_prompt' => "<fg=blue>File already exists: {path}\nOverride? [Y/n] (Enter = Y)</>\n",
+            'override_prompt' => "<question>File already exists: {path}</question>\n<question>Override? [Y/n] (Enter = Y)</question>\n",
             'invalid_plugin' => '<error>Invalid plugin name: {plugin}. `--plugin/-p` must be a directory name under plugin/ and must not contain / or \\.</error>',
             'plugin_path_conflict' => "<error>`--plugin/-p` and `--path/-P` are both provided but inconsistent.\nExpected: {expected}\nActual: {actual}\nPlease provide only one, or make them identical.</error>",
             'invalid_path' => '<error>Invalid path: {path}. `--path/-P` must be a relative path (to project root) and must not be an absolute path.</error>',
