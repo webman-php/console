@@ -13,6 +13,7 @@ use Symfony\Component\Console\Question\Question;
 use Webman\Console\Commands\Concerns\MakeCommandHelpers;
 use Webman\Console\Commands\Concerns\OrmTableCommandHelpers;
 use Webman\Console\Util;
+use Webman\Console\Messages;
 
 #[AsCommand('make:crud', 'Make CRUD (Model, Controller, Validator)')]
 class MakeCrudCommand extends Command
@@ -22,23 +23,23 @@ class MakeCrudCommand extends Command
 
     protected function configure(): void
     {
-        $this->addOption('table', 't', InputOption::VALUE_REQUIRED, 'Table name. e.g. users');
-        $this->addOption('model', 'm', InputOption::VALUE_REQUIRED, 'Model name. e.g. User, admin/User');
-        $this->addOption('model-path', 'M', InputOption::VALUE_REQUIRED, 'Model path (relative to base path). e.g. plugin/admin/app/model');
-        $this->addOption('controller', 'c', InputOption::VALUE_REQUIRED, 'Controller name. e.g. UserController, admin/UserController');
-        $this->addOption('controller-path', 'C', InputOption::VALUE_REQUIRED, 'Controller path (relative to base path). e.g. plugin/admin/app/controller');
+        $this->addOption('table', 't', InputOption::VALUE_REQUIRED, $this->msg('opt_table'));
+        $this->addOption('model', 'm', InputOption::VALUE_REQUIRED, $this->msg('opt_model'));
+        $this->addOption('model-path', 'M', InputOption::VALUE_REQUIRED, $this->msg('opt_model_path'));
+        $this->addOption('controller', 'c', InputOption::VALUE_REQUIRED, $this->msg('opt_controller'));
+        $this->addOption('controller-path', 'C', InputOption::VALUE_REQUIRED, $this->msg('opt_controller_path'));
         // NOTE:
         // - `-v/-vv/-vvv` is reserved for Symfony Console verbosity (global option).
         // - `-V` is reserved for Symfony Console version (global option).
         // So validator name only supports long option `--validator`.
-        $this->addOption('validator', null, InputOption::VALUE_REQUIRED, 'Validator name. e.g. UserValidator, admin/UserValidator');
-        $this->addOption('validator-path', null, InputOption::VALUE_REQUIRED, 'Validator path (relative to base path). e.g. plugin/admin/app/validation');
-        $this->addOption('plugin', 'p', InputOption::VALUE_REQUIRED, 'Plugin name under plugin/. e.g. admin');
-        $this->addOption('orm', 'o', InputOption::VALUE_REQUIRED, 'Select orm: laravel|thinkorm');
-        $this->addOption('database', 'd', InputOption::VALUE_OPTIONAL, 'Select database connection.');
-        $this->addOption('force', 'f', InputOption::VALUE_NONE, 'Override existing file without confirmation.');
-        $this->addOption('no-validator', null, InputOption::VALUE_NONE, 'Do not generate validator.');
-        $this->addOption('no-interaction', 'n', InputOption::VALUE_NONE, 'Disable interactive mode.');
+        $this->addOption('validator', null, InputOption::VALUE_REQUIRED, $this->msg('opt_validator'));
+        $this->addOption('validator-path', null, InputOption::VALUE_REQUIRED, $this->msg('opt_validator_path'));
+        $this->addOption('plugin', 'p', InputOption::VALUE_REQUIRED, $this->msg('opt_plugin'));
+        $this->addOption('orm', 'o', InputOption::VALUE_REQUIRED, $this->msg('opt_orm'));
+        $this->addOption('database', 'd', InputOption::VALUE_OPTIONAL, $this->msg('opt_database'));
+        $this->addOption('force', 'f', InputOption::VALUE_NONE, $this->msg('opt_force'));
+        $this->addOption('no-validator', null, InputOption::VALUE_NONE, $this->msg('opt_no_validator'));
+        $this->addOption('no-interaction', 'n', InputOption::VALUE_NONE, $this->msg('opt_no_interaction'));
 
         $this->setHelp($this->buildHelpText());
 
@@ -408,23 +409,7 @@ class MakeCrudCommand extends Command
 
     protected function getNameLabel(string $type): string
     {
-        $enLabels = ['model' => 'Model name', 'controller' => 'Controller name', 'validator' => 'Validator name'];
-        $labels = Util::selectLocaleMessages([
-            'zh_CN' => ['model' => '模型名', 'controller' => '控制器名', 'validator' => '验证器名'],
-            'zh_TW' => ['model' => '模型名', 'controller' => '控制器名', 'validator' => '驗證器名'],
-            'en' => $enLabels,
-            'ja' => ['model' => 'モデル名', 'controller' => 'コントローラ名', 'validator' => 'バリデータ名'],
-            'ko' => ['model' => '모델 이름', 'controller' => '컨트롤러 이름', 'validator' => '검증기 이름'],
-            'fr' => ['model' => 'Nom du modèle', 'controller' => 'Nom du contrôleur', 'validator' => 'Nom du validateur'],
-            'de' => ['model' => 'Modellname', 'controller' => 'Controller-Name', 'validator' => 'Validator-Name'],
-            'es' => ['model' => 'Nombre del modelo', 'controller' => 'Nombre del controlador', 'validator' => 'Nombre del validador'],
-            'pt_BR' => ['model' => 'Nome do modelo', 'controller' => 'Nome do controlador', 'validator' => 'Nome do validador'],
-            'ru' => ['model' => 'Имя модели', 'controller' => 'Имя контроллера', 'validator' => 'Имя валидатора'],
-            'vi' => ['model' => 'Tên model', 'controller' => 'Tên controller', 'validator' => 'Tên validator'],
-            'tr' => ['model' => 'Model adı', 'controller' => 'Controller adı', 'validator' => 'Doğrulayıcı adı'],
-            'id' => ['model' => 'Nama model', 'controller' => 'Nama controller', 'validator' => 'Nama validator'],
-            'th' => ['model' => 'ชื่อโมเดล', 'controller' => 'ชื่อคอนโทรลเลอร์', 'validator' => 'ชื่อตัวตรวจสอบ'],
-        ]);
+        $labels = Util::selectLocaleMessages(Messages::getTypeLabels());
         return $labels[$type] ?? $type;
     }
 
@@ -515,15 +500,7 @@ class MakeCrudCommand extends Command
     {
         $helper = $this->getHelper('question');
         $question = new ConfirmationQuestion(
-            Util::selectByLocale([
-                'zh_CN' => '是否添加验证器？[Y/n] (回车=Y): ', 'zh_TW' => '是否加入驗證器？[Y/n] (Enter=Y): ',
-                'en' => 'Add validator? [Y/n] (Enter = Y): ', 'ja' => 'バリデータを追加しますか？[Y/n] (Enter=Y): ',
-                'ko' => '검증기를 추가할까요? [Y/n] (Enter=Y): ', 'fr' => 'Ajouter un validateur ? [Y/n] (Entrée = Y) : ',
-                'de' => 'Validator hinzufügen? [Y/n] (Eingabe = Y): ', 'es' => '¿Añadir validador? [Y/n] (Enter = Y): ',
-                'pt_BR' => 'Adicionar validador? [Y/n] (Enter = Y): ', 'ru' => 'Добавить валидатор? [Y/n] (Enter = Y): ',
-                'vi' => 'Thêm trình xác thực? [Y/n] (Enter = Y): ', 'tr' => 'Doğrulayıcı eklenesin mi? [Y/n] (Enter = Y): ',
-                'id' => 'Tambahkan validator? [Y/n] (Enter = Y): ', 'th' => 'เพิ่มตัวตรวจสอบ？[Y/n] (Enter=Y): ',
-            ]),
+            Util::selectByLocale(Messages::getValidatorPrompt()),
             true
         );
         return (bool)$helper->ask($input, $output, $question);
@@ -1154,103 +1131,11 @@ EOF;
 
     protected function msg(string $key, array $replace = []): string
     {
-        $zh = [
-            'invalid_plugin' => '<error>插件名无效：{plugin}。`--plugin/-p` 只能是 plugin/ 目录下的目录名，不能包含 / 或 \\。</error>',
-            'invalid_path' => '<error>路径无效：{path}。路径必须是相对路径（相对于项目根目录），不能是绝对路径。</error>',
-            'table_required' => '<error>必须提供数据表名（--table）或在交互模式下选择数据表。</error>',
-            'validation_not_enabled' => '<error>webman/validation 未启用或未安装，无法生成验证器。</error>',
-            'override_prompt' => "<question>文件已存在：{path}</question>\n<question>是否覆盖？[Y/n]（回车=Y）</question>\n",
-            'crud_generated' => '<info>已生成 {count} 个文件：</info>',
-            'nothing_generated' => '<comment>[Warning]</comment> 没有生成任何文件。',
-            'created' => '{path}',
-            'validator_failed' => '<comment>[Warning]</comment> 验证器生成失败：{reason}，已生成空验证器。',
-            'db_unavailable' => '<comment>[Warning]</comment> 数据库不可用或无权限读取表信息，将继续使用交互选择或生成空模型。',
-            'table_list_failed' => '<comment>[Warning]</comment> 无法获取数据表列表，将继续使用交互选择或生成空模型。',
-            'no_match' => '<comment>[Info]</comment> 未找到与模型名匹配的表（按约定推断失败）。',
-            'prompt_help' => '<comment>[Info]</comment> 输入序号选择；输入表名；回车=更多；输入 0=空模型；输入 /关键字 过滤（输入 / 清除过滤）。',
-            'no_more' => '<comment>[Info]</comment> 没有更多表可显示。',
-            'end_of_list' => '<comment>[Info]</comment> 已到列表末尾。可输入表名、序号、0（空模型）或 /关键字。',
-            'filter_cleared' => '<comment>[Info]</comment> 已清除过滤条件。',
-            'filter_applied' => '<comment>[Info]</comment> 已应用过滤：`{keyword}`。',
-            'filter_no_match' => '<comment>[Warning]</comment> 没有表匹配过滤 `{keyword}`。输入 / 清除过滤或换个关键字。',
-            'selection_out_of_range' => '<comment>[Warning]</comment> 序号超出范围。可回车查看更多或输入有效序号。',
-            'table_not_in_list' => '<comment>[Warning]</comment> 表 `{table}` 不在当前数据库列表中，将继续尝试生成（注释可能为空）。',
-            'showing_range' => '<comment>[Info]</comment> 当前已显示 {start}-{end}（累计 {shown}）。',
-            'connection_not_found' => '<error>数据库连接不存在：{connection}</error>',
-            'connection_not_found_plugin' => '<error>插件 {plugin} 未配置数据库连接：{connection}</error>',
-            'connection_plugin_mismatch' => '<error>数据库连接与插件不匹配：当前插件={plugin}，连接={connection}</error>',
-            'plugin_default_connection_invalid' => '<error>插件 {plugin} 的默认数据库连接无效：{connection}</error>',
-            'enter_name_prompt' => '输入{label} (回车默认 {default}): ',
-            'enter_path_prompt' => '输入{label}路径 (回车默认 {default}): ',
-            'invalid_name' => '<error>名称无效：{type}</error>',
-            'plugin_path_mismatch' => '<error>插件与路径不一致：--plugin={plugin}，但路径推断插件={path_plugin}。</error>',
-            'plugin_path_mismatch_confirm' => "<question>插件与路径不一致：--plugin={plugin}，但路径推断插件={path_plugin}</question>\n<question>是否继续使用 --plugin？[Y/n]（回车=Y）</question>\n",
-            'plugin_reinput_prompt' => '请重新输入插件名 [{default}]: ',
-            'reference_only' => '<comment>提示：生成代码仅供参考，请根据实际业务完善。</comment>',
-        ];
-
-        $en = [
-            'invalid_plugin' => '<error>Invalid plugin name: {plugin}. `--plugin/-p` must be a directory name under plugin/ and must not contain / or \\.</error>',
-            'invalid_path' => '<error>Invalid path: {path}. Path must be relative (to project root), not absolute.</error>',
-            'table_required' => '<error>Table is required. Provide --table or select it interactively.</error>',
-            'validation_not_enabled' => '<error>webman/validation is not enabled or installed; validator generation skipped.</error>',
-            'override_prompt' => "<question>File already exists: {path}</question>\n<question>Override? [Y/n] (Enter = Y)</question>\n",
-            'crud_generated' => '<info>Generated {count} files:</info>',
-            'nothing_generated' => '<comment>[Warning]</comment> Nothing generated.',
-            'created' => '{path}',
-            'validator_failed' => '<comment>[Warning]</comment> Validator generation failed: {reason}. Generated an empty validator.',
-            'db_unavailable' => '<comment>[Warning]</comment> Database is not accessible or permission denied. Will continue with interactive selection or empty model.',
-            'table_list_failed' => '<comment>[Warning]</comment> Unable to fetch table list. Will continue with interactive selection or empty model.',
-            'no_match' => '<comment>[Info]</comment> No table matched the model name by convention.',
-            'prompt_help' => '<comment>[Info]</comment> Enter a number to select, type a table name, press Enter for more, enter 0 for an empty model, or use /keyword to filter (use / to clear).',
-            'no_more' => '<comment>[Info]</comment> No more tables to show.',
-            'end_of_list' => '<comment>[Info]</comment> End of list. Type a table name, a number, 0 for empty, or /keyword.',
-            'filter_cleared' => '<comment>[Info]</comment> Filter cleared.',
-            'filter_applied' => '<comment>[Info]</comment> Filter applied: `{keyword}`.',
-            'filter_no_match' => '<comment>[Warning]</comment> No tables matched filter `{keyword}`. Use / to clear or try another keyword.',
-            'selection_out_of_range' => '<comment>[Warning]</comment> Selection out of range. Press Enter for more, or choose a valid number.',
-            'table_not_in_list' => '<comment>[Warning]</comment> Table `{table}` is not in the current database list. Will try to generate anyway (schema annotations may be empty).',
-            'showing_range' => '<comment>[Info]</comment> Showing {start}-{end} (total shown: {shown}).',
-            'connection_not_found' => '<error>Database connection not found: {connection}</error>',
-            'connection_not_found_plugin' => '<error>Plugin {plugin} has no database connection configured: {connection}</error>',
-            'connection_plugin_mismatch' => '<error>Database connection does not match plugin: plugin={plugin}, connection={connection}</error>',
-            'plugin_default_connection_invalid' => '<error>Invalid default database connection for plugin {plugin}: {connection}</error>',
-            'enter_name_prompt' => 'Enter {label} (Enter for default: {default}): ',
-            'enter_path_prompt' => 'Enter {label} path (Enter for default: {default}): ',
-            'invalid_name' => '<error>Invalid {type} name.</error>',
-            'plugin_path_mismatch' => '<error>Plugin and path mismatch: --plugin={plugin}, but inferred plugin from path={path_plugin}.</error>',
-            'plugin_path_mismatch_confirm' => "<question>Plugin and path mismatch: --plugin={plugin}, inferred from path={path_plugin}</question>\n<question>Continue using --plugin? [Y/n] (Enter = Y)</question>\n",
-            'plugin_reinput_prompt' => 'Re-enter plugin name [{default}]: ',
-            'reference_only' => '<comment>Note: Generated code is for reference only. Please adapt it to your business needs.</comment>',
-        ];
-
-        $map = Util::selectLocaleMessages([
-            'zh_CN' => $zh, 'zh_TW' => $zh, 'en' => $en, 'ja' => $en, 'ko' => $en, 'fr' => $en,
-            'de' => $en, 'es' => $en, 'pt_BR' => $en, 'ru' => $en, 'vi' => $en, 'tr' => $en,
-            'id' => $en, 'th' => $en,
-        ]);
-        $text = $map[$key] ?? $key;
-        return $replace ? strtr($text, $replace) : $text;
+        return strtr(Util::selectLocaleMessages(Messages::getMakeCrudMessages()[$key] ?? $key), $replace);
     }
 
     protected function buildHelpText(): string
     {
-        $en = "Generate CRUD (Model, Controller, Validator).\n\nExamples:\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction";
-        return Util::selectByLocale([
-            'zh_CN' => "生成 CRUD（模型、控制器、验证器）。\n\n示例：\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
-            'zh_TW' => "建立 CRUD（模型、控制器、驗證器）。\n\n範例：\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
-            'en' => $en,
-            'ja' => "CRUD（モデル、コントローラ、バリデータ）を生成。\n\n例：\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
-            'ko' => "CRUD(모델, 컨트롤러, 검증기) 생성.\n\n예:\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
-            'fr' => "Générer CRUD (Modèle, Contrôleur, Validateur).\n\nExemples :\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
-            'de' => "CRUD erzeugen (Modell, Controller, Validator).\n\nBeispiele:\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
-            'es' => "Generar CRUD (Modelo, Controlador, Validador).\n\nEjemplos:\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
-            'pt_BR' => "Gerar CRUD (Modelo, Controlador, Validador).\n\nExemplos:\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
-            'ru' => "Создать CRUD (Модель, Контроллер, Валидатор).\n\nПримеры:\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
-            'vi' => "Tạo CRUD (Model, Controller, Validator).\n\nVí dụ:\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
-            'tr' => "CRUD oluştur (Model, Controller, Validator).\n\nÖrnekler:\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
-            'id' => "Buat CRUD (Model, Controller, Validator).\n\nContoh:\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
-            'th' => "สร้าง CRUD (โมเดล, คอนโทรลเลอร์, ตัวตรวจสอบ)\n\nตัวอย่าง:\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
-        ]);
+        return Util::selectLocaleMessages(Messages::getMakeCrudHelpText());
     }
 }

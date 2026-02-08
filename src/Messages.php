@@ -1,0 +1,2519 @@
+<?php
+namespace Webman\Console;
+
+class Messages
+{
+    public static function getAppPluginCreateHelpText(): array
+    {
+        return [
+            'zh_CN' => "创建 App 插件（包含基础目录结构）。\n\n用法：\n  php webman app-plugin:create foo",
+            'en' => "Create an App plugin (with basic directory structure).\n\nUsage:\n  php webman app-plugin:create foo",
+        ];
+    }
+
+    public static function getAppPluginInstallHelpText(): array
+    {
+        return [
+            'zh_CN' => "安装 App 插件（执行插件的安装脚本）。\n\n用法：\n  php webman app-plugin:install foo",
+            'en' => "Install an App plugin (executes the plugin's install script).\n\nUsage:\n  php webman app-plugin:install foo",
+        ];
+    }
+
+    public static function getAppPluginUninstallHelpText(): array
+    {
+        return [
+            'zh_CN' => "卸载 App 插件（执行插件的卸载脚本）。\n\n用法：\n  php webman app-plugin:uninstall foo\n  php webman app-plugin:uninstall foo --yes",
+            'en' => "Uninstall an App plugin (executes the plugin's uninstall script).\n\nUsage:\n  php webman app-plugin:uninstall foo\n  php webman app-plugin:uninstall foo --yes",
+        ];
+    }
+
+    public static function getAppPluginUpdateHelpText(): array
+    {
+        return [
+            'zh_CN' => "更新 App 插件（执行插件的更新脚本）。\n\n用法：\n  php webman app-plugin:update foo\n  php webman app-plugin:update foo --from 1.0.0 --to 1.1.0",
+            'en' => "Update an App plugin (executes the plugin's update script).\n\nUsage:\n  php webman app-plugin:update foo\n  php webman app-plugin:update foo --from 1.0.0 --to 1.1.0",
+        ];
+    }
+
+    public static function getAppPluginZipHelpText(): array
+    {
+        return [
+            'zh_CN' => "打包 App 插件为 ZIP 格式。\n\n用法：\n  php webman app-plugin:zip foo",
+            'en' => "Zip an App plugin into a ZIP file.\n\nUsage:\n  php webman app-plugin:zip foo",
+        ];
+    }
+
+    public static function getAppPluginMessages(): array
+    {
+        $zhCn = [
+            'bad_name' => "<error>插件名无效：{name}</error>\n<comment>要求</comment> 只能是 plugin/ 目录下的文件夹名，且仅允许字母数字、下划线、连字符（不能包含 / 或 \\）。",
+            'plugin_not_exists' => "<error>插件不存在：</error> {path}",
+            'create_title' => "<info>创建 App 插件</info> <comment>{name}</comment>",
+            'install_title' => "<info>安装 App 插件</info> <comment>{name}</comment>",
+            'uninstall_title' => "<info>卸载 App 插件</info> <comment>{name}</comment>",
+            'update_title' => "<info>更新 App 插件</info> <comment>{name}</comment>",
+            'zip_title' => "<info>打包 App 插件</info> <comment>{name}</comment>",
+            'dir_exists' => "<error>目录已存在：</error> {path}",
+            'created_dir' => "<info>创建目录：</info> {path}",
+            'created_file' => "<info>创建文件：</info> {path}",
+            'script_missing' => "<error>未找到安装脚本：</error> {class}\n<comment>提示</comment> 如刚修改过 composer.json，请先执行：<info>composer dumpautoload</info>",
+            'uninstall_confirm' => "<fg=yellow>即将执行卸载脚本，可能会删除数据，是否继续？[y/N]（回车=N）</>\n",
+            'running' => "<comment>执行</comment> {class}::{method}({args})",
+            'done' => "<info>完成</info>",
+            'failed' => "<error>失败：</error> {error}",
+            'version_same' => "<comment>提示</comment> from/to 版本相同（{version}），若无迁移逻辑可忽略。",
+            'zip_saved' => "<info>已生成：</info> {path}",
+            'zip_delete_failed' => "<error>无法删除旧的 zip 文件：</error> {path}",
+            'zip_open_failed' => "<error>无法创建 zip 文件：</error> {path}",
+            'description_name' => '插件名称',
+            'description_yes' => '跳过确认',
+            'description_from' => '起始版本（默认：当前版本）',
+            'description_to' => '目标版本（默认：当前版本）',
+            'source_not_exists' => "源目录不存在：{path}",
+        ];
+
+        $zhTw = [
+            'bad_name' => "<error>插件名稱無效：{name}</error>\n<comment>要求</comment> 只能是 plugin/ 目錄下的資料夾名，且僅允許字母數字、底線、連字元（不能包含 / 或 \\）。",
+            'plugin_not_exists' => "<error>插件不存在：</error> {path}",
+            'create_title' => "<info>建立 App 插件</info> <comment>{name}</comment>",
+            'install_title' => "<info>安裝 App 插件</info> <comment>{name}</comment>",
+            'uninstall_title' => "<info>卸載 App 插件</info> <comment>{name}</comment>",
+            'update_title' => "<info>更新 App 插件</info> <comment>{name}</comment>",
+            'zip_title' => "<info>打包 App 插件</info> <comment>{name}</comment>",
+            'dir_exists' => "<error>目錄已存在：</error> {path}",
+            'created_dir' => "<info>建立目錄：</info> {path}",
+            'created_file' => "<info>建立檔案：</info> {path}",
+            'script_missing' => "<error>未找到安裝腳本：</error> {class}\n<comment>提示</comment> 如剛修改過 composer.json，請先執行：<info>composer dumpautoload</info>",
+            'uninstall_confirm' => "<fg=yellow>即將執行卸載腳本，可能會刪除資料，是否繼續？[y/N]（Enter=N）</>\n",
+            'running' => "<comment>執行</comment> {class}::{method}({args})",
+            'done' => "<info>完成</info>",
+            'failed' => "<error>失敗：</error> {error}",
+            'version_same' => "<comment>提示</comment> from/to 版本相同（{version}），若無遷移邏輯可忽略。",
+            'zip_saved' => "<info>已產生：</info> {path}",
+            'zip_delete_failed' => "<error>無法刪除舊的 zip 檔案：</error> {path}",
+            'zip_open_failed' => "<error>無法建立 zip 檔案：</error> {path}",
+            'description_name' => '插件名稱',
+            'description_yes' => '跳過確認',
+            'description_from' => '起始版本（默認：當前版本）',
+            'description_to' => '目標版本（默認：當前版本）',
+            'source_not_exists' => "來源目錄不存在：{path}",
+        ];
+
+        $en = [
+            'bad_name' => "<error>Invalid plugin name: {name}</error>\n<comment>Rules</comment> Must be a folder name under plugin/, and only allows letters/digits/underscore/hyphen (must not contain / or \\).",
+            'plugin_not_exists' => "<error>Plugin not found:</error> {path}",
+            'create_title' => "<info>Create App plugin</info> <comment>{name}</comment>",
+            'install_title' => "<info>Install App plugin</info> <comment>{name}</comment>",
+            'uninstall_title' => "<info>Uninstall App plugin</info> <comment>{name}</comment>",
+            'update_title' => "<info>Update App plugin</info> <comment>{name}</comment>",
+            'zip_title' => "<info>Zip App plugin</info> <comment>{name}</comment>",
+            'dir_exists' => "<error>Directory already exists:</error> {path}",
+            'created_dir' => "<info>Create dir:</info> {path}",
+            'created_file' => "<info>Create file:</info> {path}",
+            'script_missing' => "<error>Install script not found:</error> {class}\n<comment>Note</comment> If you just changed composer.json, please run: <info>composer dumpautoload</info>",
+            'uninstall_confirm' => "<fg=yellow>It will execute uninstall script and may delete data. Continue? [y/N] (Enter = N)</>\n",
+            'running' => "<comment>Run</comment> {class}::{method}({args})",
+            'done' => "<info>Done</info>",
+            'failed' => "<error>Failed:</error> {error}",
+            'version_same' => "<comment>Note</comment> from/to versions are the same ({version}). You can ignore this if no migration is needed.",
+            'zip_saved' => "<info>Generated:</info> {path}",
+            'zip_delete_failed' => "<error>Unable to delete existing zip file:</error> {path}",
+            'zip_open_failed' => "<error>Cannot create zip file:</error> {path}",
+            'description_name' => 'App plugin name',
+            'description_yes' => 'Skip confirmation',
+            'description_from' => 'From version (default: current version)',
+            'description_to' => 'To version (default: current version)',
+            'source_not_exists' => "Source directory does not exist: {path}",
+        ];
+
+        $ja = [
+            'bad_name' => "<error>無効なプラグイン名：{name}</error>\n<comment>ルール</comment> plugin/ 以下のフォルダ名のみ。英数字・アンダースコア・ハイフンのみ使用可（/ または \\ は不可）。",
+            'plugin_not_exists' => "<error>プラグインが見つかりません：</error> {path}",
+            'create_title' => "<info>App プラグインを作成</info> <comment>{name}</comment>",
+            'install_title' => "<info>App プラグインをインストール</info> <comment>{name}</comment>",
+            'uninstall_title' => "<info>App プラグインをアンインストール</info> <comment>{name}</comment>",
+            'update_title' => "<info>App プラグインを更新</info> <comment>{name}</comment>",
+            'zip_title' => "<info>App プラグインをZIP化</info> <comment>{name}</comment>",
+            'dir_exists' => "<error>ディレクトリが既に存在します：</error> {path}",
+            'created_dir' => "<info>ディレクトリを作成：</info> {path}",
+            'created_file' => "<info>ファイルを作成：</info> {path}",
+            'script_missing' => "<error>インストールスクリプトが見つかりません：</error> {class}\n<comment>注意</comment> composer.json を変更した場合は <info>composer dumpautoload</info> を実行してください。",
+            'uninstall_confirm' => "<fg=yellow>アンインストールスクリプトを実行します。データが削除される可能性があります。続行しますか？[y/N]（Enter=N）</>\n",
+            'running' => "<comment>実行</comment> {class}::{method}({args})",
+            'done' => "<info>完了</info>",
+            'failed' => "<error>失敗：</error> {error}",
+            'version_same' => "<comment>注意</comment> from/to のバージョンが同じです（{version}）。マイグレーションが不要な場合は無視して構いません。",
+            'zip_saved' => "<info>生成しました：</info> {path}",
+            'zip_delete_failed' => "<error>既存の zip ファイルを削除できません：</error> {path}",
+            'zip_open_failed' => "<error>zip ファイルを作成できません：</error> {path}",
+            'description_name' => 'App プラグイン名',
+            'description_yes' => '確認をスキップ',
+            'description_from' => 'From バージョン (デフォルト: 現在のバージョン)',
+            'description_to' => 'To バージョン (デフォルト: 現在のバージョン)',
+            'source_not_exists' => "ソースディレクトリが存在しません：{path}",
+        ];
+
+        $ko = [
+            'bad_name' => "<error>잘못된 플러그인 이름: {name}</error>\n<comment>규칙</comment> plugin/ 아래 폴더 이름만 허용되며, 영문/숫자/밑줄/하이픈만 사용 가능합니다（/ 또는 \\ 포함 불가）.",
+            'plugin_not_exists' => "<error>플러그인을 찾을 수 없습니다:</error> {path}",
+            'create_title' => "<info>App 플러그인 생성</info> <comment>{name}</comment>",
+            'install_title' => "<info>App 플러그인 설치</info> <comment>{name}</comment>",
+            'uninstall_title' => "<info>App 플러그인 제거</info> <comment>{name}</comment>",
+            'update_title' => "<info>App 플러그인 업데이트</info> <comment>{name}</comment>",
+            'zip_title' => "<info>App 플러그인 ZIP 패키징</info> <comment>{name}</comment>",
+            'dir_exists' => "<error>디렉터리가 이미 존재합니다:</error> {path}",
+            'created_dir' => "<info>디렉터리 생성:</info> {path}",
+            'created_file' => "<info>파일 생성:</info> {path}",
+            'script_missing' => "<error>설치 스크립트를 찾을 수 없습니다:</error> {class}\n<comment>참고</comment> composer.json을 수정한 경우 <info>composer dumpautoload</info> 를 실행하세요.",
+            'uninstall_confirm' => "<fg=yellow>제거 스크립트를 실행하면 데이터가 삭제될 수 있습니다. 계속하시겠습니까? [y/N] (Enter=N)</>\n",
+            'running' => "<comment>실행</comment> {class}::{method}({args})",
+            'done' => "<info>완료</info>",
+            'failed' => "<error>실패:</error> {error}",
+            'version_same' => "<comment>참고</comment> from/to 버전이 동일합니다（{version}）. 마이그레이션이 필요 없으면 무시해도 됩니다.",
+            'zip_saved' => "<info>생성됨:</info> {path}",
+            'zip_delete_failed' => "<error>기존 zip 파일을 삭제할 수 없습니다:</error> {path}",
+            'zip_open_failed' => "<error>zip 파일을 생성할 수 없습니다:</error> {path}",
+            'description_name' => 'App 플러그인 이름',
+            'description_yes' => 'Skip confirmation',
+            'description_from' => 'From version (default: current version)',
+            'description_to' => 'To version (default: current version)',
+            'source_not_exists' => "소스 디렉터리가 존재하지 않습니다: {path}",
+        ];
+
+        $fr = [
+            'bad_name' => "<error>Nom de plugin invalide : {name}</error>\n<comment>Règles</comment> Doit être un nom de dossier sous plugin/, uniquement lettres/chiffres/tiret souligné/tiret (ne doit pas contenir / ou \\).",
+            'plugin_not_exists' => "<error>Plugin introuvable :</error> {path}",
+            'create_title' => "<info>Créer le plugin App</info> <comment>{name}</comment>",
+            'install_title' => "<info>Installer le plugin App</info> <comment>{name}</comment>",
+            'uninstall_title' => "<info>Désinstaller le plugin App</info> <comment>{name}</comment>",
+            'update_title' => "<info>Mettre à jour le plugin App</info> <comment>{name}</comment>",
+            'zip_title' => "<info>Zipper le plugin App</info> <comment>{name}</comment>",
+            'dir_exists' => "<error>Le répertoire existe déjà :</error> {path}",
+            'created_dir' => "<info>Créer le répertoire :</info> {path}",
+            'created_file' => "<info>Créer le fichier :</info> {path}",
+            'script_missing' => "<error>Script d'installation introuvable :</error> {class}\n<comment>Note</comment> Si vous venez de modifier composer.json, exécutez : <info>composer dumpautoload</info>",
+            'uninstall_confirm' => "<fg=yellow>Le script de désinstallation va s'exécuter et peut supprimer des données. Continuer ? [y/N] (Entrée = N)</>\n",
+            'running' => "<comment>Exécution</comment> {class}::{method}({args})",
+            'done' => "<info>Terminé</info>",
+            'failed' => "<error>Échec :</error> {error}",
+            'version_same' => "<comment>Note</comment> Les versions from/to sont identiques ({version}). Ignorez si aucune migration n'est nécessaire.",
+            'zip_saved' => "<info>Généré :</info> {path}",
+            'zip_delete_failed' => "<error>Impossible de supprimer le fichier zip existant :</error> {path}",
+            'zip_open_failed' => "<error>Impossible de créer le fichier zip :</error> {path}",
+            'description_name' => 'Nom du plugin App',
+            'description_yes' => 'Skip confirmation',
+            'description_from' => 'From version (default: current version)',
+            'description_to' => 'To version (default: current version)',
+            'source_not_exists' => "Le répertoire source n'existe pas : {path}",
+        ];
+
+        $de = [
+            'bad_name' => "<error>Ungültiger Plugin-Name: {name}</error>\n<comment>Regeln</comment> Muss ein Ordnername unter plugin/ sein, nur Buchstaben/Ziffern/Unterstrich/Bindestrich (darf / oder \\ nicht enthalten).",
+            'plugin_not_exists' => "<error>Plugin nicht gefunden:</error> {path}",
+            'create_title' => "<info>App-Plugin erstellen</info> <comment>{name}</comment>",
+            'install_title' => "<info>App-Plugin installieren</info> <comment>{name}</comment>",
+            'uninstall_title' => "<info>App-Plugin deinstallieren</info> <comment>{name}</comment>",
+            'update_title' => "<info>App-Plugin aktualisieren</info> <comment>{name}</comment>",
+            'zip_title' => "<info>App-Plugin als ZIP packen</info> <comment>{name}</comment>",
+            'dir_exists' => "<error>Verzeichnis existiert bereits:</error> {path}",
+            'created_dir' => "<info>Verzeichnis erstellen:</info> {path}",
+            'created_file' => "<info>Datei erstellen:</info> {path}",
+            'script_missing' => "<error>Installationsskript nicht gefunden:</error> {class}\n<comment>Hinweis</comment> Bei Änderung von composer.json bitte ausführen: <info>composer dumpautoload</info>",
+            'uninstall_confirm' => "<fg=yellow>Deinstallationsskript wird ausgeführt und kann Daten löschen. Fortfahren? [y/N] (Eingabe = N)</>\n",
+            'running' => "<comment>Ausführen</comment> {class}::{method}({args})",
+            'done' => "<info>Fertig</info>",
+            'failed' => "<error>Fehlgeschlagen:</error> {error}",
+            'version_same' => "<comment>Hinweis</comment> from/to-Versionen sind gleich ({version}). Kann ignoriert werden, wenn keine Migration nötig ist.",
+            'zip_saved' => "<info>Erstellt:</info> {path}",
+            'zip_delete_failed' => "<error>Vorhandene ZIP-Datei kann nicht gelöscht werden:</error> {path}",
+            'zip_open_failed' => "<error>ZIP-Datei kann nicht erstellt werden:</error> {path}",
+            'description_name' => 'App-Plugin-Name',
+            'description_yes' => 'Skip confirmation',
+            'description_from' => 'From version (default: current version)',
+            'description_to' => 'To version (default: current version)',
+            'source_not_exists' => "Quellverzeichnis existiert nicht: {path}",
+        ];
+
+        $es = [
+            'bad_name' => "<error>Nombre de plugin no válido: {name}</error>\n<comment>Reglas</comment> Debe ser un nombre de carpeta bajo plugin/, solo letras/números/guion bajo/guion (no debe contener / o \\).",
+            'plugin_not_exists' => "<error>Plugin no encontrado:</error> {path}",
+            'create_title' => "<info>Crear plugin App</info> <comment>{name}</comment>",
+            'install_title' => "<info>Instalar plugin App</info> <comment>{name}</comment>",
+            'uninstall_title' => "<info>Desinstalar plugin App</info> <comment>{name}</comment>",
+            'update_title' => "<info>Actualizar plugin App</info> <comment>{name}</comment>",
+            'zip_title' => "<info>Comprimir plugin App en ZIP</info> <comment>{name}</comment>",
+            'dir_exists' => "<error>El directorio ya existe:</error> {path}",
+            'created_dir' => "<info>Crear directorio:</info> {path}",
+            'created_file' => "<info>Crear archivo:</info> {path}",
+            'script_missing' => "<error>Script de instalación no encontrado:</error> {class}\n<comment>Nota</comment> Si acaba de modificar composer.json, ejecute: <info>composer dumpautoload</info>",
+            'uninstall_confirm' => "<fg=yellow>Se ejecutará el script de desinstalación y puede borrar datos. ¿Continuar? [y/N] (Enter = N)</>\n",
+            'running' => "<comment>Ejecutar</comment> {class}::{method}({args})",
+            'done' => "<info>Hecho</info>",
+            'failed' => "<error>Error:</error> {error}",
+            'version_same' => "<comment>Nota</comment> Las versiones from/to son iguales ({version}). Puede ignorarse si no hay migración.",
+            'zip_saved' => "<info>Generado:</info> {path}",
+            'zip_delete_failed' => "<error>No se puede eliminar el archivo zip existente:</error> {path}",
+            'zip_open_failed' => "<error>No se puede crear el archivo zip:</error> {path}",
+            'description_name' => 'Nombre del plugin App',
+            'description_yes' => 'Skip confirmation',
+            'description_from' => 'From version (default: current version)',
+            'description_to' => 'To version (default: current version)',
+            'source_not_exists' => "El directorio origen no existe: {path}",
+        ];
+
+        $ptBr = [
+            'bad_name' => "<error>Nome de plugin inválido: {name}</error>\n<comment>Regras</comment> Deve ser um nome de pasta em plugin/, apenas letras/números/underscore/hífen (não pode conter / o ou \\).",
+            'plugin_not_exists' => "<error>Plugin não encontrado:</error> {path}",
+            'create_title' => "<info>Criar plugin App</info> <comment>{name}</comment>",
+            'install_title' => "<info>Instalar plugin App</info> <comment>{name}</comment>",
+            'uninstall_title' => "<info>Desinstalar plugin App</info> <comment>{name}</comment>",
+            'update_title' => "<info>Atualizar plugin App</info> <comment>{name}</comment>",
+            'zip_title' => "<info>Empacotar plugin App em ZIP</info> <comment>{name}</comment>",
+            'dir_exists' => "<error>O diretório já existe:</error> {path}",
+            'created_dir' => "<info>Criar diretório:</info> {path}",
+            'created_file' => "<info>Criar arquivo:</info> {path}",
+            'script_missing' => "<error>Script de instalação não encontrado:</error> {class}\n<comment>Nota</comment> Se você acabou de alterar o composer.json, execute: <info>composer dumpautoload</info>",
+            'uninstall_confirm' => "<fg=yellow>O script de desinstalação será executado e pode excluir dados. Continuar? [y/N] (Enter = N)</>\n",
+            'running' => "<comment>Executar</comment> {class}::{method}({args})",
+            'done' => "<info>Concluído</info>",
+            'failed' => "<error>Falhou:</error> {error}",
+            'version_same' => "<comment>Nota</comment> As versões from/to são iguais ({version}). Pode ignorar se não houver migração.",
+            'zip_saved' => "<info>Gerado:</info> {path}",
+            'zip_delete_failed' => "<error>Não foi possível excluir o arquivo zip existente:</error> {path}",
+            'zip_open_failed' => "<error>Não foi possível criar o arquivo zip:</error> {path}",
+            'description_name' => 'Nome do plugin App',
+            'description_yes' => 'Skip confirmation',
+            'description_from' => 'From version (default: current version)',
+            'description_to' => 'To version (default: current version)',
+            'source_not_exists' => "O diretório de origem não existe: {path}",
+        ];
+
+        $ru = [
+            'bad_name' => "<error>Недопустимое имя плагина: {name}</error>\n<comment>Правила</comment> Должно быть именем папки в plugin/, только буквы/цифры/подчёркивание/дефис (не должно содержать / или \\).",
+            'plugin_not_exists' => "<error>Плагин не найден:</error> {path}",
+            'create_title' => "<info>Создать App-плагин</info> <comment>{name}</comment>",
+            'install_title' => "<info>Установить App-плагин</info> <comment>{name}</comment>",
+            'uninstall_title' => "<info>Удалить App-плагин</info> <comment>{name}</comment>",
+            'update_title' => "<info>Обновить App-плагин</info> <comment>{name}</comment>",
+            'zip_title' => "<info>Упаковать App-плагин в ZIP</info> <comment>{name}</comment>",
+            'dir_exists' => "<error>Каталог уже существует:</error> {path}",
+            'created_dir' => "<info>Создать каталог:</info> {path}",
+            'created_file' => "<info>Создать файл:</info> {path}",
+            'script_missing' => "<error>Скрипт установки не найден:</error> {class}\n<comment>Примечание</comment> Если вы только что изменили composer.json, выполните: <info>composer dumpautoload</info>",
+            'uninstall_confirm' => "<fg=yellow>Будет выполнен скрипт удаления, данные могут быть удалены. Продолжить? [y/N] (Enter = N)</>\n",
+            'running' => "<comment>Выполнить</comment> {class}::{method}({args})",
+            'done' => "<info>Готово</info>",
+            'failed' => "<error>Ошибка:</error> {error}",
+            'version_same' => "<comment>Примечание</comment> Версии from/to совпадают ({version}). Можно игнорировать, если миграция не нужна.",
+            'zip_saved' => "<info>Создано:</info> {path}",
+            'zip_delete_failed' => "<error>Не удалось удалить существующий zip-файл:</error> {path}",
+            'zip_open_failed' => "<error>Не удалось создать zip-файл:</error> {path}",
+            'description_name' => 'Имя App-плагина',
+            'description_yes' => 'Skip confirmation',
+            'description_from' => 'From version (default: current version)',
+            'description_to' => 'To version (default: current version)',
+            'source_not_exists' => "Исходный каталог не существует: {path}",
+        ];
+
+        $vi = [
+            'bad_name' => "<error>Tên plugin không hợp lệ: {name}</error>\n<comment>Quy tắc</comment> Phải là tên thư mục trong plugin/, chỉ cho phép chữ/số/gạch dưới/gạch ngang (không được chứa / hoặc \\).",
+            'plugin_not_exists' => "<error>Không tìm thấy plugin:</error> {path}",
+            'create_title' => "<info>Tạo plugin App</info> <comment>{name}</comment>",
+            'install_title' => "<info>Cài đặt plugin App</info> <comment>{name}</comment>",
+            'uninstall_title' => "<info>Gỡ cài đặt plugin App</info> <comment>{name}</comment>",
+            'update_title' => "<info>Cập nhật plugin App</info> <comment>{name}</comment>",
+            'zip_title' => "<info>Đóng gói plugin App thành ZIP</info> <comment>{name}</comment>",
+            'dir_exists' => "<error>Thư mục đã tồn tại:</error> {path}",
+            'created_dir' => "<info>Tạo thư mục:</info> {path}",
+            'created_file' => "<info>Tạo tệp:</info> {path}",
+            'script_missing' => "<error>Không tìm thấy script cài đặt:</error> {class}\n<comment>Lưu ý</comment> Nếu vừa sửa composer.json, hãy chạy: <info>composer dumpautoload</info>",
+            'uninstall_confirm' => "<fg=yellow>Script gỡ cài đặt sẽ chạy và có thể xóa dữ liệu. Tiếp tục? [y/N] (Enter = N)</>\n",
+            'running' => "<comment>Chạy</comment> {class}::{method}({args})",
+            'done' => "<info>Xong</info>",
+            'failed' => "<error>Thất bại:</error> {error}",
+            'version_same' => "<comment>Lưu ý</comment> Phiên bản from/to giống nhau ({version}). Có thể bỏ qua nếu không cần di chuyển.",
+            'zip_saved' => "<info>Đã tạo:</info> {path}",
+            'zip_delete_failed' => "<error>Không thể xóa tệp zip hiện có:</error> {path}",
+            'zip_open_failed' => "<error>Không thể tạo tệp zip:</error> {path}",
+            'description_name' => 'Tên plugin App',
+            'description_yes' => 'Skip confirmation',
+            'description_from' => 'From version (default: current version)',
+            'description_to' => 'To version (default: current version)',
+            'source_not_exists' => "Thư mục nguồn không tồn tại: {path}",
+        ];
+
+        $tr = [
+            'bad_name' => "<error>Geçersiz eklenti adı: {name}</error>\n<comment>Kurallar</comment> plugin/ altında bir klasör adı olmalı, yalnızca harf/rakam/alt çizgi/tire (/ veya \\ içermemeli).",
+            'plugin_not_exists' => "<error>Eklenti bulunamadı:</error> {path}",
+            'create_title' => "<info>App eklentisi oluştur</info> <comment>{name}</comment>",
+            'install_title' => "<info>App eklentisini yükle</info> <comment>{name}</comment>",
+            'uninstall_title' => "<info>App eklentisini kaldır</info> <comment>{name}</comment>",
+            'update_title' => "<info>App eklentisini güncelle</info> <comment>{name}</comment>",
+            'zip_title' => "<info>App eklentisini ZIP'le</info> <comment>{name}</comment>",
+            'dir_exists' => "<error>Dizin zaten mevcut:</error> {path}",
+            'created_dir' => "<info>Dizin oluştur:</info> {path}",
+            'created_file' => "<info>Dosya oluştur:</info> {path}",
+            'script_missing' => "<error>Kurulum betiği bulunamadı:</error> {class}\n<comment>Not</comment> composer.json'ı yeni değiştirdiyseniz çalıştırın: <info>composer dumpautoload</info>",
+            'uninstall_confirm' => "<fg=yellow>Kaldırma betiği çalışacak ve veriler silinebilir. Devam? [y/N] (Enter = N)</>\n",
+            'running' => "<comment>Çalıştır</comment> {class}::{method}({args})",
+            'done' => "<info>Tamamlandı</info>",
+            'failed' => "<error>Başarısız:</error> {error}",
+            'version_same' => "<comment>Not</comment> from/to sürümleri aynı ({version}). Taşıma gerekmiyorsa yok sayabilirsiniz.",
+            'zip_saved' => "<info>Oluşturuldu:</info> {path}",
+            'zip_delete_failed' => "<error>Mevcut zip dosyası silinemiyor:</error> {path}",
+            'zip_open_failed' => "<error>Zip dosyası oluşturulamıyor:</error> {path}",
+            'description_name' => 'App eklenti adı',
+            'description_yes' => 'Skip confirmation',
+            'description_from' => 'From version (default: current version)',
+            'description_to' => 'To version (default: current version)',
+            'source_not_exists' => "Kaynak dizin mevcut değil: {path}",
+        ];
+
+        $id = [
+            'bad_name' => "<error>Nama plugin tidak valid: {name}</error>\n<comment>Aturan</comment> Harus nama folder di bawah plugin/, hanya huruf/angka/underscore/tanda hubung (tidak boleh mengandung / atau \\).",
+            'plugin_not_exists' => "<error>Plugin tidak ditemukan:</error> {path}",
+            'create_title' => "<info>Buat plugin App</info> <comment>{name}</comment>",
+            'install_title' => "<info>Pasang plugin App</info> <comment>{name}</comment>",
+            'uninstall_title' => "<info>Copot plugin App</info> <comment>{name}</comment>",
+            'update_title' => "<info>Perbarui plugin App</info> <comment>{name}</comment>",
+            'zip_title' => "<info>Bungkus plugin App ke ZIP</info> <comment>{name}</comment>",
+            'dir_exists' => "<error>Direktori sudah ada:</error> {path}",
+            'created_dir' => "<info>Buat direktori:</info> {path}",
+            'created_file' => "<info>Buat file:</info> {path}",
+            'script_missing' => "<error>Skrip instalasi tidak ditemukan:</error> {class}\n<comment>Catatan</comment> Jika Anda baru mengubah composer.json, jalankan: <info>composer dumpautoload</info>",
+            'uninstall_confirm' => "<fg=yellow>Skrip copot akan dijalankan dan dapat menghapus data. Lanjutkan? [y/N] (Enter = N)</>\n",
+            'running' => "<comment>Jalankan</comment> {class}::{method}({args})",
+            'done' => "<info>Selesai</info>",
+            'failed' => "<error>Gagal:</error> {error}",
+            'version_same' => "<comment>Catatan</comment> Versi from/to sama ({version}). Dapat diabaikan jika tidak ada migrasi.",
+            'zip_saved' => "<info>Berhasil dibuat:</info> {path}",
+            'zip_delete_failed' => "<error>Tidak dapat menghapus file zip yang ada:</error> {path}",
+            'zip_open_failed' => "<error>Tidak dapat membuat file zip:</error> {path}",
+            'description_name' => 'Nama plugin App',
+            'description_yes' => 'Skip confirmation',
+            'description_from' => 'From version (default: current version)',
+            'description_to' => 'To version (default: current version)',
+            'source_not_exists' => "Direktori sumber tidak ada: {path}",
+        ];
+
+        $th = [
+            'bad_name' => "<error>ชื่อปลั๊กอินไม่ถูกต้อง: {name}</error>\n<comment>กฎ</comment> ต้องเป็นชื่อโฟลเดอร์ภายใต้ plugin/ เท่านั้น ใช้ได้แค่ตัวอักษร/ตัวเลข/ขีดล่าง/ขีด (ห้ามมี / หรือ \\)",
+            'plugin_not_exists' => "<error>ไม่พบปลั๊กอิน:</error> {path}",
+            'create_title' => "<info>สร้างปลั๊กอิน App</info> <comment>{name}</comment>",
+            'install_title' => "<info>ติดตั้งปลั๊กอิน App</info> <comment>{name}</comment>",
+            'uninstall_title' => "<info>ถอนการติดตั้งปลั๊กอิน App</info> <comment>{name}</comment>",
+            'update_title' => "<info>อัปเดตปลั๊กอิน App</info> <comment>{name}</comment>",
+            'zip_title' => "<info>บีบอัดปลั๊กอิน App เป็น ZIP</info> <comment>{name}</comment>",
+            'dir_exists' => "<error>มีไดเรกทอรีอยู่แล้ว:</error> {path}",
+            'created_dir' => "<info>สร้างไดเรกทอรี:</info> {path}",
+            'created_file' => "<info>สร้างไฟล์:</info> {path}",
+            'script_missing' => "<error>ไม่พบสคริปต์ติดตั้ง:</error> {class}\n<comment>หมายเหตุ</comment> หากเพิ่งแก้ composer.json กรุณารัน: <info>composer dumpautoload</info>",
+            'uninstall_confirm' => "<fg=yellow>จะรันสคริปต์ถอนการติดตั้งและอาจลบข้อมูล ดำเนินการต่อ? [y/N] (Enter = N)</>\n",
+            'running' => "<comment>รัน</comment> {class}::{method}({args})",
+            'done' => "<info>เสร็จสิ้น</info>",
+            'failed' => "<error>ล้มเหลว:</error> {error}",
+            'version_same' => "<comment>หมายเหตุ</comment> เวอร์ชัน from/to เหมือนกัน ({version}) ข้ามได้หากไม่มีการย้ายข้อมูล",
+            'zip_saved' => "<info>สร้างแล้ว:</info> {path}",
+            'zip_delete_failed' => "<error>ลบไฟล์ zip เดิมไม่ได้:</error> {path}",
+            'zip_open_failed' => "<error>สร้างไฟล์ zip ไม่ได้:</error> {path}",
+            'description_name' => 'ชื่อปลั๊กอิน App',
+            'description_yes' => 'Skip confirmation',
+            'description_from' => 'From version (default: current version)',
+            'description_to' => 'To version (default: current version)',
+            'source_not_exists' => "ไม่มีไดเรกทอรีต้นทาง：{path}",
+        ];
+
+        return [
+            'zh_CN' => $zhCn,
+            'zh_TW' => $zhTw,
+            'en' => $en,
+            'ja' => $ja,
+            'ko' => $ko,
+            'fr' => $fr,
+            'de' => $de,
+            'es' => $es,
+            'pt_BR' => $ptBr,
+            'ru' => $ru,
+            'vi' => $vi,
+            'tr' => $tr,
+            'id' => $id,
+            'th' => $th,
+        ];
+    }
+
+    public static function getMakeCrudMessages(): array
+    {
+        $zh = [
+            'invalid_plugin' => '<error>插件名无效：{plugin}。`--plugin/-p` 只能是 plugin/ 目录下的目录名，不能包含 / 或 \\。</error>',
+            'invalid_path' => '<error>路径无效：{path}。路径必须是相对路径（相对于项目根目录），不能是绝对路径。</error>',
+            'table_required' => '<error>必须提供数据表名（--table）或在交互模式下选择数据表。</error>',
+            'validation_not_enabled' => '<error>webman/validation 未启用或未安装，无法生成验证器。</error>',
+            'override_prompt' => "<question>文件已存在：{path}</question>\n<question>是否覆盖？[Y/n]（回车=Y）</question>\n",
+            'crud_generated' => '<info>已生成 {count} 个文件：</info>',
+            'nothing_generated' => '<comment>[Warning]</comment> 没有生成任何文件。',
+            'created' => '{path}',
+            'validator_failed' => '<comment>[Warning]</comment> 验证器生成失败：{reason}，已生成空验证器。',
+            'db_unavailable' => '<comment>[Warning]</comment> 数据库不可用或无权限读取表信息，将继续使用交互选择或生成空模型。',
+            'table_list_failed' => '<comment>[Warning]</comment> 无法获取数据表列表，将继续使用交互选择或生成空模型。',
+            'no_match' => '<comment>[Info]</comment> 未找到与模型名匹配的表（按约定推断失败）。',
+            'prompt_help' => '<comment>[Info]</comment> 输入序号选择；输入表名；回车=更多；输入 0=空模型；输入 /关键字 过滤（输入 / 清除过滤）。',
+            'no_more' => '<comment>[Info]</comment> 没有更多表可显示。',
+            'end_of_list' => '<comment>[Info]</comment> 已到列表末尾。可输入表名、序号、0（空模型）或 /关键字。',
+            'filter_cleared' => '<comment>[Info]</comment> 已清除过滤条件。',
+            'filter_applied' => '<comment>[Info]</comment> 已应用过滤：`{keyword}`。',
+            'filter_no_match' => '<comment>[Warning]</comment> 没有表匹配过滤 `{keyword}`。输入 / 清除过滤或换个关键字。',
+            'selection_out_of_range' => '<comment>[Warning]</comment> 序号超出范围。可回车查看更多或输入有效序号。',
+            'table_not_in_list' => '<comment>[Warning]</comment> 表 `{table}` 不在当前数据库列表中，将继续尝试生成（注释可能为空）。',
+            'showing_range' => '<comment>[Info]</comment> 当前已显示 {start}-{end}（累计 {shown}）。',
+            'connection_not_found' => '<error>数据库连接不存在：{connection}</error>',
+            'connection_not_found_plugin' => '<error>插件 {plugin} 未配置数据库连接：{connection}</error>',
+            'connection_plugin_mismatch' => '<error>数据库连接与插件不匹配：当前插件={plugin}，连接={connection}</error>',
+            'plugin_default_connection_invalid' => '<error>插件 {plugin} 的默认数据库连接无效：{connection}</error>',
+            'enter_name_prompt' => '输入{label} (回车默认 {default}): ',
+            'enter_path_prompt' => '输入{label}路径 (回车默认 {default}): ',
+            'invalid_name' => '<error>名称无效：{type}</error>',
+            'plugin_path_mismatch' => '<error>插件与路径不一致：--plugin={plugin}，但路径推断插件={path_plugin}。</error>',
+            'plugin_path_mismatch_confirm' => "<question>插件与路径不一致：--plugin={plugin}，但路径推断插件={path_plugin}</question>\n<question>是否继续使用 --plugin？[Y/n]（回车=Y）</question>\n",
+            'plugin_reinput_prompt' => '请重新输入插件名 [{default}]: ',
+            'reference_only' => '提示：生成代码仅供参考，请根据实际业务完善。',
+            'opt_table' => '表名，例如：users',
+            'opt_model' => '模型名，例如：User, admin/User',
+            'opt_model_path' => '模型路径 (相对路径)，例如：plugin/admin/app/model',
+            'opt_controller' => '控制器名，例如：UserController, admin/UserController',
+            'opt_controller_path' => '控制器路径 (相对路径)，例如：plugin/admin/app/controller',
+            'opt_validator' => '验证器名，例如：UserValidator, admin/UserValidator',
+            'opt_validator_path' => '验证器路径 (相对路径)，例如：plugin/admin/app/validation',
+            'opt_plugin' => '插件名，例如：admin',
+            'opt_orm' => '选择 ORM：laravel|thinkorm',
+            'opt_database' => '选择数据库连接',
+            'opt_force' => '强制覆盖已存在文件',
+            'opt_no_validator' => '不生成验证器',
+            'opt_no_interaction' => '禁用交互模式',
+        ];
+
+        $en = [
+            'invalid_plugin' => '<error>Invalid plugin name: {plugin}. `--plugin/-p` must be a directory name under plugin/ and must not contain / or \\.</error>',
+            'invalid_path' => '<error>Invalid path: {path}. Path must be relative (to project root), not absolute.</error>',
+            'table_required' => '<error>Table is required. Provide --table or select it interactively.</error>',
+            'validation_not_enabled' => '<error>webman/validation is not enabled or installed; validator generation skipped.</error>',
+            'override_prompt' => "<question>File already exists: {path}</question>\n<question>Override? [Y/n] (Enter = Y)</question>\n",
+            'crud_generated' => '<info>Generated {count} files:</info>',
+            'nothing_generated' => '<comment>[Warning]</comment> Nothing generated.',
+            'created' => '{path}',
+            'validator_failed' => '<comment>[Warning]</comment> Validator generation failed: {reason}. Generated an empty validator.',
+            'db_unavailable' => '<comment>[Warning]</comment> Database is not accessible or permission denied. Will continue with interactive selection or empty model.',
+            'table_list_failed' => '<comment>[Warning]</comment> Unable to fetch table list. Will continue with interactive selection or empty model.',
+            'no_match' => '<comment>[Info]</comment> No table matched the model name by convention.',
+            'prompt_help' => '<comment>[Info]</comment> Enter a number to select, type a table name, press Enter for more, enter 0 for an empty model, or use /keyword to filter (use / to clear).',
+            'no_more' => '<comment>[Info]</comment> No more tables to show.',
+            'end_of_list' => '<comment>[Info]</comment> End of list. Type a table name, a number, 0 for empty, or /keyword.',
+            'filter_cleared' => '<comment>[Info]</comment> Filter cleared.',
+            'filter_applied' => '<comment>[Info]</comment> Filter applied: `{keyword}`.',
+            'filter_no_match' => '<comment>[Warning]</comment> No tables matched filter `{keyword}`. Use / to clear or try another keyword.',
+            'selection_out_of_range' => '<comment>[Warning]</comment> Selection out of range. Press Enter for more, or choose a valid number.',
+            'table_not_in_list' => '<comment>[Warning]</comment> Table `{table}` is not in the current database list. Will try to generate anyway (schema annotations may be empty).',
+            'showing_range' => '<comment>[Info]</comment> Showing {start}-{end} (total shown: {shown}).',
+            'connection_not_found' => '<error>Database connection not found: {connection}</error>',
+            'connection_not_found_plugin' => '<error>Plugin {plugin} has no database connection configured: {connection}</error>',
+            'connection_plugin_mismatch' => '<error>Database connection does not match plugin: plugin={plugin}, connection={connection}</error>',
+            'plugin_default_connection_invalid' => '<error>Invalid default database connection for plugin {plugin}: {connection}</error>',
+            'enter_name_prompt' => 'Enter {label} (Enter for default: {default}): ',
+            'enter_path_prompt' => 'Enter {label} path (Enter for default: {default}): ',
+            'invalid_name' => '<error>Invalid {type} name.</error>',
+            'plugin_path_mismatch' => '<error>Plugin and path mismatch: --plugin={plugin}, but inferred plugin from path={path_plugin}.</error>',
+            'plugin_path_mismatch_confirm' => "<question>Plugin and path mismatch: --plugin={plugin}, inferred from path={path_plugin}</question>\n<question>Continue using --plugin? [Y/n] (Enter = Y)</question>\n",
+            'plugin_reinput_prompt' => 'Please re-enter plugin name [{default}]: ',
+            'reference_only' => 'Note: Generated code is for reference only; please complete it based on your actual business logic.',
+            'opt_table' => 'Table name. e.g. users',
+            'opt_model' => 'Model name. e.g. User, admin/User',
+            'opt_model_path' => 'Model path (relative to base path). e.g. plugin/admin/app/model',
+            'opt_controller' => 'Controller name. e.g. UserController, admin/UserController',
+            'opt_controller_path' => 'Controller path (relative to base path). e.g. plugin/admin/app/controller',
+            'opt_validator' => 'Validator name. e.g. UserValidator, admin/UserValidator',
+            'opt_validator_path' => 'Validator path (relative to base path). e.g. plugin/admin/app/validation',
+            'opt_plugin' => 'Plugin name under plugin/. e.g. admin',
+            'opt_orm' => 'Select orm: laravel|thinkorm',
+            'opt_database' => 'Select database connection.',
+            'opt_force' => 'Override existing file without confirmation.',
+            'opt_no_validator' => 'Do not generate validator.',
+            'opt_no_interaction' => 'Disable interactive mode.',
+        ];
+
+        $ja = [
+            'invalid_plugin' => '<error>無効なプラグイン名：{plugin}。`--plugin/-p` は plugin/ 以下のディレクトリ名である必要があり、/ や \\ を含めることはできません。</error>',
+            'invalid_path' => '<error>無効なパス：{path}。パスは（プロジェクトルートからの）相対パスである必要があり、絶対パスは使用できません。</error>',
+            'table_required' => '<error>テーブル名は必須です（--table）または対話モードで選択してください。</error>',
+            'validation_not_enabled' => '<error>webman/validation が有効になっていないかインストールされていません。バリデータの生成をスキップします。</error>',
+            'override_prompt' => "<question>ファイルは既に存在します：{path}</question>\n<question>上書きしますか？[Y/n]（Enter=Y）</question>\n",
+            'crud_generated' => '<info>{count} 個のファイルを生成しました：</info>',
+            'nothing_generated' => '<comment>[Warning]</comment> ファイルは生成されませんでした。</',
+            'created' => '{path}',
+            'validator_failed' => '<comment>[Warning]</comment> バリデータの生成に失敗しました：{reason}。空のバリデータを生成しました。</',
+            'db_unavailable' => '<comment>[Warning]</comment> データベースにアクセスできないか、テーブル情報の読み取り権限がありません。対話選択または空のモデルの生成を続行します。</',
+            'table_list_failed' => '<comment>[Warning]</comment> テーブルリストを取得できません。対話選択または空のモデルの生成を続行します。</',
+            'no_match' => '<comment>[Info]</comment> モデル名と一致するテーブルが見つかりませんでした（規約による推論）。</',
+            'prompt_help' => '<comment>[Info]</comment> 番号を入力して選択、テーブル名を入力、Enterで詳細表示、0で空のモデル、/キーワード でフィルタリング（/ でフィルタ解除）。</',
+            'no_more' => '<comment>[Info]</comment> これ以上表示するテーブルはありません。</',
+            'end_of_list' => '<comment>[Info]</comment> リストの最後です。テーブル名、番号、0（空モデル）、または /キーワード を入力してください。</',
+            'filter_cleared' => '<comment>[Info]</comment> フィルタ条件をクリアしました。</',
+            'filter_applied' => '<comment>[Info]</comment> フィルタ適用：`{keyword}`。</',
+            'filter_no_match' => '<comment>[Warning]</comment> フィルタ `{keyword}` に一致するテーブルはありません。/ でクリアするか、別のキーワードを試してください。</',
+            'selection_out_of_range' => '<comment>[Warning]</comment> 番号が範囲外です。Enterで詳細を表示するか、有効な番号を選択してください。</',
+            'table_not_in_list' => '<comment>[Warning]</comment> テーブル `{table}` は現在のデータベースリストにありません。生成を試みます（注釈が空になる可能性があります）。</',
+            'showing_range' => '<comment>[Info]</comment> 現在 {start}-{end} を表示中（累計 {shown}）。</',
+            'connection_not_found' => '<error>データベース接続が存在しません：{connection}</error>',
+            'connection_not_found_plugin' => '<error>プラグイン {plugin} にデータベース接続が設定されていません：{connection}</error>',
+            'connection_plugin_mismatch' => '<error>データベース接続がプラグインと一致しません：現在のプラグイン={plugin}、接続={connection}</error>',
+            'plugin_default_connection_invalid' => '<error>プラグイン {plugin} のデフォルトデータベース接続が無効です：{connection}</error>',
+            'enter_name_prompt' => '{label}を入力 (Enterでデフォルト {default}): ',
+            'enter_path_prompt' => '{label}のパスを入力 (Enterでデフォルト {default}): ',
+            'invalid_name' => '<error>無効な名前：{type}</error>',
+            'plugin_path_mismatch' => '<error>プラグインとパスが一致しません：--plugin={plugin}、しかしパスから推論されたプラグイン={path_plugin}。</error>',
+            'plugin_path_mismatch_confirm' => "<question>プラグインとパスが一致しません：--plugin={plugin}、しかしパスから推論されたプラグイン={path_plugin}</question>\n<question>--plugin を使用し続けますか？[Y/n]（Enter=Y）</question>\n",
+            'plugin_reinput_prompt' => 'プラグイン名を再入力してください [{default}]: ',
+            'reference_only' => '<comment>ヒント：生成されたコードは参照用です。実際のビジネスに合わせて修正してください。</comment>',
+        ];
+
+        return [
+            'zh_CN' => $zh,
+            'zh_TW' => $zh,
+            'en' => $en,
+            'ja' => $ja,
+            // Fallback for others to English
+            'ko' => $en, 'fr' => $en, 'de' => $en, 'es' => $en,
+            'pt_BR' => $en, 'ru' => $en, 'vi' => $en, 'tr' => $en,
+            'id' => $en, 'th' => $en,
+        ];
+    }
+
+    public static function getTypeLabels(): array
+    {
+        $enTypeLabels = ['model' => 'Model', 'controller' => 'Controller', 'validation' => 'Validator'];
+        return [
+            'zh_CN' => ['model' => '模型', 'controller' => '控制器', 'validation' => '验证器'],
+            'zh_TW' => ['model' => '模型', 'controller' => '控制器', 'validation' => '驗證器'],
+            'en' => $enTypeLabels,
+            'ja' => ['model' => 'モデル', 'controller' => 'コントローラ', 'validation' => 'バリデータ'],
+            'ko' => ['model' => '모델', 'controller' => '컨트롤러', 'validation' => '검증기'],
+            'fr' => ['model' => 'Modèle', 'controller' => 'Contrôleur', 'validation' => 'Validateur'],
+            'de' => ['model' => 'Modell', 'controller' => 'Controller', 'validation' => 'Validator'],
+            // ... (fill others with enTypeLabels or specific translations)
+            'es' => ['model' => 'Modelo', 'controller' => 'Controlador', 'validation' => 'Validador'],
+            'pt_BR' => ['model' => 'Modelo', 'controller' => 'Controlador', 'validation' => 'Validador'],
+            'ru' => ['model' => 'Модель', 'controller' => 'Контроллер', 'validation' => 'Валидатор'],
+            'vi' => ['model' => 'Model', 'controller' => 'Controller', 'validation' => 'Validator'],
+            'tr' => ['model' => 'Model', 'controller' => 'Controller', 'validation' => 'Doğrulayıcı'],
+            'id' => ['model' => 'Model', 'controller' => 'Controller', 'validation' => 'Validator'],
+            'th' => ['model' => 'โมเดล', 'controller' => 'คอนโทรลเลอร์', 'validation' => 'ตัวตรวจสอบ'],
+        ];
+    }
+
+    public static function getValidatorPrompt(): array
+    {
+        return [
+            'zh_CN' => '是否添加验证器？[Y/n] (回车=Y): ', 'zh_TW' => '是否加入驗證器？[Y/n] (Enter=Y): ',
+            'en' => 'Add validator? [Y/n] (Enter = Y): ', 'ja' => 'バリデータを追加しますか？[Y/n] (Enter=Y): ',
+            'ko' => '검증기를 추가할까요? [Y/n] (Enter=Y): ', 'fr' => 'Ajouter un validateur ? [Y/n] (Entrée = Y) : ',
+            'de' => 'Validator hinzufügen? [Y/n] (Eingabe = Y): ', 'es' => '¿Añadir validador? [Y/n] (Enter = Y): ',
+            'pt_BR' => 'Adicionar validador? [Y/n] (Enter = Y): ', 'ru' => 'Добавить валидатор? [Y/n] (Enter = Y): ',
+            'vi' => 'Thêm trình xác thực? [Y/n] (Enter = Y): ', 'tr' => 'Doğrulayıcı eklenesin mi? [Y/n] (Enter = Y): ',
+            'id' => 'Tambahkan validator? [Y/n] (Enter = Y): ', 'th' => 'เพิ่มตัวตรวจสอบ？[Y/n] (Enter=Y): ',
+        ];
+    }
+
+    public static function getMakeCrudHelpText(): array
+    {
+        $en = "Generate CRUD (Model, Controller, Validator).\n\nExamples:\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction";
+        return [
+            'zh_CN' => "生成 CRUD（模型、控制器、验证器）。\n\n示例：\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
+            'zh_TW' => "建立 CRUD（模型、控制器、驗證器）。\n\n範例：\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
+            'en' => $en,
+            'ja' => "CRUD（モデル、コントローラ、バリデータ）を生成。\n\n例：\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
+            'ko' => "CRUD(모델, 컨트롤러, 검증기) 생성.\n\n예:\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
+            'fr' => "Générer CRUD (Modèle, Contrôleur, Validateur).\n\nExemples :\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
+            'de' => "CRUD erzeugen (Modell, Controller, Validator).\n\nBeispiele:\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
+            'es' => "Generar CRUD (Modelo, Controlador, Validador).\n\nEjemplos:\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
+            'pt_BR' => "Gerar CRUD (Modelo, Controlador, Validador).\n\nExemplos:\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
+            'ru' => "Создать CRUD (Модель, Контроллер, Валидатор).\n\nПримеры:\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
+            'vi' => "Tạo CRUD (Model, Controller, Validator).\n\nVí dụ:\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
+            'tr' => "CRUD oluştur (Model, Controller, Validator).\n\nÖrnekler:\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
+            'id' => "Buat CRUD (Model, Controller, Validator).\n\nContoh:\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
+            'th' => "สร้าง CRUD (โมเดล, คอนโทรลเลอร์, ตัวตรวจสอบ)\n\nตัวอย่าง:\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
+        ];
+    }
+
+    public static function getMakeModelMessages(): array
+    {
+        $zh = [
+            'make_model' => "<info>创建模型</info> <comment>{name}</comment>",
+            'created' => '<info>已创建：</info> {path}',
+            'override_prompt' => "<question>文件已存在：{path}</question>\n<question>是否覆盖？[Y/n]（回车=Y）</question>\n",
+            'invalid_plugin' => '<error>插件名无效：{plugin}。`--plugin/-p` 只能是 plugin/ 目录下的目录名，不能包含 / 或 \\。</error>',
+            'plugin_path_conflict' => "<error>`--plugin/-p` 与 `--path/-P` 同时指定且不一致。\n期望路径：{expected}\n实际路径：{actual}\n请二选一或保持一致。</error>",
+            'invalid_path' => '<error>路径无效：{path}。`--path/-P` 必须是相对路径（相对于项目根目录），不能是绝对路径。</error>',
+            'connection_not_found' => '<error>数据库连接不存在：{connection}</error>',
+            'connection_not_found_plugin' => '<error>插件 {plugin} 未配置数据库连接：{connection}</error>',
+            'connection_plugin_mismatch' => '<error>数据库连接与插件不匹配：当前插件={plugin}，连接={connection}</error>',
+            'plugin_default_connection_invalid' => '<error>插件 {plugin} 的默认数据库连接无效：{connection}</error>',
+            'db_unavailable' => '<comment>[Warning]</comment> 数据库不可用或无权限读取表信息，将生成空模型（可使用 -t/--table 指定）。',
+            'table_list_failed' => '<comment>[Warning]</comment> 无法获取数据表列表，将生成空模型（可使用 -t/--table 指定）。',
+            'no_match' => '<comment>[Info]</comment> 未找到与模型名匹配的表（按约定推断失败）。',
+            'prompt_help' => '<comment>[Info]</comment> 输入序号选择；输入表名；回车=更多；输入 0=空模型；输入 /关键字 过滤（输入 / 清除过滤）。',
+            'no_more' => '<comment>[Info]</comment> 没有更多表可显示。',
+            'end_of_list' => '<comment>[Info]</comment> 已到列表末尾。可输入表名、序号、0（空模型）或 /关键字。',
+            'filter_cleared' => '<comment>[Info]</comment> 已清除过滤条件。',
+            'filter_applied' => '<comment>[Info]</comment> 已应用过滤：`{keyword}`。',
+            'filter_no_match' => '<comment>[Warning]</comment> 没有表匹配过滤 `{keyword}`。输入 / 清除过滤或换个关键字。',
+            'selection_out_of_range' => '<comment>[Warning]</comment> 序号超出范围。可回车查看更多或输入有效序号。',
+            'table_not_in_list' => '<comment>[Warning]</comment> 表 `{table}` 不在当前数据库列表中，将继续尝试生成（注释可能为空）。',
+            'table_not_found_schema' => "<comment>[Warning]</comment> 表 `{table}` 未找到，将生成无注释的模型。",
+            'table_not_found_empty' => '<comment>[Warning]</comment> 未找到数据表，将生成空模型（可使用 -t/--table 指定，交互终端下也可选择）。',
+            'showing_range' => '<comment>[Info]</comment> 当前已显示 {start}-{end}（累计 {shown}）。',
+        ];
+
+        $en = [
+            'make_model' => "<info>Make model</info> <comment>{name}</comment>",
+            'created' => '<info>Created:</info> {path}',
+            'override_prompt' => "<question>File already exists: {path}</question>\n<question>Override? [Y/n] (Enter = Y)</question>\n",
+            'invalid_plugin' => '<error>Invalid plugin name: {plugin}. `--plugin/-p` must be a directory name under plugin/ and must not contain / or \\.</error>',
+            'plugin_path_conflict' => "<error>`--plugin/-p` and `--path/-P` are both provided but inconsistent.\nExpected: {expected}\nActual: {actual}\nPlease provide only one, or make them identical.</error>",
+            'invalid_path' => '<error>Invalid path: {path}. `--path/-P` must be a relative path (to project root) and must not be an absolute path.</error>',
+            'connection_not_found' => '<error>Database connection not found: {connection}</error>',
+            'connection_not_found_plugin' => '<error>Plugin {plugin} has no database connection configured: {connection}</error>',
+            'connection_plugin_mismatch' => '<error>Database connection does not match plugin: plugin={plugin}, connection={connection}</error>',
+            'plugin_default_connection_invalid' => '<error>Invalid default database connection for plugin {plugin}: {connection}</error>',
+            'db_unavailable' => '<comment>[Warning]</comment> Database is not accessible or permission denied. Generating an empty model (use -t/--table to specify).',
+            'table_list_failed' => '<comment>[Warning]</comment> Unable to fetch table list. Generating an empty model (use -t/--table to specify).',
+            'no_match' => '<comment>[Info]</comment> No table matched the model name by convention.',
+            'prompt_help' => '<comment>[Info]</comment> Enter a number to select, type a table name, press Enter for more, enter 0 for an empty model, or use /keyword to filter (use / to clear).',
+            'no_more' => '<comment>[Info]</comment> No more tables to show.',
+            'end_of_list' => '<comment>[Info]</comment> End of list. Type a table name, a number, 0 for empty, or /keyword.',
+            'filter_cleared' => '<comment>[Info]</comment> Filter cleared.',
+            'filter_applied' => '<comment>[Info]</comment> Filter applied: `{keyword}`.',
+            'filter_no_match' => '<comment>[Warning]</comment> No tables matched filter `{keyword}`. Use / to clear or try another keyword.',
+            'selection_out_of_range' => '<comment>[Warning]</comment> Selection out of range. Press Enter for more, or choose a valid number.',
+            'table_not_in_list' => '<comment>[Warning]</comment> Table `{table}` is not in the current database list. Will try to generate anyway (schema annotations may be empty).',
+            'table_not_found_schema' => "<comment>[Warning]</comment> Table `{table}` not found, generating model without schema annotations.",
+            'table_not_found_empty' => '<comment>[Warning]</comment> Table not found. Generating an empty model (use -t/--table to specify, or choose interactively in a supported terminal).',
+            'showing_range' => '<comment>[Info]</comment> Showing {start}-{end} (total shown: {shown}).',
+        ];
+
+        return [
+            'zh_CN' => $zh, 'zh_TW' => $zh, 'en' => $en, 'ja' => $en, 'ko' => $en, 'fr' => $en,
+            'de' => $en, 'es' => $en, 'pt_BR' => $en, 'ru' => $en, 'vi' => $en, 'tr' => $en,
+            'id' => $en, 'th' => $en,
+        ];
+    }
+
+    public static function getMakeModelHelpText(): array
+    {
+        $zh = <<<'EOF'
+生成模型文件，并在表存在时自动读取表结构生成 @property 注释。
+
+推荐用法：
+  php webman make:model User
+  php webman make:model User -p admin
+  php webman make:model User -P plugin/admin/app/model
+  php webman make:model User -t wa_users -o laravel
+  php webman make:model User -t wa_users -o thinkorm
+  php webman make:model User -f
+
+交互式选表（仅支持交互终端且推断失败时出现）：
+  - 回车：显示更多表
+  - 输入数字：选择已展示表
+  - 输入表名：直接使用
+  - 输入 0：生成空模型
+  - 输入 /关键字：过滤（输入 / 清除过滤）
+EOF;
+        $en = <<<'EOF'
+Generate a model file and (when the table exists) generate @property annotations from the table schema.
+
+Recommended:
+  php webman make:model User
+  php webman make:model User -p admin
+  php webman make:model User -P plugin/admin/app/model
+  php webman make:model User -t wa_users -o laravel
+  php webman make:model User -t wa_users -o thinkorm
+  php webman make:model User -f
+
+Interactive table picker (only in interactive terminals when guessing fails):
+  - Enter: show more tables
+  - Number: select from shown list
+  - Table name: use directly
+  - 0: generate an empty model
+  - /keyword: filter (use / to clear)
+EOF;
+        return [
+            'zh_CN' => $zh, 'zh_TW' => $zh, 'en' => $en,
+            'ja' => "モデルファイルを生成し、テーブルが存在する場合はスキーマから @property を生成。\n\n推奨：\n  php webman make:model User\n  php webman make:model User -p admin\n  php webman make:model User -P plugin/admin/app/model\n  php webman make:model User -t wa_users -o laravel\n  php webman make:model User -t wa_users -o thinkorm\n  php webman make:model User -f\n\n対話式テーブル選択（対応端末で推定失敗時）：\n  - Enter: さらに表示\n  - 数字: 一覧から選択\n  - テーブル名: そのまま使用\n  - 0: 空モデルを生成\n  - /キーワード: 絞り込み（/ で解除）",
+            'ko' => "모델 파일 생성. 테이블이 있으면 스키마에서 @property 주석 생성.\n\n권장:\n  php webman make:model User\n  php webman make:model User -p admin\n  php webman make:model User -P plugin/admin/app/model\n  php webman make:model User -t wa_users -o laravel\n  php webman make:model User -t wa_users -o thinkorm\n  php webman make:model User -f\n\n대화형 테이블 선택(지원 터미널에서 추측 실패 시):\n  - Enter: 더 보기\n  - 숫자: 목록에서 선택\n  - 테이블명: 직접 사용\n  - 0: 빈 모델 생성\n  - /키워드: 필터 (/ 로 해제)",
+            'fr' => "Générer un fichier modèle et (si la table existe) des annotations @property depuis le schéma.\n\nRecommandé :\n  php webman make:model User\n  php webman make:model User -p admin\n  php webman make:model User -P plugin/admin/app/model\n  php webman make:model User -t wa_users -o laravel\n  php webman make:model User -t wa_users -o thinkorm\n  php webman make:model User -f\n\nSélection de table interactive (terminal interactif, si la détection échoue) :\n  - Entrée : afficher plus\n  - Numéro : choisir dans la liste\n  - Nom de table : utiliser tel quel\n  - 0 : modèle vide\n  - /mot-clé : filtrer (/ pour effacer)",
+            'de' => "Modelldatei erzeugen und (bei existierender Tabelle) @property aus dem Schema.\n\nEmpfohlen:\n  php webman make:model User\n  php webman make:model User -p admin\n  php webman make:model User -P plugin/admin/app/model\n  php webman make:model User -t wa_users -o laravel\n  php webman make:model User -t wa_users -o thinkorm\n  php webman make:model User -f\n\nInteraktive Tabellenauswahl (nur in interaktiven Terminals bei Fehlschlag):\n  - Enter: mehr anzeigen\n  - Zahl: aus Liste wählen\n  - Tabellenname: direkt verwenden\n  - 0: leeres Modell\n  - /keyword: filtern (/ zum Löschen)",
+            'es' => "Generar archivo de modelo y (si la tabla existe) anotaciones @property desde el esquema.\n\nRecomendado:\n  php webman make:model User\n  php webman make:model User -p admin\n  php webman make:model User -P plugin/admin/app/model\n  php webman make:model User -t wa_users -o laravel\n  php webman make:model User -t wa_users -o thinkorm\n  php webman make:model User -f\n\nSelector de tabla interactivo (solo en terminal interactivo si falla la detección):\n  - Enter: mostrar más\n  - Número: elegir de la lista\n  - Nombre de tabla: usar directamente\n  - 0: modelo vacío\n  - /keyword: filtrar (/ para limpiar)",
+            'pt_BR' => "Gerar arquivo de modelo e (quando a tabela existe) anotações @property do esquema.\n\nRecomendado:\n  php webman make:model User\n  php webman make:model User -p admin\n  php webman make:model User -P plugin/admin/app/model\n  php webman make:model User -t wa_users -o laravel\n  php webman make:model User -t wa_users -o thinkorm\n  php webman make:model User -f\n\nSeleção interativa de tabela (apenas em terminal interativo quando falha):\n  - Enter: mostrar mais\n  - Número: escolher da lista\n  - Nome da tabela: usar diretamente\n  - 0: modelo vazio\n  - /keyword: filtrar (use / para limpar)",
+            'ru' => "Создать файл модели и (при существующей таблице) аннотации @property из схемы.\n\nРекомендуется:\n  php webman make:model User\n  php webman make:model User -p admin\n  php webman make:model User -P plugin/admin/app/model\n  php webman make:model User -t wa_users -o laravel\n  php webman make:model User -t wa_users -o thinkorm\n  php webman make:model User -f\n\nИнтерактивный выбор таблицы (только в интерактивном терминале при сбое):\n  - Enter: показать ещё\n  - Номер: выбрать из списка\n  - Имя таблицы: использовать как есть\n  - 0: пустая модель\n  - /ключ: фильтр (/ для сброса)",
+            'vi' => "Tạo file model và (khi bảng tồn tại) chú thích @property từ schema.\n\nKhuyến nghị:\n  php webman make:model User\n  php webman make:model User -p admin\n  php webman make:model User -P plugin/admin/app/model\n  php webman make:model User -t wa_users -o laravel\n  php webman make:model User -t wa_users -o thinkorm\n  php webman make:model User -f\n\nChọn bảng tương tác (chỉ khi đoán thất bại trong terminal tương tác):\n  - Enter: xem thêm\n  - Số: chọn từ danh sách\n  - Tên bảng: dùng trực tiếp\n  - 0: model rỗng\n  - /từ khóa: lọc (dùng / để xóa)",
+            'tr' => "Model dosyası oluştur ve (tablo varsa) şemadan @property ekle.\n\nÖnerilen:\n  php webman make:model User\n  php webman make:model User -p admin\n  php webman make:model User -P plugin/admin/app/model\n  php webman make:model User -t wa_users -o laravel\n  php webman make:model User -t wa_users -o thinkorm\n  php webman make:model User -f\n\nİnteraktif tablo seçici (yalnızca tahmin başarısız olduğunda):\n  - Enter: daha fazla göster\n  - Numara: listeden seç\n  - Tablo adı: doğrudan kullan\n  - 0: boş model\n  - /anahtar: filtre (/ ile temizle)",
+            'id' => "Buat file model dan (jika tabel ada) anotasi @property dari skema.\n\nDirekomendasikan:\n  php webman make:model User\n  php webman make:model User -p admin\n  php webman make:model User -P plugin/admin/app/model\n  php webman make:model User -t wa_users -o laravel\n  php webman make:model User -t wa_users -o thinkorm\n  php webman make:model User -f\n\nPemilih tabel interaktif (hanya di terminal interaktif saat tebakan gagal):\n  - Enter: tampilkan lebih banyak\n  - Angka: pilih dari daftar\n  - Nama tabel: gunakan langsung\n  - 0: model kosong\n  - /kata kunci: filter (gunakan / untuk hapus)",
+            'th' => "สร้างไฟล์โมเดล และ (เมื่อมีตาราง) สร้าง @property จาก schema\n\nแนะนำ:\n  php webman make:model User\n  php webman make:model User -p admin\n  php webman make:model User -P plugin/admin/app/model\n  php webman make:model User -t wa_users -o laravel\n  php webman make:model User -t wa_users -o thinkorm\n  php webman make:model User -f\n\nตัวเลือกตารางแบบโต้ตอบ (เฉพาะเมื่อการเดาล้มเหลว):\n  - Enter: แสดงเพิ่ม\n  - ตัวเลข: เลือกจากรายการ\n  - ชื่อตาราง: ใช้โดยตรง\n  - 0: โมเดลว่าง\n  - /คำค้น: กรอง (ใช้ / เพื่อล้าง)",
+        ];
+    }
+
+    public static function getMakeControllerMessages(): array
+    {
+        $zh = [
+            'make_controller' => '<info>创建控制器</info> <comment>{name}</comment>',
+            'created' => '<info>已创建：</info> {path}',
+            'override_prompt' => "<question>文件已存在：{path}</question>\n<question>是否覆盖？[Y/n]（回车=Y）</question>\n",
+            'invalid_plugin' => '<error>插件名无效：{plugin}。`--plugin/-p` 只能是 plugin/ 目录下的目录名，不能包含 / 或 \\。</error>',
+            'plugin_path_conflict' => "<error>`--plugin/-p` 与 `--path/-P` 同时指定且不一致。\n期望路径：{expected}\n实际路径：{actual}\n请二选一或保持一致。</error>",
+            'invalid_path' => '<error>路径无效：{path}。`--path/-P` 必须是相对路径（相对于项目根目录），不能是绝对路径。</error>',
+        ];
+
+        $en = [
+            'make_controller' => '<info>Make controller</info> <comment>{name}</comment>',
+            'created' => '<info>Created:</info> {path}',
+            'override_prompt' => "<question>File already exists: {path}</question>\n<question>Override? [Y/n] (Enter = Y)</question>\n",
+            'invalid_plugin' => '<error>Invalid plugin name: {plugin}. `--plugin/-p` must be a directory name under plugin/ and must not contain / or \\.</error>',
+            'plugin_path_conflict' => "<error>`--plugin/-p` and `--path/-P` are both provided but inconsistent.\nExpected: {expected}\nActual: {actual}\nPlease provide only one, or make them identical.</error>",
+            'invalid_path' => '<error>Invalid path: {path}. `--path/-P` must be a relative path (to project root) and must not be an absolute path.</error>',
+        ];
+
+        return [
+            'zh_CN' => $zh, 
+            'zh_TW' => [
+                'make_controller' => '<info>建立控制器</info> <comment>{name}</comment>',
+                'created' => '<info>已建立：</info> {path}',
+                'override_prompt' => "<question>檔案已存在：{path}</question>\n<question>是否覆蓋？[Y/n]（Enter=Y）</question>\n",
+                'invalid_plugin' => '<error>插件名稱無效：{plugin}。`--plugin/-p` 只能是 plugin/ 目錄下的目錄名，不能包含 / 或 \\。</error>',
+                'plugin_path_conflict' => "<error>`--plugin/-p` 與 `--path/-P` 同時指定且不一致。\n期望路徑：{expected}\n實際路徑：{actual}\n請二選一或保持一致。</error>",
+                'invalid_path' => '<error>路徑無效：{path}。`--path/-P` 必須是相對路徑（相對於專案根目錄），不能是絕對路徑。</error>',
+            ],
+            'en' => $en,
+            'ja' => [
+                'make_controller' => '<info>コントローラを作成</info> <comment>{name}</comment>',
+                'created' => '<info>作成しました：</info> {path}',
+                'override_prompt' => "<question>ファイルが既に存在します：{path}</question>\n<question>上書きしますか？[Y/n]（Enter=Y）</question>\n",
+                'invalid_plugin' => '<error>プラグイン名が無効です：{plugin}。`--plugin/-p` は plugin/ 以下のディレクトリ名で、/ または \\ を含めません。</error>',
+                'plugin_path_conflict' => "<error>`--plugin/-p` と `--path/-P` が両方指定されていますが一致しません。\n期待：{expected}\n実際：{actual}\nどちらか一方に揃えてください。</error>",
+                'invalid_path' => '<error>パスが無効です：{path}。`--path/-P` はプロジェクトルートからの相対パスで、絶対パスは不可です。</error>',
+            ],
+            'ko' => ['make_controller' => '<info>컨트롤러 만들기</info> <comment>{name}</comment>', 'created' => '<info>생성됨:</info> {path}', 'override_prompt' => "<question>파일이 이미 있습니다: {path}</question>\n<question>덮어쓸까요? [Y/n] (Enter=Y)</question>\n", 'invalid_plugin' => '<error>잘못된 플러그인 이름: {plugin}. `--plugin/-p`는 plugin/ 아래 디렉터리 이름이며 / 또는 \\를 포함할 수 없습니다.</error>', 'plugin_path_conflict' => "<error>`--plugin/-p`와 `--path/-P`가 모두 지정되었지만 일치하지 않습니다.\n예상: {expected}\n실제: {actual}\n하나만 사용하거나 동일하게 맞추세요.</error>", 'invalid_path' => '<error>잘못된 경로: {path}. `--path/-P`는 프로젝트 루트 기준 상대 경로여야 하며 절대 경로는 안 됩니다.</error>'],
+            'fr' => ['make_controller' => '<info>Créer un contrôleur</info> <comment>{name}</comment>', 'created' => '<info>Créé :</info> {path}', 'override_prompt' => "<question>Le fichier existe déjà : {path}</question>\n<question>Écraser ? [Y/n] (Entrée = Y)</question>\n", 'invalid_plugin' => '<error>Nom de plugin invalide : {plugin}. `--plugin/-p` doit être un nom de dossier sous plugin/, sans / ni \\.</error>', 'plugin_path_conflict' => "<error>`--plugin/-p` et `--path/-P` sont tous deux fournis mais incohérents.\nAttendu : {expected}\nRéel : {actual}\nN\'en fournissez qu\'un ou rendez-les identiques.</error>", 'invalid_path' => '<error>Chemin invalide : {path}. `--path/-P` doit être un chemin relatif (à la racine du projet), pas absolu.</error>'],
+            'de' => ['make_controller' => '<info>Controller erstellen</info> <comment>{name}</comment>', 'created' => '<info>Erstellt:</info> {path}', 'override_prompt' => "<question>Datei existiert bereits: {path}</question>\n<question>Überschreiben? [Y/n] (Eingabe = Y)</question>\n", 'invalid_plugin' => '<error>Ungültiger Plugin-Name: {plugin}. `--plugin/-p` muss ein Ordnername unter plugin/ sein, ohne / oder \\.</error>', 'plugin_path_conflict' => "<error>`--plugin/-p` und `--path/-P` sind beide angegeben, aber nicht konsistent.\nErwartet: {expected}\nTatsächlich: {actual}\nNur eines angeben oder angleichen.</error>", 'invalid_path' => '<error>Ungültiger Pfad: {path}. `--path/-P` muss ein relativer Pfad (zur Projektwurzel) sein, kein absoluter.</error>'],
+            'es' => ['make_controller' => '<info>Crear controlador</info> <comment>{name}</comment>', 'created' => '<info>Creado:</info> {path}', 'override_prompt' => "<question>El archivo ya existe: {path}</question>\n<question>¿Sobrescribir? [Y/n] (Enter = Y)</question>\n", 'invalid_plugin' => '<error>Nombre de plugin no válido: {plugin}. `--plugin/-p` debe ser un nombre de carpeta bajo plugin/, sin / ni \\.</error>', 'plugin_path_conflict' => "<error>Se dieron `--plugin/-p` y `--path/-P` pero no coinciden.\nEsperado: {expected}\nReal: {actual}\nProporcione solo uno o hágalos idénticos.</error>", 'invalid_path' => '<error>Ruta no válida: {path}. `--path/-P` debe ser una ruta relativa (a la raíz del proyecto), no absoluta.</error>'],
+            'pt_BR' => ['make_controller' => '<info>Criar controlador</info> <comment>{name}</comment>', 'created' => '<info>Criado:</info> {path}', 'override_prompt' => "<question>O arquivo já existe: {path}</question>\n<question>Sobrescrever? [Y/n] (Enter = Y)</question>\n", 'invalid_plugin' => '<error>Nome de plugin inválido: {plugin}. `--plugin/-p` deve ser um nome de pasta em plugin/, sem / ou \\.</error>', 'plugin_path_conflict' => "<error>`--plugin/-p` e `--path/-P` foram fornecidos mas são inconsistentes.\nEsperado: {expected}\nAtual: {actual}\nForneça apenas um ou deixe-os iguais.</error>", 'invalid_path' => '<error>Caminho inválido: {path}. `--path/-P` deve ser um caminho relativo (à raiz do projeto), não absoluto.</error>'],
+            'ru' => ['make_controller' => '<info>Создать контроллер</info> <comment>{name}</comment>', 'created' => '<info>Создано:</info> {path}', 'override_prompt' => "<question>Файл уже существует: {path}</question>\n<question>Перезаписать? [Y/n] (Enter = Y)</question>\n", 'invalid_plugin' => '<error>Недопустимое имя плагина: {plugin}. `--plugin/-p` должно быть именем каталога в plugin/, без / или \\.</error>', 'plugin_path_conflict' => "<error>Указаны и `--plugin/-p`, и `--path/-P`, но они не совпадают.\nОжидалось: {expected}\nФактически: {actual}\nУкажите что-то одно или сделайте их одинаковыми.</error>", 'invalid_path' => '<error>Недопустимый путь: {path}. `--path/-P` должен быть относительным путём (к корню проекта), не абсолютным.</error>'],
+            'vi' => ['make_controller' => '<info>Tạo controller</info> <comment>{name}</comment>', 'created' => '<info>Đã tạo:</info> {path}', 'override_prompt' => "<question>Tệp đã tồn tại: {path}</question>\n<question>Ghi đè? [Y/n] (Enter = Y)</question>\n", 'invalid_plugin' => '<error>Tên plugin không hợp lệ: {plugin}. `--plugin/-p` phải là tên thư mục trong plugin/, không chứa / hoặc \\.</error>', 'plugin_path_conflict' => "<error>`--plugin/-p` và `--path/-P` đều được chỉ định nhưng không khớp.\nMong đợi: {expected}\nThực tế: {actual}\nChỉ dùng một hoặc cho chúng giống nhau.</error>", 'invalid_path' => '<error>Đường dẫn không hợp lệ: {path}. `--path/-P` phải là đường dẫn tương đối (tới thư mục gốc dự án), không phải tuyệt đối.</error>'],
+            'tr' => ['make_controller' => '<info>Denetleyici oluştur</info> <comment>{name}</comment>', 'created' => '<info>Oluşturuldu:</info> {path}', 'override_prompt' => "<question>Dosya zaten mevcut: {path}</question>\n<question>Üzerine yazılsın mı? [Y/n] (Enter = Y)</question>\n", 'invalid_plugin' => '<error>Geçersiz eklenti adı: {plugin}. `--plugin/-p` plugin/ altında bir klasör adı olmalı, / veya \\ içermemeli.</error>', 'plugin_path_conflict' => "<error>`--plugin/-p` ve `--path/-P` birlikte verilmiş ancak uyuşmuyor.\nBeklenen: {expected}\nGerçek: {actual}\nYalnızca birini verin veya aynı yapın.</error>", 'invalid_path' => '<error>Geçersiz yol: {path}. `--path/-P` proje köküne göre göreli yol olmalı, mutlak yol olmamalı.</error>'],
+            'id' => ['make_controller' => '<info>Buat controller</info> <comment>{name}</comment>', 'created' => '<info>Dibuat:</info> {path}', 'override_prompt' => "<question>File sudah ada: {path}</question>\n<question>Timpa? [Y/n] (Enter = Y)</question>\n", 'invalid_plugin' => '<error>Nama plugin tidak valid: {plugin}. `--plugin/-p` harus nama folder di bawah plugin/, tidak boleh mengandung / atau \\.</error>', 'plugin_path_conflict' => "<error>`--plugin/-p` dan `--path/-P` keduanya diberikan tetapi tidak konsisten.\nHarapan: {expected}\nActual: {actual}\nBerikan hanya satu atau samakan.</error>", 'invalid_path' => '<error>Path tidak valid: {path}. `--path/-P` harus path relatif (ke akar proyek), bukan absolut.</error>'],
+            'th' => ['make_controller' => '<info>สร้างคอนโทรลเลอร์</info> <comment>{name}</comment>', 'created' => '<info>สร้างแล้ว：</info> {path}', 'override_prompt' => "<question>มีไฟล์อยู่แล้ว：{path}</question>\n<question>เขียนทับ？[Y/n]（Enter=Y）</question>\n", 'invalid_plugin' => '<error>ชื่อปลั๊กอินไม่ถูกต้อง：{plugin}。`--plugin/-p` ต้องเป็นชื่อโฟลเดอร์ภายใต้ plugin/ ห้ามมี / หรือ \\</error>', 'plugin_path_conflict' => "<error>ระบุทั้ง `--plugin/-p` และ `--path/-P` แต่ไม่ตรงกัน\nคาดว่า：{expected}\nจริง：{actual}\nใช้อย่างใดอย่างหนึ่งหรือให้ตรงกัน</error>", 'invalid_path' => '<error>เส้นทางไม่ถูกต้อง：{path}。`--path/-P` ต้องเป็นเส้นทางสัมพัทธ์（จากรากโปรเจกต์）ไม่ใช่แบบสัมบูรณ์</error>'],
+        ];
+    }
+
+    public static function getMakeControllerHelpText(): array
+    {
+        $en = "Generate a controller file.\n\nRecommended:\n  php webman make:controller User\n  php webman make:controller User -p admin\n  php webman make:controller User -P plugin/admin/app/controller\n  php webman make:controller Admin/User -f\n\nNotes:\n  - By default, it generates under app/controller (case depends on existing directory).\n  - With -p/--plugin, it generates under plugin/<plugin>/app/controller by default.\n  - With -P/--path, it generates under the specified relative directory (to project root).\n  - If the file already exists, it will ask before overriding; use -f/--force to override directly.";
+        return [
+            'zh_CN' => "生成控制器文件。\n\n推荐用法：\n  php webman make:controller User\n  php webman make:controller User -p admin\n  php webman make:controller User -P plugin/admin/app/controller\n  php webman make:controller Admin/User -f\n\n说明：\n  - 默认生成到 app/controller（大小写以现有目录为准）。\n  - 使用 -p/--plugin 时默认生成到 plugin/<plugin>/app/controller。\n  - 使用 -P/--path 时生成到指定相对目录（相对于项目根目录）。\n  - 文件已存在时默认会提示是否覆盖；使用 -f/--force 可直接覆盖。",
+            'zh_TW' => "建立控制器檔案。\n\n推薦用法：\n  php webman make:controller User\n  php webman make:controller User -p admin\n  php webman make:controller User -P plugin/admin/app/controller\n  php webman make:controller Admin/User -f\n\n說明：\n  - 預設生成到 app/controller（大小寫依現有目錄）。\n  - 使用 -p/--plugin 時預設生成到 plugin/<plugin>/app/controller。\n  - 使用 -P/--path 時生成到指定相對目錄（相對於專案根目錄）。\n  - 檔案已存在時會詢問是否覆蓋；使用 -f/--force 可直接覆蓋。",
+            'en' => $en,
+            'ja' => "コントローラファイルを生成。\n\n推奨：\n  php webman make:controller User\n  php webman make:controller User -p admin\n  php webman make:controller User -P plugin/admin/app/controller\n  php webman make:controller Admin/User -f\n\n説明：\n  - デフォルトは app/controller に生成（大文字小文字は既存ディレクトリに合わせる）。\n  - -p/--plugin の場合は plugin/<plugin>/app/controller に生成。\n  - -P/--path で相対ディレクトリを指定可能（プロジェクトルート基準）。\n  - ファイルが既にある場合は上書き確認；-f/--force で直接上書き。",
+            'ko' => "컨트롤러 파일 생성.\n\n권장:\n  php webman make:controller User\n  php webman make:controller User -p admin\n  php webman make:controller User -P plugin/admin/app/controller\n  php webman make:controller Admin/User -f\n\n참고:\n  - 기본 생성 위치 app/controller(기존 디렉터리 대소문자 따름).\n  - -p/--plugin 사용 시 plugin/<plugin>/app/controller에 생성.\n  - -P/--path로 프로젝트 루트 기준 상대 경로 지정 가능.\n  - 파일이 있으면 덮어쓸지 묻고, -f/--force로 직접 덮어쓰기.",
+            'fr' => "Générer un fichier contrôleur.\n\nRecommandé :\n  php webman make:controller User\n  php webman make:controller User -p admin\n  php webman make:controller User -P plugin/admin/app/controller\n  php webman make:controller Admin/User -f\n\nNotes :\n  - Par défaut, génération sous app/controller (casse selon le répertoire existant).\n  - Avec -p/--plugin, génération sous plugin/<plugin>/app/controller.\n  - Avec -P/--path, génération dans le répertoire relatif indiqué (par rapport à la racine).\n  - Si le fichier existe, demande avant d'écraser ; -f/--force pour écraser directement.",
+            'de' => "Controller-Datei erzeugen.\n\nEmpfohlen:\n  php webman make:controller User\n  php webman make:controller User -p admin\n  php webman make:controller User -P plugin/admin/app/controller\n  php webman make:controller Admin/User -f\n\nHinweise:\n  - Standard: Erzeugung unter app/controller (Groß-/Kleinschreibung nach vorhandenem Verzeichnis).\n  - Mit -p/--plugin: unter plugin/<plugin>/app/controller.\n  - Mit -P/--path: unter angegebenem relativem Pfad (zur Projektwurzel).\n  - Bei vorhandener Datei wird gefragt; -f/--force überschreibt direkt.",
+            'es' => "Generar un archivo de controlador.\n\nRecomendado:\n  php webman make:controller User\n  php webman make:controller User -p admin\n  php webman make:controller User -P plugin/admin/app/controller\n  php webman make:controller Admin/User -f\n\nNotas:\n  - Por defecto se genera en app/controller (mayúsculas según el directorio existente).\n  - Con -p/--plugin se genera en plugin/<plugin>/app/controller.\n  - Con -P/--path se genera en el directorio relativo indicado (respecto a la raíz).\n  - Si el archivo existe, pregunta antes de sobrescribir; -f/--force sobrescribe directamente.",
+            'pt_BR' => "Gerar um arquivo de controlador.\n\nRecomendado:\n  php webman make:controller User\n  php webman make:controller User -p admin\n  php webman make:controller User -P plugin/admin/app/controller\n  php webman make:controller Admin/User -f\n\nNotas:\n  - Por padrão gera em app/controller (maiúsculas conforme o diretório existente).\n  - Com -p/--plugin gera em plugin/<plugin>/app/controller.\n  - Com -P/--path gera no diretório relativo indicado (em relação à raiz do projeto).\n  - Se o arquivo existir, pergunta antes de sobrescrever; -f/--force sobrescreve diretamente.",
+            'ru' => "Создать файл контроллера.\n\nРекомендуется:\n  php webman make:controller User\n  php webman make:controller User -p admin\n  php webman make:controller User -P plugin/admin/app/controller\n  php webman make:controller Admin/User -f\n\nПримечания:\n  - По умолчанию создаётся в app/controller (регистр по существующей директории).\n  - С -p/--plugin создаётся в plugin/<plugin>/app/controller.\n  - С -P/--path создаётся в указанной относительной директории (от корня проекта).\n  - Если файл существует, запрашивается подтверждение перезаписи; -f/--force перезаписывает сразу.",
+            'vi' => "Tạo tệp controller.\n\nKhuyến nghị:\n  php webman make:controller User\n  php webman make:controller User -p admin\n  php webman make:controller User -P plugin/admin/app/controller\n  php webman make:controller Admin/User -f\n\nLưu ý:\n  - Mặc định tạo trong app/controller (chữ hoa/thường theo thư mục hiện có).\n  - Với -p/--plugin tạo trong plugin/<plugin>/app/controller.\n  - Với -P/--path tạo trong thư mục tương đối chỉ định (so với thư mục gốc dự án).\n  - Nếu tệp đã tồn tại sẽ hỏi trước khi ghi đè; -f/--force ghi đè trực tiếp.",
+            'tr' => "Controller dosyası oluştur.\n\nÖnerilen:\n  php webman make:controller User\n  php webman make:controller User -p admin\n  php webman make:controller User -P plugin/admin/app/controller\n  php webman make:controller Admin/User -f\n\nNotlar:\n  - Varsayılan olarak app/controller altında oluşturulur (büyük/küçük harf mevcut dizine göre).\n  - -p/--plugin ile plugin/<plugin>/app/controller altında oluşturulur.\n  - -P/--path ile belirtilen göreli dizinde oluşturulur (proje köküne göre).\n  - Dosya varsa üzerine yazmadan önce sorar; -f/--force doğrudan üzerine yazar.",
+            'id' => "Buat file controller.\n\nDirekomendasikan:\n  php webman make:controller User\n  php webman make:controller User -p admin\n  php webman make:controller User -P plugin/admin/app/controller\n  php webman make:controller Admin/User -f\n\nCatatan:\n  - Secara default dibuat di app/controller (huruf mengikuti direktori yang ada).\n  - Dengan -p/--plugin dibuat di plugin/<plugin>/app/controller.\n  - Dengan -P/--path dibuat di direktori relatif yang ditentukan (terhadap akar proyek).\n  - Jika file sudah ada akan ditanya sebelum menimpa; -f/--force menimpa langsung.",
+            'th' => "สร้างไฟล์คอนโทรลเลอร์\n\nแนะนำ:\n  php webman make:controller User\n  php webman make:controller User -p admin\n  php webman make:controller User -P plugin/admin/app/controller\n  php webman make:controller Admin/User -f\n\nหมายเหตุ:\n  - ค่าเริ่มต้นสร้างใต้ app/controller (ตัวพิมพ์ตามไดเรกทอรีที่มีอยู่)\n  - ใช้ -p/--plugin สร้างใต้ plugin/<plugin>/app/controller\n  - ใช้ -P/--path สร้างในไดเรกทอรีสัมพัทธ์ที่ระบุ (เทียบกับรากโปรเจกต์)\n  - ถ้ามีไฟล์อยู่แล้วจะถามก่อนเขียนทับ -f/--force เขียนทับโดยตรง",
+        ];
+    }
+
+    public static function getMakeMiddlewareMessages(): array
+    {
+        $zh = [
+            'make_middleware' => '<info>创建中间件</info> <comment>{name}</comment>',
+            'created' => '<info>已创建：</info> {path}',
+            'configured' => '<info>已配置：</info> {class} -> {file}',
+            'configured_exists' => '<comment>[Info]</comment> 配置已存在，跳过：{class} -> {file}',
+            'override_prompt' => "<question>文件已存在：{path}</question>\n<question>是否覆盖？[Y/n]（回车=Y）</question>\n",
+            'invalid_plugin' => '<error>插件名无效：{plugin}。`--plugin/-p` 只能是 plugin/ 目录下的目录名，不能包含 / 或 \\。</error>',
+            'plugin_path_conflict' => "<error>`--plugin/-p` 与 `--path/-P` 同时指定且不一致。\n期望路径：{expected}\n实际路径：{actual}\n请二选一或保持一致。</error>",
+            'invalid_path' => '<error>路径无效：{path}。`--path/-P` 必须是相对路径（相对于项目根目录），不能是绝对路径。</error>',
+        ];
+
+        $en = [
+            'make_middleware' => '<info>Make middleware</info> <comment>{name}</comment>',
+            'created' => '<info>Created:</info> {path}',
+            'configured' => '<info>Configured:</info> {class} -> {file}',
+            'configured_exists' => '<comment>[Info]</comment> Already configured, skipped: {class} -> {file}',
+            'override_prompt' => "<question>File already exists: {path}</question>\n<question>Override? [Y/n] (Enter = Y)</question>\n",
+            'invalid_plugin' => '<error>Invalid plugin name: {plugin}. `--plugin/-p` must be a directory name under plugin/ and must not contain / or \\.</error>',
+            'plugin_path_conflict' => "<error>`--plugin/-p` and `--path/-P` are both provided but inconsistent.\nExpected: {expected}\nActual: {actual}\nPlease provide only one, or make them identical.</error>",
+            'invalid_path' => '<error>Invalid path: {path}. `--path/-P` must be a relative path (to project root) and must not be an absolute path.</error>',
+        ];
+
+        return [
+            'zh_CN' => $zh, 
+            'zh_TW' => [
+                'make_middleware' => '<info>建立中間件</info> <comment>{name}</comment>',
+                'created' => '<info>已建立：</info> {path}',
+                'configured' => '<info>已設定：</info> {class} -> {file}',
+                'configured_exists' => '<comment>[Info]</comment> 設定已存在，略過：{class} -> {file}',
+                'override_prompt' => "<question>檔案已存在：{path}</question>\n<question>是否覆蓋？[Y/n]（Enter=Y）</question>\n",
+                'invalid_plugin' => '<error>插件名稱無效：{plugin}。`--plugin/-p` 只能是 plugin/ 目錄下的目錄名，不能包含 / 或 \\。</error>',
+                'plugin_path_conflict' => "<error>`--plugin/-p` 與 `--path/-P` 同時指定且不一致。\n期望路徑：{expected}\n實際路徑：{actual}\n請二選一或保持一致。</error>",
+                'invalid_path' => '<error>路徑無效：{path}。`--path/-P` 必須是相對路徑（相對於專案根目錄），不能是絕對路徑。</error>',
+            ],
+            'en' => $en,
+            'ja' => [
+                'make_middleware' => '<info>ミドルウェアを作成</info> <comment>{name}</comment>',
+                'created' => '<info>作成しました：</info> {path}',
+                'configured' => '<info>設定しました：</info> {class} -> {file}',
+                'configured_exists' => '<comment>[Info]</comment> 既に設定済み、スキップ：{class} -> {file}',
+                'override_prompt' => "<question>ファイルが既に存在します：{path}</question>\n<question>上書きしますか？[Y/n]（Enter=Y）</question>\n",
+                'invalid_plugin' => '<error>プラグイン名が無効です：{plugin}。`--plugin/-p` は plugin/ 以下のディレクトリ名で、/ または \\ を含めません。</error>',
+                'plugin_path_conflict' => "<error>`--plugin/-p` と `--path/-P` が両方指定されていますが一致しません。\n期待：{expected}\n実際：{actual}\nどちらか一方に揃えてください。</error>",
+                'invalid_path' => '<error>パスが無効です：{path}。`--path/-P` はプロジェクトルートからの相対パスで、絶対パスは不可です。</error>',
+            ],
+            'ko' => ['make_middleware' => '<info>미들웨어 만들기</info> <comment>{name}</comment>', 'created' => '<info>생성됨:</info> {path}', 'configured' => '<info>설정됨:</info> {class} -> {file}', 'configured_exists' => '<comment>[Info]</comment> 이미 설정됨, 건너뜀: {class} -> {file}', 'override_prompt' => "<question>파일이 이미 있습니다: {path}</question>\n<question>덮어쓸까요? [Y/n] (Enter=Y)</question>\n", 'invalid_plugin' => '<error>잘못된 플러그인 이름: {plugin}. `--plugin/-p`는 plugin/ 아래 디렉터리 이름이며 / 또는 \\를 포함할 수 없습니다.</error>', 'plugin_path_conflict' => "<error>`--plugin/-p`와 `--path/-P`가 모두 지정되었지만 일치하지 않습니다.\n예상: {expected}\n실제: {actual}\n하나만 사용하거나 동일하게 맞추세요.</error>", 'invalid_path' => '<error>잘못된 경로: {path}. `--path/-P`는 프로젝트 루트 기준 상대 경로여야 하며 절대 경로는 안 됩니다.</error>'],
+            'fr' => ['make_middleware' => '<info>Créer un middleware</info> <comment>{name}</comment>', 'created' => '<info>Créé :</info> {path}', 'configured' => '<info>Configuré :</info> {class} -> {file}', 'configured_exists' => '<comment>[Info]</comment> Déjà configuré, ignoré : {class} -> {file}', 'override_prompt' => "<question>Le fichier existe déjà : {path}</question>\n<question>Écraser ? [Y/n] (Entrée = Y)</question>\n", 'invalid_plugin' => '<error>Nom de plugin invalide : {plugin}. `--plugin/-p` doit être un nom de dossier sous plugin/, sans / ni \\.</error>', 'plugin_path_conflict' => "<error>`--plugin/-p` et `--path/-P` sont tous deux fournis mais incohérents.\nAttendu : {expected}\nRéel : {actual}\nN\'en fournissez qu\'un ou rendez-les identiques.</error>", 'invalid_path' => '<error>Chemin invalide : {path}. `--path/-P` doit être un chemin relatif (à la racine du projet), pas absolu.</error>'],
+            'de' => ['make_middleware' => '<info>Middleware erstellen</info> <comment>{name}</comment>', 'created' => '<info>Erstellt:</info> {path}', 'configured' => '<info>Konfiguriert:</info> {class} -> {file}', 'configured_exists' => '<comment>[Info]</comment> Bereits konfiguriert, übersprungen: {class} -> {file}', 'override_prompt' => "<question>Datei existiert bereits: {path}</question>\n<question>Überschreiben? [Y/n] (Eingabe = Y)</question>\n", 'invalid_plugin' => '<error>Ungültiger Plugin-Name: {plugin}. `--plugin/-p` muss ein Ordnername unter plugin/ sein, ohne / oder \\.</error>', 'plugin_path_conflict' => "<error>`--plugin/-p` und `--path/-P` sind beide angegeben, aber nicht konsistent.\nErwartet: {expected}\nTatsächlich: {actual}\nNur eines angeben oder angleichen.</error>", 'invalid_path' => '<error>Ungültiger Pfad: {path}. `--path/-P` muss ein relativer Pfad (zur Projektwurzel) sein, kein absoluter.</error>'],
+            'es' => ['make_middleware' => '<info>Crear middleware</info> <comment>{name}</comment>', 'created' => '<info>Creado:</info> {path}', 'configured' => '<info>Configurado:</info> {class} -> {file}', 'configured_exists' => '<comment>[Info]</comment> Ya configurado, omitido: {class} -> {file}', 'override_prompt' => "<question>El archivo ya existe: {path}</question>\n<question>¿Sobrescribir? [Y/n] (Enter = Y)</question>\n", 'invalid_plugin' => '<error>Nombre de plugin no válido: {plugin}. `--plugin/-p` debe ser un nombre de carpeta bajo plugin/, sin / ni \\.</error>', 'plugin_path_conflict' => "<error>Se dieron `--plugin/-p` y `--path/-P` pero no coinciden.\nEsperado: {expected}\nReal: {actual}\nProporcione solo uno o hágalos idénticos.</error>", 'invalid_path' => '<error>Ruta no válida: {path}. `--path/-P` debe ser una ruta relativa (a la raíz del proyecto), no absoluta.</error>'],
+            'pt_BR' => ['make_middleware' => '<info>Criar middleware</info> <comment>{name}</comment>', 'created' => '<info>Criado:</info> {path}', 'configured' => '<info>Configurado:</info> {class} -> {file}', 'configured_exists' => '<comment>[Info]</comment> Já configurado, ignorado: {class} -> {file}', 'override_prompt' => "<question>O arquivo já existe: {path}</question>\n<question>Sobrescrever? [Y/n] (Enter = Y)</question>\n", 'invalid_plugin' => '<error>Nome de plugin inválido: {plugin}. `--plugin/-p` deve ser um nome de pasta em plugin/, sem / ou \\.</error>', 'plugin_path_conflict' => "<error>`--plugin/-p` e `--path/-P` foram fornecidos mas são inconsistentes.\nEsperado: {expected}\nAtual: {actual}\nForneça apenas um ou deixe-os iguais.</error>", 'invalid_path' => '<error>Caminho inválido: {path}. `--path/-P` deve ser um caminho relativo (à raiz do projeto), não absoluto.</error>'],
+            'ru' => ['make_middleware' => '<info>Создать middleware</info> <comment>{name}</comment>', 'created' => '<info>Создано:</info> {path}', 'configured' => '<info>Настроено:</info> {class} -> {file}', 'configured_exists' => '<comment>[Info]</comment> Уже настроено, пропущено: {class} -> {file}', 'override_prompt' => "<question>Файл уже существует: {path}</question>\n<question>Перезаписать? [Y/n] (Enter = Y)</question>\n", 'invalid_plugin' => '<error>Недопустимое имя плагина: {plugin}. `--plugin/-p` должно быть именем каталога в plugin/, без / или \\.</error>', 'plugin_path_conflict' => "<error>Указаны и `--plugin/-p`, и `--path/-P`, но они не совпадают.\nОжидалось: {expected}\nФактически: {actual}\nУкажите что-то одно или сделайте их одинаковыми.</error>", 'invalid_path' => '<error>Недопустимый путь: {path}. `--path/-P` должен быть относительным путём (к корню проекта), не абсолютным.</error>'],
+            'vi' => ['make_middleware' => '<info>Tạo middleware</info> <comment>{name}</comment>', 'created' => '<info>Đã tạo:</info> {path}', 'configured' => '<info>Đã cấu hình:</info> {class} -> {file}', 'configured_exists' => '<comment>[Info]</comment> Đã cấu hình, bỏ qua: {class} -> {file}', 'override_prompt' => "<question>Tệp đã tồn tại: {path}</question>\n<question>Ghi đè? [Y/n] (Enter = Y)</question>\n", 'invalid_plugin' => '<error>Tên plugin không hợp lệ: {plugin}. `--plugin/-p` phải là tên thư mục trong plugin/, không chứa / hoặc \\.</error>', 'plugin_path_conflict' => "<error>`--plugin/-p` và `--path/-P` đều được chỉ định nhưng không khớp.\nMong đợi: {expected}\nThực tế: {actual}\nChỉ dùng một hoặc cho chúng giống nhau.</error>", 'invalid_path' => '<error>Đường dẫn không hợp lệ: {path}. `--path/-P` phải là đường dẫn tương đối (tới thư mục gốc dự án), không phải tuyệt đối.</error>'],
+            'tr' => ['make_middleware' => '<info>Middleware oluştur</info> <comment>{name}</comment>', 'created' => '<info>Oluşturuldu:</info> {path}', 'configured' => '<info>Yapılandırıldı:</info> {class} -> {file}', 'configured_exists' => '<comment>[Info]</comment> Zaten yapılandırılmış, atlandı: {class} -> {file}', 'override_prompt' => "<question>Dosya zaten mevcut: {path}</question>\n<question>Üzerine yazılsın mı? [Y/n] (Enter = Y)</question>\n", 'invalid_plugin' => '<error>Geçersiz eklenti adı: {plugin}. `--plugin/-p` plugin/ altında bir klasör adı olmalı, / veya \\ içermemeli.</error>', 'plugin_path_conflict' => "<error>`--plugin/-p` ve `--path/-P` birlikte verilmiş ancak uyuşmuyor.\nBeklenen: {expected}\nGerçek: {actual}\nYalnızca birini verin veya aynı yapın.</error>", 'invalid_path' => '<error>Geçersiz yol: {path}. `--path/-P` proje köküne göre göreli yol olmalı, mutlak yol olmamalı.</error>'],
+            'id' => ['make_middleware' => '<info>Buat middleware</info> <comment>{name}</comment>', 'created' => '<info>Dibuat:</info> {path}', 'configured' => '<info>Dikonfigurasi:</info> {class} -> {file}', 'configured_exists' => '<comment>[Info]</comment> Sudah dikonfigurasi, dilewati: {class} -> {file}', 'override_prompt' => "<question>File sudah ada: {path}</question>\n<question>Timpa? [Y/n] (Enter = Y)</question>\n", 'invalid_plugin' => '<error>Nama plugin tidak valid: {plugin}. `--plugin/-p` harus nama folder di bawah plugin/, tidak boleh mengandung / atau \\.</error>', 'plugin_path_conflict' => "<error>`--plugin/-p` dan `--path/-P` keduanya diberikan tetapi tidak konsisten.\nHarapan: {expected}\nActual: {actual}\nBerikan hanya satu atau samakan.</error>", 'invalid_path' => '<error>Path tidak valid: {path}. `--path/-P` harus path relatif (ke akar proyek), bukan absolut.</error>'],
+            'th' => ['make_middleware' => '<info>สร้างมิดเดิลแวร์</info> <comment>{name}</comment>', 'created' => '<info>สร้างแล้ว：</info> {path}', 'configured' => '<info>ตั้งค่าแล้ว：</info> {class} -> {file}', 'configured_exists' => '<comment>[Info]</comment> ตั้งค่าแล้ว ข้าม：{class} -> {file}', 'override_prompt' => "<question>มีไฟล์อยู่แล้ว：{path}</question>\n<question>เขียนทับ？[Y/n]（Enter=Y）</question>\n", 'invalid_plugin' => '<error>ชื่อปลั๊กอินไม่ถูกต้อง：{plugin}。`--plugin/-p` ต้องเป็นชื่อโฟลเดอร์ภายใต้ plugin/ ห้ามมี / หรือ \\</error>', 'plugin_path_conflict' => "<error>ระบุทั้ง `--plugin/-p` และ `--path/-P` แต่ไม่ตรงกัน\nคาดว่า：{expected}\nจริง：{actual}\nใช้อย่างใดอย่างหนึ่งหรือให้ตรงกัน</error>", 'invalid_path' => '<error>เส้นทางไม่ถูกต้อง：{path}。`--path/-P` ต้องเป็นเส้นทางสัมพัทธ์（จากรากโปรเจกต์）ไม่ใช่แบบสัมบูรณ์</error>'],
+        ];
+    }
+
+    public static function getMakeMiddlewareHelpText(): array
+    {
+        $en = "Generate a middleware file.\n\nRecommended:\n  php webman make:middleware Auth\n  php webman make:middleware Auth -p admin\n  php webman make:middleware Auth -P plugin/admin/app/middleware\n  php webman make:middleware Api/Auth -f\n\nNotes:\n  - By default, it generates under app/middleware (case depends on existing directory).\n  - With -p/--plugin, it generates under plugin/<plugin>/app/middleware by default.\n  - With -P/--path, it generates under the specified relative directory (to project root).\n  - If the file already exists, it will ask before overriding; use -f/--force to override directly.";
+        return [
+            'zh_CN' => "生成中间件文件。\n\n推荐用法：\n  php webman make:middleware Auth\n  php webman make:middleware Auth -p admin\n  php webman make:middleware Auth -P plugin/admin/app/middleware\n  php webman make:middleware Api/Auth -f\n\n说明：\n  - 默认生成到 app/middleware（大小写以现有目录为准）。\n  - 使用 -p/--plugin 时默认生成到 plugin/<plugin>/app/middleware。\n  - 使用 -P/--path 时生成到指定相对目录（相对于项目根目录）。\n  - 文件已存在时默认会提示是否覆盖；使用 -f/--force 可直接覆盖。",
+            'zh_TW' => "建立中間件檔案。\n\n推薦用法：\n  php webman make:middleware Auth\n  php webman make:middleware Auth -p admin\n  php webman make:middleware Auth -P plugin/admin/app/middleware\n  php webman make:middleware Api/Auth -f\n\n說明：\n  - 預設生成到 app/middleware（大小寫依現有目錄）。\n  - 使用 -p/--plugin 時預設生成到 plugin/<plugin>/app/middleware。\n  - 使用 -P/--path 時生成到指定相對目錄（相對於專案根目錄）。\n  - 檔案已存在時會詢問是否覆蓋；使用 -f/--force 可直接覆蓋。",
+            'en' => $en,
+            'ja' => "ミドルウェアファイルを生成。\n\n推奨：\n  php webman make:middleware Auth\n  php webman make:middleware Auth -p admin\n  php webman make:middleware Auth -P plugin/admin/app/middleware\n  php webman make:middleware Api/Auth -f\n\n説明：\n  - デフォルトは app/middleware に生成（大文字小文字は既存ディレクトリに合わせる）。\n  - -p/--plugin の場合は plugin/<plugin>/app/middleware に生成。\n  - -P/--path で相対ディレクトリを指定可能（プロジェクトルート基準）。\n  - ファイルが既にある場合は上書き確認；-f/--force で直接上書き。",
+            'ko' => "미들웨어 파일 생성.\n\n권장:\n  php webman make:middleware Auth\n  php webman make:middleware Auth -p admin\n  php webman make:middleware Auth -P plugin/admin/app/middleware\n  php webman make:middleware Api/Auth -f\n\n참고:\n  - 기본 생성 위치 app/middleware(기존 디렉터리 대소문자 따름).\n  - -p/--plugin 사용 시 plugin/<plugin>/app/middleware에 생성.\n  - -P/--path로 프로젝트 루트 기준 상대 경로 지정 가능.\n  - 파일이 있으면 덮어쓸지 묻고, -f/--force로 직접 덮어쓰기.",
+            'fr' => "Générer un fichier middleware.\n\nRecommandé :\n  php webman make:middleware Auth\n  php webman make:middleware Auth -p admin\n  php webman make:middleware Auth -P plugin/admin/app/middleware\n  php webman make:middleware Api/Auth -f\n\nNotes :\n  - Par défaut, génération sous app/middleware (casse selon le répertoire existant).\n  - Avec -p/--plugin, génération sous plugin/<plugin>/app/middleware.\n  - Avec -P/--path, génération dans le répertoire relatif indiqué (par rapport à la racine).\n  - Si le fichier existe, demande avant d'écraser ; -f/--force pour écraser directement.",
+            'de' => "Middleware-Datei erzeugen.\n\nEmpfohlen:\n  php webman make:middleware Auth\n  php webman make:middleware Auth -p admin\n  php webman make:middleware Auth -P plugin/admin/app/middleware\n  php webman make:middleware Api/Auth -f\n\nHinweise:\n  - Standard: Erzeugung unter app/middleware (Groß-/Kleinschreibung nach vorhandenem Verzeichnis).\n  - Mit -p/--plugin: unter plugin/<plugin>/app/middleware.\n  - Mit -P/--path: unter angegebenem relativem Pfad (zur Projektwurzel).\n  - Bei vorhandener Datei wird gefragt; -f/--force überschreibt direkt.",
+            'es' => "Generar un archivo de middleware.\n\nRecomendado:\n  php webman make:middleware Auth\n  php webman make:middleware Auth -p admin\n  php webman make:middleware Auth -P plugin/admin/app/middleware\n  php webman make:middleware Api/Auth -f\n\nNotas:\n  - Por defecto se genera en app/middleware (mayúsculas según el directorio existente).\n  - Con -p/--plugin se genera en plugin/<plugin>/app/middleware.\n  - Con -P/--path se genera en el directorio relativo indicado (respecto a la raíz).\n  - Si el archivo existe, pregunta antes de sobrescribir; -f/--force sobrescribe directamente.",
+            'pt_BR' => "Gerar um arquivo de middleware.\n\nRecomendado:\n  php webman make:middleware Auth\n  php webman make:middleware Auth -p admin\n  php webman make:middleware Auth -P plugin/admin/app/middleware\n  php webman make:middleware Api/Auth -f\n\nNotas:\n  - Por padrão gera em app/middleware (maiúsculas conforme o diretório existente).\n  - Com -p/--plugin gera em plugin/<plugin>/app/middleware.\n  - Com -P/--path gera no diretório relativo indicado (em relação à raiz do projeto).\n  - Se o arquivo existir, pergunta antes de sobrescrever; -f/--force sobrescreve diretamente.",
+            'ru' => "Создать файл middleware.\n\nРекомендуется:\n  php webman make:middleware Auth\n  php webman make:middleware Auth -p admin\n  php webman make:middleware Auth -P plugin/admin/app/middleware\n  php webman make:middleware Api/Auth -f\n\nПримечания:\n  - По умолчанию создаётся в app/middleware (регистр по существующей директории).\n  - С -p/--plugin создаётся в plugin/<plugin>/app/middleware.\n  - С -P/--path создаётся в указанной относительной директории (от корня проекта).\n  - Если файл существует, запрашивается подтверждение перезаписи; -f/--force перезаписывает сразу.",
+            'vi' => "Tạo tệp middleware.\n\nKhuyến nghị:\n  php webman make:middleware Auth\n  php webman make:middleware Auth -p admin\n  php webman make:middleware Auth -P plugin/admin/app/middleware\n  php webman make:middleware Api/Auth -f\n\nLưu ý:\n  - Mặc định tạo trong app/middleware (chữ hoa/thường theo thư mục hiện có).\n  - Với -p/--plugin tạo trong plugin/<plugin>/app/middleware.\n  - Với -P/--path tạo trong thư mục tương đối chỉ định (so với thư mục gốc dự án).\n  - Nếu tệp đã tồn tại sẽ hỏi trước khi ghi đè; -f/--force ghi đè trực tiếp.",
+            'tr' => "Middleware dosyası oluştur.\n\nÖnerilen:\n  php webman make:middleware Auth\n  php webman make:middleware Auth -p admin\n  php webman make:middleware Auth -P plugin/admin/app/middleware\n  php webman make:middleware Api/Auth -f\n\nNotlar:\n  - Varsayılan olarak app/middleware altında oluşturulur (büyük/küçük harf mevcut dizine göre).\n  - -p/--plugin ile plugin/<plugin>/app/middleware altında oluşturulur.\n  - -P/--path ile belirtilen göreli dizinde oluşturulur (proje köküne göre).\n  - Dosya varsa üzerine yazmadan önce sorar; -f/--force doğrudan üzerine yazar.",
+            'id' => "Buat file middleware.\n\nDirekomendasikan:\n  php webman make:middleware Auth\n  php webman make:middleware Auth -p admin\n  php webman make:middleware Auth -P plugin/admin/app/middleware\n  php webman make:middleware Api/Auth -f\n\nCatatan:\n  - Secara default dibuat di app/middleware (huruf mengikuti direktori yang ada).\n  - Dengan -p/--plugin dibuat di plugin/<plugin>/app/middleware.\n  - Dengan -P/--path dibuat di direktori relatif yang ditentukan (terhadap akar proyek).\n  - Jika file sudah ada akan ditanya sebelum menimpa; -f/--force menimpa langsung.",
+            'th' => "สร้างไฟล์มิดเดิลแวร์\n\nแนะนำ:\n  php webman make:middleware Auth\n  php webman make:middleware Auth -p admin\n  php webman make:middleware Auth -P plugin/admin/app/middleware\n  php webman make:middleware Api/Auth -f\n\nหมายเหตุ:\n  - ค่าเริ่มต้นสร้างใต้ app/middleware (ตัวพิมพ์ตามไดเรกทอรีที่มีอยู่)\n  - ใช้ -p/--plugin สร้างใต้ plugin/<plugin>/app/middleware\n  - ใช้ -P/--path สร้างในไดเรกทอรีสัมพัทธ์ที่ระบุ (เทียบกับรากโปรเจกต์)\n  - ถ้ามีไฟล์อยู่แล้วจะถามก่อนเขียนทับ -f/--force เขียนทับโดยตรง",
+        ];
+    }
+
+    public static function getMakeCommandMessages(): array
+    {
+        return [
+            'zh_CN' => [
+                'make_command' => '<info>创建命令</info> <comment>{name}</comment>',
+                'created' => '<info>已创建：</info> {path}',
+                'override_prompt' => "<question>文件已存在：{path}</question>\n<question>是否覆盖？[Y/n]（回车=Y）</question>\n",
+                'invalid_plugin' => '<error>插件名无效：{plugin}。`--plugin/-p` 只能是 plugin/ 目录下的目录名，不能包含 / 或 \\。</error>',
+                'plugin_path_conflict' => "<error>`--plugin/-p` 与 `--path/-P` 同时指定且不一致。\n期望路径：{expected}\n实际路径：{actual}\n请二选一或保持一致。</error>",
+                'invalid_path' => '<error>路径无效：{path}。`--path/-P` 必须是相对路径（相对于项目根目录），不能是绝对路径。</error>',
+                'invalid_command' => '<error>命令名不能为空。</error>',
+            ],
+            'zh_TW' => [
+                'make_command' => '<info>建立命令</info> <comment>{name}</comment>',
+                'created' => '<info>已建立：</info> {path}',
+                'override_prompt' => "<question>檔案已存在：{path}</question>\n<question>是否覆蓋？[Y/n]（Enter=Y）</question>\n",
+                'invalid_plugin' => '<error>插件名稱無效：{plugin}。`--plugin/-p` 只能是 plugin/ 目錄下的目錄名，不能包含 / 或 \\。</error>',
+                'plugin_path_conflict' => "<error>`--plugin/-p` 與 `--path/-P` 同時指定且不一致。\n期望路徑：{expected}\n實際路徑：{actual}\n請二選一或保持一致。</error>",
+                'invalid_path' => '<error>路徑無效：{path}。`--path/-P` 必須是相對路徑（相對於專案根目錄），不能是絕對路徑。</error>',
+                'invalid_command' => '<error>命令名稱不可為空。</error>',
+            ],
+            'en' => [
+                'make_command' => '<info>Make command</info> <comment>{name}</comment>',
+                'created' => '<info>Created:</info> {path}',
+                'override_prompt' => "<question>File already exists: {path}</question>\n<question>Override? [Y/n] (Enter = Y)</question>\n",
+                'invalid_plugin' => '<error>Invalid plugin name: {plugin}. `--plugin/-p` must be a directory name under plugin/ and must not contain / or \\.</error>',
+                'plugin_path_conflict' => "<error>`--plugin/-p` and `--path/-P` are both provided but inconsistent.\nExpected: {expected}\nActual: {actual}\nPlease provide only one, or make them identical.</error>",
+                'invalid_path' => '<error>Invalid path: {path}. `--path/-P` must be a relative path (to project root) and must not be an absolute path.</error>',
+                'invalid_command' => '<error>Command name cannot be empty.</error>',
+            ],
+            'ja' => [
+                'make_command' => '<info>コマンドを作成</info> <comment>{name}</comment>',
+                'created' => '<info>作成しました：</info> {path}',
+                'override_prompt' => "<question>ファイルが既に存在します：{path}</question>\n<question>上書きしますか？[Y/n]（Enter=Y）</question>\n",
+                'invalid_plugin' => '<error>プラグイン名が無効です：{plugin}。`--plugin/-p` は plugin/ 以下のディレクトリ名で、/ または \\ を含めません。</error>',
+                'plugin_path_conflict' => "<error>`--plugin/-p` と `--path/-P` が両方指定されていますが一致しません。\n期待：{expected}\n実際：{actual}\nどちらか一方に揃えてください。</error>",
+                'invalid_path' => '<error>パスが無効です：{path}。`--path/-P` はプロジェクトルートからの相対パスで、絶対パスは不可です。</error>',
+                'invalid_command' => '<error>コマンド名を空にできません。</error>',
+            ],
+            'ko' => [
+                'make_command' => '<info>명령 만들기</info> <comment>{name}</comment>',
+                'created' => '<info>생성됨:</info> {path}',
+                'override_prompt' => "<question>파일이 이미 있습니다: {path}</question>\n<question>덮어쓸까요? [Y/n] (Enter=Y)</question>\n",
+                'invalid_plugin' => '<error>잘못된 플러그인 이름: {plugin}. `--plugin/-p`는 plugin/ 아래 디렉터리 이름이며 / 또는 \\를 포함할 수 없습니다.</error>',
+                'plugin_path_conflict' => "<error>`--plugin/-p`와 `--path/-P`가 모두 지정되었지만 일치하지 않습니다.\n예상: {expected}\n실제: {actual}\n하나만 사용하거나 동일하게 맞추세요.</error>",
+                'invalid_path' => '<error>잘못된 경로: {path}. `--path/-P`는 프로젝트 루트 기준 상대 경로여야 하며 절대 경로는 안 됩니다.</error>',
+                'invalid_command' => '<error>명령 이름이 비어 있을 수 없습니다.</error>',
+            ],
+            'fr' => [
+                'make_command' => '<info>Créer une commande</info> <comment>{name}</comment>',
+                'created' => '<info>Créé :</info> {path}',
+                'override_prompt' => "<question>Le fichier existe déjà : {path}</question>\n<question>Écraser ? [Y/n] (Entrée = Y)</question>\n",
+                'invalid_plugin' => '<error>Nom de plugin invalide : {plugin}. `--plugin/-p` doit être un nom de dossier sous plugin/, sans / ni \\.</error>',
+                'plugin_path_conflict' => "<error>`--plugin/-p` et `--path/-P` sont tous deux fournis mais incohérents.\nAttendu : {expected}\nRéel : {actual}\nN\'en fournissez qu\'un ou rendez-les identiques.</error>",
+                'invalid_path' => '<error>Chemin invalide : {path}. `--path/-P` doit être un chemin relatif (à la racine du projet), pas absolu.</error>',
+                'invalid_command' => '<error>Le nom de la commande ne peut pas être vide.</error>',
+            ],
+            'de' => [
+                'make_command' => '<info>Befehl erstellen</info> <comment>{name}</comment>',
+                'created' => '<info>Erstellt:</info> {path}',
+                'override_prompt' => "<question>Datei existiert bereits: {path}</question>\n<question>Überschreiben? [Y/n] (Eingabe = Y)</question>\n",
+                'invalid_plugin' => '<error>Ungültiger Plugin-Name: {plugin}. `--plugin/-p` muss ein Ordnername unter plugin/ sein, ohne / oder \\.</error>',
+                'plugin_path_conflict' => "<error>`--plugin/-p` und `--path/-P` sind beide angegeben, aber nicht konsistent.\nErwartet: {expected}\nTatsächlich: {actual}\nNur eines angeben oder angleichen.</error>",
+                'invalid_path' => '<error>Ungültiger Pfad: {path}. `--path/-P` muss ein relativer Pfad (zur Projektwurzel) sein, kein absoluter.</error>',
+                'invalid_command' => '<error>Der Befehlsname darf nicht leer sein.</error>',
+            ],
+            'es' => [
+                'make_command' => '<info>Crear comando</info> <comment>{name}</comment>',
+                'created' => '<info>Creado:</info> {path}',
+                'override_prompt' => "<question>El archivo ya existe: {path}</question>\n<question>¿Sobrescribir? [Y/n] (Enter = Y)</question>\n",
+                'invalid_plugin' => '<error>Nombre de plugin no válido: {plugin}. `--plugin/-p` debe ser un nombre de carpeta bajo plugin/, sin / ni \\.</error>',
+                'plugin_path_conflict' => "<error>Se dieron `--plugin/-p` y `--path/-P` pero no coinciden.\nEsperado: {expected}\nReal: {actual}\nProporcione solo uno o hágalos idénticos.</error>",
+                'invalid_path' => '<error>Ruta no válida: {path}. `--path/-P` debe ser una ruta relativa (a la raíz del proyecto), no absoluta.</error>',
+                'invalid_command' => '<error>El nombre del comando no puede estar vacío.</error>',
+            ],
+            'pt_BR' => [
+                'make_command' => '<info>Criar comando</info> <comment>{name}</comment>',
+                'created' => '<info>Criado:</info> {path}',
+                'override_prompt' => "<question>O arquivo já existe: {path}</question>\n<question>Sobrescrever? [Y/n] (Enter = Y)</question>\n",
+                'invalid_plugin' => '<error>Nome de plugin inválido: {plugin}. `--plugin/-p` deve ser um nome de pasta em plugin/, sem / ou \\.</error>',
+                'plugin_path_conflict' => "<error>`--plugin/-p` e `--path/-P` foram fornecidos mas são inconsistentes.\nEsperado: {expected}\nAtual: {actual}\nForneça apenas um ou deixe-os iguais.</error>",
+                'invalid_path' => '<error>Caminho inválido: {path}. `--path/-P` deve ser um caminho relativo (à raiz do projeto), não absoluto.</error>',
+                'invalid_command' => '<error>O nome do comando não pode estar vazio.</error>',
+            ],
+            'ru' => [
+                'make_command' => '<info>Создать команду</info> <comment>{name}</comment>',
+                'created' => '<info>Создано:</info> {path}',
+                'override_prompt' => "<question>Файл уже существует: {path}</question>\n<question>Перезаписать? [Y/n] (Enter = Y)</question>\n",
+                'invalid_plugin' => '<error>Недопустимое имя плагина: {plugin}. `--plugin/-p` должно быть именем каталога в plugin/, без / или \\.</error>',
+                'plugin_path_conflict' => "<error>Указаны и `--plugin/-p`, и `--path/-P`, но они не совпадают.\nОжидалось: {expected}\nФактически: {actual}\nУкажите что-то одно или сделайте их одинаковыми.</error>",
+                'invalid_path' => '<error>Недопустимый путь: {path}. `--path/-P` должен быть относительным путём (к корню проекта), не абсолютным.</error>',
+                'invalid_command' => '<error>Имя команды не может быть пустым.</error>',
+            ],
+            'vi' => [
+                'make_command' => '<info>Tạo lệnh</info> <comment>{name}</comment>',
+                'created' => '<info>Đã tạo:</info> {path}',
+                'override_prompt' => "<question>Tệp đã tồn tại: {path}</question>\n<question>Ghi đè? [Y/n] (Enter = Y)</question>\n",
+                'invalid_plugin' => '<error>Tên plugin không hợp lệ: {plugin}. `--plugin/-p` phải là tên thư mục trong plugin/, không chứa / hoặc \\.</error>',
+                'plugin_path_conflict' => "<error>`--plugin/-p` và `--path/-P` đều được chỉ định nhưng không khớp.\nMong đợi: {expected}\nThực tế: {actual}\nChỉ dùng một hoặc cho chúng giống nhau.</error>",
+                'invalid_path' => '<error>Đường dẫn không hợp lệ: {path}. `--path/-P` phải là đường dẫn tương đối (tới thư mục gốc dự án), không phải tuyệt đối.</error>',
+                'invalid_command' => '<error>Tên lệnh không được để trống.</error>',
+            ],
+            'tr' => [
+                'make_command' => '<info>Komut oluştur</info> <comment>{name}</comment>',
+                'created' => '<info>Oluşturuldu:</info> {path}',
+                'override_prompt' => "<question>Dosya zaten mevcut: {path}</question>\n<question>Üzerine yazılsın mı? [Y/n] (Enter = Y)</question>\n",
+                'invalid_plugin' => '<error>Geçersiz eklenti adı: {plugin}. `--plugin/-p` plugin/ altında bir klasör adı olmalı, / veya \\ içermemeli.</error>',
+                'plugin_path_conflict' => "<error>`--plugin/-p` ve `--path/-P` birlikte verilmiş ancak uyuşmuyor.\nBeklenen: {expected}\nGerçek: {actual}\nYalnızca birini verin veya aynı yapın.</error>",
+                'invalid_path' => '<error>Geçersiz yol: {path}. `--path/-P` proje köküne göre göreli yol olmalı, mutlak yol olmamalı.</error>',
+                'invalid_command' => '<error>Komut adı boş olamaz.</error>',
+            ],
+            'id' => [
+                'make_command' => '<info>Buat perintah</info> <comment>{name}</comment>',
+                'created' => '<info>Dibuat:</info> {path}',
+                'override_prompt' => "<question>File sudah ada: {path}</question>\n<question>Timpa? [Y/n] (Enter = Y)</question>\n",
+                'invalid_plugin' => '<error>Nama plugin tidak valid: {plugin}. `--plugin/-p` harus nama folder di bawah plugin/, tidak boleh mengandung / atau \\.</error>',
+                'plugin_path_conflict' => "<error>`--plugin/-p` dan `--path/-P` keduanya diberikan tetapi tidak konsisten.\nHarapan: {expected}\nActual: {actual}\nBerikan hanya satu atau samakan.</error>",
+                'invalid_path' => '<error>Path tidak valid: {path}. `--path/-P` harus path relatif (ke akar proyek), bukan absolut.</error>',
+                'invalid_command' => '<error>Nama perintah tidak boleh kosong.</error>',
+            ],
+            'th' => [
+                'make_command' => '<info>สร้างคำสั่ง</info> <comment>{name}</comment>',
+                'created' => '<info>สร้างแล้ว：</info> {path}',
+                'override_prompt' => "<question>มีไฟล์อยู่แล้ว：{path}</question>\n<question>เขียนทับ？[Y/n]（Enter=Y）</question>\n",
+                'invalid_plugin' => '<error>ชื่อปลั๊กอินไม่ถูกต้อง：{plugin}。`--plugin/-p` ต้องเป็นชื่อโฟลเดอร์ภายใต้ plugin/ ห้ามมี / หรือ \\</error>',
+                'plugin_path_conflict' => "<error>ระบุทั้ง `--plugin/-p` และ `--path/-P` แต่ไม่ตรงกัน\nคาดว่า：{expected}\nจริง：{actual}\nใช้อย่างใดอย่างหนึ่งหรือให้ตรงกัน</error>",
+                'invalid_path' => '<error>เส้นทางไม่ถูกต้อง：{path}。`--path/-P` ต้องเป็นเส้นทางสัมพัทธ์（จากรากโปรเจกต์）ไม่ใช่แบบสัมบูรณ์</error>',
+                'invalid_command' => '<error>ชื่อคำสั่งต้องไม่ว่าง</error>',
+            ],
+        ];
+
+        return $messages;
+    }
+
+    public static function getMakeCommandHelpText(): array
+    {
+        $helps = [
+            'zh_CN' => "生成 Console 命令类（Symfony Console）。\n\n推荐用法：\n  php webman make:command user:list\n  php webman make:command user:list -p admin\n  php webman make:command user:list -P plugin/admin/app/command\n  php webman make:command user:list -f\n\n说明：\n  - 命令名支持冒号分段（例如 user:list），生成类名会自动转为驼峰（UserList）。\n  - 默认生成到 app/command（大小写以现有目录为准）。\n  - 使用 -p/--plugin 时默认生成到 plugin/<plugin>/app/command。\n  - 使用 -P/--path 时生成到指定相对目录（相对于项目根目录）。\n  - 文件已存在时默认会提示是否覆盖；使用 -f/--force 可直接覆盖。",
+            'zh_TW' => "建立 Console 命令類（Symfony Console）。\n\n推薦用法：\n  php webman make:command user:list\n  php webman make:command user:list -p admin\n  php webman make:command user:list -P plugin/admin/app/command\n  php webman make:command user:list -f\n\n說明：\n  - 命令名支援冒號分段（如 user:list），類名會自動轉為駝峰（UserList）。\n  - 預設生成到 app/command（大小寫依現有目錄）。\n  - 使用 -p/--plugin 時預設生成到 plugin/<plugin>/app/command。\n  - 使用 -P/--path 時生成到指定相對目錄（相對於專案根目錄）。\n  - 檔案已存在時會詢問是否覆蓋；使用 -f/--force 可直接覆蓋。",
+            'en' => "Generate a Console command class (Symfony Console).\n\nRecommended:\n  php webman make:command user:list\n  php webman make:command user:list -p admin\n  php webman make:command user:list -P plugin/admin/app/command\n  php webman make:command user:list -f\n\nNotes:\n  - Command name supports colon segments (e.g. user:list). The class name will be camel-cased (UserList).\n  - By default, it generates under app/command (case depends on existing directory).\n  - With -p/--plugin, it generates under plugin/<plugin>/app/command by default.\n  - With -P/--path, it generates under the specified relative directory (to project root).\n  - If the file already exists, it will ask before overriding; use -f/--force to override directly.",
+            'ja' => "Console コマンドクラスを生成（Symfony Console）。\n\n推奨：\n  php webman make:command user:list\n  php webman make:command user:list -p admin\n  php webman make:command user:list -P plugin/admin/app/command\n  php webman make:command user:list -f\n\n説明：\n  - コマンド名はコロン区切り（例 user:list）に対応。クラス名はキャメルケース（UserList）になります。\n  - デフォルトは app/command に生成（大文字小文字は既存ディレクトリに合わせる）。\n  - -p/--plugin の場合は plugin/<plugin>/app/command に生成。\n  - -P/--path で相対ディレクトリを指定可能（プロジェクトルート基準）。\n  - ファイルが既にある場合は上書き確認；-f/--force で直接上書き。",
+            'ko' => "Console 명령 클래스 생성 (Symfony Console).\n\n권장:\n  php webman make:command user:list\n  php webman make:command user:list -p admin\n  php webman make:command user:list -P plugin/admin/app/command\n  php webman make:command user:list -f\n\n참고:\n  - 명령 이름은 콜론 구분(예: user:list) 지원. 클래스명은 캐멀케이스(UserList)로 생성.\n  - 기본 생성 위치 app/command(기존 디렉터리 대소문자 따름).\n  - -p/--plugin 사용 시 plugin/<plugin>/app/command에 생성.\n  - -P/--path로 프로젝트 루트 기준 상대 경로 지정 가능.\n  - 파일이 있으면 덮어쓸지 묻고, -f/--force로 직접 덮어쓰기.",
+            'fr' => "Générer une classe de commande Console (Symfony Console).\n\nRecommandé :\n  php webman make:command user:list\n  php webman make:command user:list -p admin\n  php webman make:command user:list -P plugin/admin/app/command\n  php webman make:command user:list -f\n\nNotes :\n  - Le nom de commande peut contenir des deux-points (ex. user:list), le nom de classe sera en camelCase (UserList).\n  - Par défaut, génération sous app/command (casse selon le répertoire existant).\n  - Avec -p/--plugin, génération sous plugin/<plugin>/app/command.\n  - Avec -P/--path, génération dans le répertoire relatif indiqué (par rapport à la racine).\n  - Si le fichier existe, demande avant d'écraser ; -f/--force pour écraser directement.",
+            'de' => "Eine Console-Befehlsklasse erzeugen (Symfony Console).\n\nEmpfohlen:\n  php webman make:command user:list\n  php webman make:command user:list -p admin\n  php webman make:command user:list -P plugin/admin/app/command\n  php webman make:command user:list -f\n\nHinweise:\n  - Befehlsname kann Doppelpunkte enthalten (z. B. user:list), Klassenname wird zu CamelCase (UserList).\n  - Standard: Erzeugung unter app/command (Groß-/Kleinschreibung nach vorhandenem Verzeichnis).\n  - Mit -p/--plugin: unter plugin/<plugin>/app/command.\n  - Mit -P/--path: unter angegebenem relativem Pfad (zur Projektwurzel).\n  - Bei vorhandener Datei wird gefragt; -f/--force überschreibt direkt.",
+            'es' => "Generar una clase de comando Console (Symfony Console).\n\nRecomendado:\n  php webman make:command user:list\n  php webman make:command user:list -p admin\n  php webman make:command user:list -P plugin/admin/app/command\n  php webman make:command user:list -f\n\nNotas:\n  - El nombre del comando admite segmentos con dos puntos (ej. user:list). El nombre de clase será en camelCase (UserList).\n  - Por defecto se genera en app/command (mayúsculas según el directorio existente).\n  - Con -p/--plugin se genera en plugin/<plugin>/app/command.\n  - Con -P/--path se genera en el directorio relativo indicado (respecto a la raíz).\n  - Si el archivo existe, pregunta antes de sobrescribir; -f/--force sobrescribe directamente.",
+            'pt_BR' => "Gerar uma classe de comando Console (Symfony Console).\n\nRecomendado:\n  php webman make:command user:list\n  php webman make:command user:list -p admin\n  php webman make:command user:list -P plugin/admin/app/command\n  php webman make:command user:list -f\n\nNotas:\n  - O nome do comando aceita segmentos com dois pontos (ex. user:list). O nome da classe será em camelCase (UserList).\n  - Por padrão gera em app/command (maiúsculas conforme o diretório existente).\n  - Com -p/--plugin gera em plugin/<plugin>/app/command.\n  - Com -P/--path gera no diretório relativo indicado (em relação à raiz do projeto).\n  - Se o arquivo existir, pergunta antes de sobrescrever; -f/--force sobrescreve diretamente.",
+            'ru' => "Создать класс команды Console (Symfony Console).\n\nРекомендуется:\n  php webman make:command user:list\n  php webman make:command user:list -p admin\n  php webman make:command user:list -P plugin/admin/app/command\n  php webman make:command user:list -f\n\nПримечания:\n  - Имя команды может содержать двоеточие (напр. user:list), имя класса будет в camelCase (UserList).\n  - По умолчанию создаётся в app/command (регистр по существующей директории).\n  - С -p/--plugin создаётся в plugin/<plugin>/app/command.\n  - С -P/--path создаётся в указанной относительной директории (от корня проекта).\n  - Если файл существует, запрашивается подтверждение перезаписи; -f/--force перезаписывает сразу.",
+            'vi' => "Tạo lớp lệnh Console (Symfony Console).\n\nKhuyến nghị:\n  php webman make:command user:list\n  php webman make:command user:list -p admin\n  php webman make:command user:list -P plugin/admin/app/command\n  php webman make:command user:list -f\n\nLưu ý:\n  - Tên lệnh hỗ trợ phân đoạn bằng dấu hai chấm (vd. user:list), tên lớp sẽ là camelCase (UserList).\n  - Mặc định tạo trong app/command (chữ hoa/thường theo thư mục hiện có).\n  - Với -p/--plugin tạo trong plugin/<plugin>/app/command.\n  - Với -P/--path tạo trong thư mục tương đối chỉ định (so với thư mục gốc dự án).\n  - Nếu tệp đã tồn tại sẽ hỏi trước khi ghi đè; -f/--force ghi đè trực tiếp.",
+            'tr' => "Bir Console komut sınıfı oluştur (Symfony Console).\n\nÖnerilen:\n  php webman make:command user:list\n  php webman make:command user:list -p admin\n  php webman make:command user:list -P plugin/admin/app/command\n  php webman make:command user:list -f\n\nNotlar:\n  - Komut adı iki nokta ile ayrılmış parçalar destekler (örn. user:list), sınıf adı camelCase (UserList) olur.\n  - Varsayılan olarak app/command altında oluşturulur (büyük/küçük harf mevcut dizine göre).\n  - -p/--plugin ile plugin/<plugin>/app/command altında oluşturulur.\n  - -P/--path ile belirtilen göreli dizinde oluşturulur (proje köküne göre).\n  - Dosya varsa üzerine yazmadan önce sorar; -f/--force doğrudan üzerine yazar.",
+            'id' => "Buat kelas perintah Console (Symfony Console).\n\nDirekomendasikan:\n  php webman make:command user:list\n  php webman make:command user:list -p admin\n  php webman make:command user:list -P plugin/admin/app/command\n  php webman make:command user:list -f\n\nCatatan:\n  - Nama perintah mendukung segmen dengan titik dua (mis. user:list), nama kelas akan camelCase (UserList).\n  - Secara default dibuat di app/command (huruf mengikuti direktori yang ada).\n  - Dengan -p/--plugin dibuat di plugin/<plugin>/app/command.\n  - Dengan -P/--path dibuat di direktori relatif yang ditentukan (terhadap akar proyek).\n  - Jika file sudah ada akan ditanya sebelum menimpa; -f/--force menimpa langsung.",
+            'th' => "สร้างคลาสคำสั่ง Console (Symfony Console)\n\nแนะนำ:\n  php webman make:command user:list\n  php webman make:command user:list -p admin\n  php webman make:command user:list -P plugin/admin/app/command\n  php webman make:command user:list -f\n\nหมายเหตุ:\n  - ชื่อคำสั่งรองรับส่วนที่คั่นด้วยโคลอน (เช่น user:list) ชื่อคลาสจะเป็น camelCase (UserList)\n  - ค่าเริ่มต้นสร้างใต้ app/command (ตัวพิมพ์ตามไดเรกทอรีที่มีอยู่)\n  - ใช้ -p/--plugin สร้างใต้ plugin/<plugin>/app/command\n  - ใช้ -P/--path สร้างในไดเรกทอรีสัมพัทธ์ที่ระบุ (เทียบกับรากโปรเจกต์)\n  - ถ้ามีไฟล์อยู่แล้วจะถามก่อนเขียนทับ -f/--force เขียนทับโดยตรง",
+        ];
+        return $helps;
+    }
+
+    public static function getMakeBootstrapMessages(): array
+    {
+        return [
+            'zh_CN' => [
+                'make_bootstrap' => '<info>创建启动项</info> <comment>{name}</comment>',
+                'created' => '<info>已创建：</info> {path}',
+                'enabled' => '<info>已启用：</info> {class}',
+                'enabled_exists' => '<comment>[Info]</comment> 已存在，无需重复写入：{class}',
+                'override_prompt' => "<question>文件已存在：{path}</question>\n<question>是否覆盖？[Y/n]（回车=Y）</question>\n",
+                'invalid_plugin' => '<error>插件名无效：{plugin}。`--plugin/-p` 只能是 plugin/ 目录下的目录名，不能包含 / 或 \\。</error>',
+                'plugin_path_conflict' => "<error>`--plugin/-p` 与 `--path/-P` 同时指定且不一致。\n期望路径：{expected}\n实际路径：{actual}\n请二选一或保持一致。</error>",
+                'invalid_path' => '<error>路径无效：{path}。`--path/-P` 必须是相对路径（相对于项目根目录），不能是绝对路径。</error>',
+                'arg_name' => '启动项名称',
+                'arg_enable' => '是否启用',
+                'opt_plugin' => '插件名称（plugin/ 下的目录名，例如 admin）',
+                'opt_path' => '目标目录（相对于项目根目录，例如 plugin/admin/app/bootstrap）',
+                'opt_force' => '强制覆盖',
+            ],
+            'zh_TW' => [
+                'make_bootstrap' => '<info>建立啟動項</info> <comment>{name}</comment>',
+                'created' => '<info>已建立：</info> {path}',
+                'enabled' => '<info>已啟用：</info> {class}',
+                'enabled_exists' => '<comment>[Info]</comment> 已存在，無需重複寫入：{class}',
+                'override_prompt' => "<question>檔案已存在：{path}</question>\n<question>是否覆蓋？[Y/n]（Enter=Y）</question>\n",
+                'invalid_plugin' => '<error>插件名稱無效：{plugin}。`--plugin/-p` 只能是 plugin/ 目錄下的目錄名，不能包含 / 或 \\。</error>',
+                'plugin_path_conflict' => "<error>`--plugin/-p` 與 `--path/-P` 同時指定且不一致。\n期望路徑：{expected}\n實際路徑：{actual}\n請二選一或保持一致。</error>",
+                'invalid_path' => '<error>路徑無效：{path}。`--path/-P` 必須是相對路徑（相對於專案根目錄），不能是絕對路徑。</error>',
+                'arg_name' => '啟動項名稱',
+                'arg_enable' => '是否啟用',
+                'opt_plugin' => '插件名稱（plugin/ 下的目錄名，例如 admin）',
+                'opt_path' => '目標目錄（相對於專案根目錄，例如 plugin/admin/app/bootstrap）',
+                'opt_force' => '強制覆蓋',
+            ],
+            'en' => [
+                'make_bootstrap' => '<info>Make bootstrap</info> <comment>{name}</comment>',
+                'created' => '<info>Created:</info> {path}',
+                'enabled' => '<info>Enabled:</info> {class}',
+                'enabled_exists' => '<comment>[Info]</comment> Already exists, skipped: {class}',
+                'override_prompt' => "<question>File already exists: {path}</question>\n<question>Override? [Y/n] (Enter = Y)</question>\n",
+                'invalid_plugin' => '<error>Invalid plugin name: {plugin}. `--plugin/-p` must be a directory name under plugin/ and must not contain / or \\.</error>',
+                'plugin_path_conflict' => "<error>`--plugin/-p` and `--path/-P` are both provided but inconsistent.\nExpected: {expected}\nActual: {actual}\nPlease provide only one, or make them identical.</error>",
+                'invalid_path' => '<error>Invalid path: {path}. `--path/-P` must be a relative path (to project root) and must not be an absolute path.</error>',
+                'arg_name' => 'Bootstrap name',
+                'arg_enable' => 'Enable or not',
+                'opt_plugin' => 'Plugin name under plugin/. e.g. admin',
+                'opt_path' => 'Target directory (relative to base path). e.g. plugin/admin/app/bootstrap',
+                'opt_force' => 'Override existing file without confirmation.',
+            ],
+            'ja' => [
+                'make_bootstrap' => '<info>Bootstrap を作成</info> <comment>{name}</comment>',
+                'created' => '<info>作成しました：</info> {path}',
+                'enabled' => '<info>有効にしました：</info> {class}',
+                'enabled_exists' => '<comment>[Info]</comment> 既に存在します、スキップ：{class}',
+                'override_prompt' => "<question>ファイルが既に存在します：{path}</question>\n<question>上書きしますか？[Y/n]（Enter=Y）</question>\n",
+                'invalid_plugin' => '<error>プラグイン名が無効です：{plugin}。`--plugin/-p` は plugin/ 以下のディレクトリ名で、/ または \\ を含めません。</error>',
+                'plugin_path_conflict' => "<error>`--plugin/-p` と `--path/-P` が両方指定されていますが一致しません。\n期待：{expected}\n実際：{actual}\nどちらか一方に揃えてください。</error>",
+                'invalid_path' => '<error>パスが無効です：{path}。`--path/-P` はプロジェクトルートからの相対パスで、絶対パスは不可です。</error>',
+            ],
+            'ko' => [
+                'make_bootstrap' => '<info>Bootstrap 생성</info> <comment>{name}</comment>',
+                'created' => '<info>생성됨:</info> {path}',
+                'enabled' => '<info>활성화됨:</info> {class}',
+                'enabled_exists' => '<comment>[Info]</comment> 이미 있음, 건너뜀: {class}',
+                'override_prompt' => "<question>파일이 이미 있습니다: {path}</question>\n<question>덮어쓸까요? [Y/n] (Enter=Y)</question>\n",
+                'invalid_plugin' => '<error>잘못된 플러그인 이름: {plugin}. `--plugin/-p`는 plugin/ 아래 디렉터리 이름이며 / 또는 \\를 포함할 수 없습니다.</error>',
+                'plugin_path_conflict' => "<error>`--plugin/-p`와 `--path/-P`가 모두 지정되었지만 일치하지 않습니다.\n예상: {expected}\n실제: {actual}\n하나만 사용하거나 동일하게 맞추세요.</error>",
+                'invalid_path' => '<error>잘못된 경로: {path}. `--path/-P`는 프로젝트 루트 기준 상대 경로여야 하며 절대 경로는 안 됩니다.</error>',
+            ],
+            'fr' => [
+                'make_bootstrap' => '<info>Créer un Bootstrap</info> <comment>{name}</comment>',
+                'created' => '<info>Créé :</info> {path}',
+                'enabled' => '<info>Activé :</info> {class}',
+                'enabled_exists' => '<comment>[Info]</comment> Déjà présent, ignoré : {class}',
+                'override_prompt' => "<question>Le fichier existe déjà : {path}</question>\n<question>Écraser ? [Y/n] (Entrée = Y)</question>\n",
+                'invalid_plugin' => '<error>Nom de plugin invalide : {plugin}. `--plugin/-p` doit être un nom de dossier sous plugin/, sans / ni \\.</error>',
+                'plugin_path_conflict' => "<error>`--plugin/-p` et `--path/-P` sont tous deux fournis mais incohérents.\nAttendu : {expected}\nRéel : {actual}\nN\'en fournissez qu\'un ou rendez-les identiques.</error>",
+                'invalid_path' => '<error>Chemin invalide : {path}. `--path/-P` doit être un chemin relatif (à la racine du projet), pas absolu.</error>',
+            ],
+            'de' => [
+                'make_bootstrap' => '<info>Bootstrap erstellen</info> <comment>{name}</comment>',
+                'created' => '<info>Erstellt:</info> {path}',
+                'enabled' => '<info>Aktiviert:</info> {class}',
+                'enabled_exists' => '<comment>[Info]</comment> Bereits vorhanden, übersprungen: {class}',
+                'override_prompt' => "<question>Datei existiert bereits: {path}</question>\n<question>Überschreiben? [Y/n] (Eingabe = Y)</question>\n",
+                'invalid_plugin' => '<error>Ungültiger Plugin-Name: {plugin}. `--plugin/-p` muss ein Ordnername unter plugin/ sein, ohne / oder \\.</error>',
+                'plugin_path_conflict' => "<error>`--plugin/-p` und `--path/-P` sind beide angegeben, aber nicht konsistent.\nErwartet: {expected}\nTatsächlich: {actual}\nNur eines angeben oder angleichen.</error>",
+                'invalid_path' => '<error>Ungültiger Pfad: {path}. `--path/-P` muss ein relativer Pfad (zur Projektwurzel) sein, kein absoluter.</error>',
+            ],
+            'es' => [
+                'make_bootstrap' => '<info>Crear Bootstrap</info> <comment>{name}</comment>',
+                'created' => '<info>Creado:</info> {path}',
+                'enabled' => '<info>Habilitado:</info> {class}',
+                'enabled_exists' => '<comment>[Info]</comment> Ya existe, omitido: {class}',
+                'override_prompt' => "<question>El archivo ya existe: {path}</question>\n<question>¿Sobrescribir? [Y/n] (Enter = Y)</question>\n",
+                'invalid_plugin' => '<error>Nombre de plugin no válido: {plugin}. `--plugin/-p` debe ser un nombre de carpeta bajo plugin/, sin / ni \\.</error>',
+                'plugin_path_conflict' => "<error>Se dieron `--plugin/-p` y `--path/-P` pero no coinciden.\nEsperado: {expected}\nReal: {actual}\nProporcione solo uno o hágalos idénticos.</error>",
+                'invalid_path' => '<error>Ruta no válida: {path}. `--path/-P` debe ser una ruta relativa (a la raíz del proyecto), no absoluta.</error>',
+            ],
+            'pt_BR' => [
+                'make_bootstrap' => '<info>Criar Bootstrap</info> <comment>{name}</comment>',
+                'created' => '<info>Criado:</info> {path}',
+                'enabled' => '<info>Habilitado:</info> {class}',
+                'enabled_exists' => '<comment>[Info]</comment> Já existe, ignorado: {class}',
+                'override_prompt' => "<question>O arquivo já existe: {path}</question>\n<question>Sobrescrever? [Y/n] (Enter = Y)</question>\n",
+                'invalid_plugin' => '<error>Nome de plugin inválido: {plugin}. `--plugin/-p` deve ser um nome de pasta em plugin/, sem / ou \\.</error>',
+                'plugin_path_conflict' => "<error>`--plugin/-p` e `--path/-P` foram fornecidos mas são inconsistentes.\nEsperado: {expected}\nAtual: {actual}\nForneça apenas um ou deixe-os iguais.</error>",
+                'invalid_path' => '<error>Caminho inválido: {path}. `--path/-P` deve ser um caminho relativo (à raiz do projeto), não absoluto.</error>',
+            ],
+            'ru' => [
+                'make_bootstrap' => '<info>Создать Bootstrap</info> <comment>{name}</comment>',
+                'created' => '<info>Создано:</info> {path}',
+                'enabled' => '<info>Включено:</info> {class}',
+                'enabled_exists' => '<comment>[Info]</comment> Уже есть, пропущено: {class}',
+                'override_prompt' => "<question>Файл уже существует: {path}</question>\n<question>Перезаписать? [Y/n] (Enter = Y)</question>\n",
+                'invalid_plugin' => '<error>Недопустимое имя плагина: {plugin}. `--plugin/-p` должно быть именем каталога в plugin/, без / или \\.</error>',
+                'plugin_path_conflict' => "<error>Указаны и `--plugin/-p`, и `--path/-P` но они не совпадают.\nОжидалось: {expected}\nФактически: {actual}\nУкажите что-то одно или сделайте их одинаковыми.</error>",
+                'invalid_path' => '<error>Недопустимый путь: {path}. `--path/-P` должен быть относительным путём (к корню проекта), не абсолютным.</error>',
+            ],
+            'vi' => [
+                'make_bootstrap' => '<info>Tạo Bootstrap</info> <comment>{name}</comment>',
+                'created' => '<info>Đã tạo:</info> {path}',
+                'enabled' => '<info>Đã bật:</info> {class}',
+                'enabled_exists' => '<comment>[Info]</comment> Đã tồn tại, bỏ qua: {class}',
+                'override_prompt' => "<question>Tệp đã tồn tại: {path}</question>\n<question>Ghi đè? [Y/n] (Enter = Y)</question>\n",
+                'invalid_plugin' => '<error>Tên plugin không hợp lệ: {plugin}. `--plugin/-p` phải là tên thư mục trong plugin/, không chứa / hoặc \\.</error>',
+                'plugin_path_conflict' => "<error>`--plugin/-p` và `--path/-P` đều được chỉ định nhưng không khớp.\nMong đợi: {expected}\nThực tế: {actual}\nChỉ dùng một hoặc cho chúng giống nhau.</error>",
+                'invalid_path' => '<error>Đường dẫn không hợp lệ: {path}. `--path/-P` phải là đường dẫn tương đối (tới thư mục gốc dự án), không phải tuyệt đối.</error>',
+            ],
+            'tr' => [
+                'make_bootstrap' => '<info>Bootstrap oluştur</info> <comment>{name}</comment>',
+                'created' => '<info>Oluşturuldu:</info> {path}',
+                'enabled' => '<info>Etkinleştirildi:</info> {class}',
+                'enabled_exists' => '<comment>[Info]</comment> Zaten mevcut, atlandı: {class}',
+                'override_prompt' => "<question>Dosya zaten mevcut: {path}</question>\n<question>Üzerine yazılsın mı? [Y/n] (Enter = Y)</question>\n",
+                'invalid_plugin' => '<error>Geçersiz eklenti adı: {plugin}. `--plugin/-p` plugin/ altında bir klasör adı olmalı, / veya \\ içermemeli.</error>',
+                'plugin_path_conflict' => "<error>`--plugin/-p` ve `--path/-P` birlikte verilmiş ancak uyuşmuyor.\nBeklenen: {expected}\nGerçek: {actual}\nYalnızca birini verin veya aynı yapın.</error>",
+                'invalid_path' => '<error>Geçersiz yol: {path}. `--path/-P` proje köküne göre göreli yol olmalı, mutlak yol olmamalı.</error>',
+            ],
+            'id' => [
+                'make_bootstrap' => '<info>Buat Bootstrap</info> <comment>{name}</comment>',
+                'created' => '<info>Dibuat:</info> {path}',
+                'enabled' => '<info>Diaktifkan:</info> {class}',
+                'enabled_exists' => '<comment>[Info]</comment> Sudah ada, dilewati: {class}',
+                'override_prompt' => "<question>File sudah ada: {path}</question>\n<question>Timpa? [Y/n] (Enter = Y)</question>\n",
+                'invalid_plugin' => '<error>Nama plugin tidak valid: {plugin}. `--plugin/-p` harus nama folder di bawah plugin/, tidak boleh mengandung / atau \\.</error>',
+                'plugin_path_conflict' => "<error>`--plugin/-p` dan `--path/-P` keduanya diberikan tetapi tidak konsisten.\nHarapan: {expected}\nActual: {actual}\nBerikan hanya satu atau samakan.</error>",
+                'invalid_path' => '<error>Path tidak valid: {path}. `--path/-P` harus path relatif (ke akar proyek), bukan absolut.</error>',
+            ],
+            'th' => [
+                'make_bootstrap' => '<info>สร้าง Bootstrap</info> <comment>{name}</comment>',
+                'created' => '<info>สร้างแล้ว：</info> {path}',
+                'enabled' => '<info>เปิดใช้งานแล้ว：</info> {class}',
+                'enabled_exists' => '<comment>[Info]</comment> มีอยู่แล้ว ข้าม：{class}',
+                'override_prompt' => "<question>มีไฟล์อยู่แล้ว：{path}</question>\n<question>เขียนทับ？[Y/n]（Enter=Y）</question>\n",
+                'invalid_plugin' => '<error>ชื่อปลั๊กอินไม่ถูกต้อง：{plugin}。`--plugin/-p` ต้องเป็นชื่อโฟลเดอร์ภายใต้ plugin/ ห้ามมี / หรือ \\</error>',
+                'plugin_path_conflict' => "<error>ระบุทั้ง `--plugin/-p` และ `--path/-P` แต่ไม่ตรงกัน\nคาดว่า：{expected}\nจริง：{actual}\nใช้อย่างใดอย่างหนึ่งหรือให้ตรงกัน</error>",
+                'invalid_path' => '<error>เส้นทางไม่ถูกต้อง：{path}。`--path/-P` ต้องเป็นเส้นทางสัมพัทธ์（จากรากโปรเจกต์）ไม่ใช่แบบสัมบูรณ์</error>',
+            ],
+        ];
+
+        return $messages;
+    }
+
+    public static function getMakeBootstrapHelpText(): array
+    {
+        return [
+            'zh_CN' => "生成 Bootstrap 启动项类（实现 Webman\\Bootstrap）。\n\n推荐用法：\n  php webman make:bootstrap MyBootstrap\n  php webman make:bootstrap MyBootstrap no\n  php webman make:bootstrap MyBootstrap -p admin\n  php webman make:bootstrap MyBootstrap -P plugin/admin/app/bootstrap\n  php webman make:bootstrap MyBootstrap -f\n\n说明：\n  - 默认生成到 app/bootstrap（大小写以现有目录为准）。\n  - 使用 -p/--plugin 时默认生成到 plugin/<plugin>/app/bootstrap。\n  - 使用 -P/--path 时生成到指定相对目录（相对于项目根目录）。\n  - enable 位置参数用于控制是否写入 config/bootstrap.php（默认启用；传 no/false/0/off 等表示不启用）。\n  - 文件已存在时默认会提示是否覆盖；使用 -f/--force 可直接覆盖。",
+            'zh_TW' => "建立 Bootstrap 啟動項類（實作 Webman\\Bootstrap）。\n\n推薦用法：\n  php webman make:bootstrap MyBootstrap\n  php webman make:bootstrap MyBootstrap no\n  php webman make:bootstrap MyBootstrap -p admin\n  php webman make:bootstrap MyBootstrap -P plugin/admin/app/bootstrap\n  php webman make:bootstrap MyBootstrap -f\n\n說明：\n  - 預設生成到 app/bootstrap（大小寫依現有目錄）。\n  - 使用 -p/--plugin 時預設生成到 plugin/<plugin>/app/bootstrap。\n  - 使用 -P/--path 時生成到指定相對目錄（相對於專案根目錄）。\n  - enable 位置參數用於控制是否寫入 config/bootstrap.php（預設啟用；傳 no/false/0/off 表示不啟用）。\n  - 檔案已存在時會詢問是否覆蓋；使用 -f/--force 可直接覆蓋。",
+            'en' => "Generate a Bootstrap class (implements Webman\\Bootstrap).\n\nRecommended:\n  php webman make:bootstrap MyBootstrap\n  php webman make:bootstrap MyBootstrap no\n  php webman make:bootstrap MyBootstrap -p admin\n  php webman make:bootstrap MyBootstrap -P plugin/admin/app/bootstrap\n  php webman make:bootstrap MyBootstrap -f\n\nNotes:\n  - By default, it generates under app/bootstrap (case depends on existing directory).\n  - With -p/--plugin, it generates under plugin/<plugin>/app/bootstrap by default.\n  - With -P/--path, it generates under the specified relative directory (to project root).\n  - The positional `enable` argument controls whether to append to config/bootstrap.php (enabled by default; use no/false/0/off to disable).\n  - If the file already exists, it will ask before overriding; use -f/--force to override directly.",
+            'ja' => "Bootstrap クラスを生成（Webman\\Bootstrap を実装）。\n\n推奨：\n  php webman make:bootstrap MyBootstrap\n  php webman make:bootstrap MyBootstrap no\n  php webman make:bootstrap MyBootstrap -p admin\n  php webman make:bootstrap MyBootstrap -P plugin/admin/app/bootstrap\n  php webman make:bootstrap MyBootstrap -f\n\n説明：\n  - デフォルトは app/bootstrap に生成（大文字小文字は既存ディレクトリに合わせる）。\n  - -p/--plugin の場合は plugin/<plugin>/app/bootstrap に生成。\n  - -P/--path で相対ディレクトリを指定可能（プロジェクトルート基準）。\n  - 位置引数 enable で config/bootstrap.php に追記するか制御（デフォルト有効；no/false/0/off で無効）。\n  - ファイルが既にある場合は上書き確認；-f/--force で直接上書き。",
+            'ko' => "Bootstrap 클래스 생성 (Webman\\Bootstrap 구현).\n\n권장:\n  php webman make:bootstrap MyBootstrap\n  php webman make:bootstrap MyBootstrap no\n  php webman make:bootstrap MyBootstrap -p admin\n  php webman make:bootstrap MyBootstrap -P plugin/admin/app/bootstrap\n  php webman make:bootstrap MyBootstrap -f\n\n참고:\n  - 기본 생성 위치 app/bootstrap(기존 디렉터리 대소문자 따름).\n  - -p/--plugin 사용 시 plugin/<plugin>/app/bootstrap에 생성.\n  - -P/--path로 프로젝트 루트 기준 상대 경로 지정 가능.\n  - 위치 인자 enable으로 config/bootstrap.php 추가 여부 제어(기본 활성화; no/false/0/off로 비활성화).\n  - 파일이 있으면 덮어쓸지 묻고, -f/--force로 직접 덮어쓰기.",
+            'fr' => "Générer une classe Bootstrap (implémente Webman\\Bootstrap).\n\nRecommandé :\n  php webman make:bootstrap MyBootstrap\n  php webman make:bootstrap MyBootstrap no\n  php webman make:bootstrap MyBootstrap -p admin\n  php webman make:bootstrap MyBootstrap -P plugin/admin/app/bootstrap\n  php webman make:bootstrap MyBootstrap -f\n\nNotes :\n  - Par défaut, génération sous app/bootstrap (casse selon le répertoire existant).\n  - Avec -p/--plugin, génération sous plugin/<plugin>/app/bootstrap.\n  - Avec -P/--path, génération dans le répertoire relatif indiqué (par rapport à la racine).\n  - L'argument positionnel enable contrôle l'ajout à config/bootstrap.php (activé par défaut ; no/false/0/off pour désactiver).\n  - Si le fichier existe, demande avant d'écraser ; -f/--force pour écraser directement.",
+            'de' => "Eine Bootstrap-Klasse erzeugen (implementiert Webman\\Bootstrap).\n\nEmpfohlen:\n  php webman make:bootstrap MyBootstrap\n  php webman make:bootstrap MyBootstrap no\n  php webman make:bootstrap MyBootstrap -p admin\n  php webman make:bootstrap MyBootstrap -P plugin/admin/app/bootstrap\n  php webman make:bootstrap MyBootstrap -f\n\nHinweise:\n  - Standard: Erzeugung unter app/bootstrap (Groß-/Kleinschreibung nach vorhandenem Verzeichnis).\n  - Mit -p/--plugin: unter plugin/<plugin>/app/bootstrap.\n  - Mit -P/--path: unter angegebenem relativem Pfad (zur Projektwurzel).\n  - Positionsargument enable steuert Eintrag in config/bootstrap.php (Standard: an; no/false/0/off zum Deaktivieren).\n  - Bei vorhandener Datei wird gefragt; -f/--force überschreibt direkt.",
+            'es' => "Generar una clase Bootstrap (implementa Webman\\Bootstrap).\n\nRecomendado:\n  php webman make:bootstrap MyBootstrap\n  php webman make:bootstrap MyBootstrap no\n  php webman make:bootstrap MyBootstrap -p admin\n  php webman make:bootstrap MyBootstrap -P plugin/admin/app/bootstrap\n  php webman make:bootstrap MyBootstrap -f\n\nNotas:\n  - Por defecto se genera en app/bootstrap (mayúsculas según el directorio existente).\n  - Con -p/--plugin se genera en plugin/<plugin>/app/bootstrap.\n  - Con -P/--path se genera en el directorio relativo indicado (respecto a la raíz).\n  - El argumento posicional enable controla si se escribe en config/bootstrap.php (activado por defecto; no/false/0/off para desactivar).\n  - Si el archivo existe, pregunta antes de sobrescribir; -f/--force sobrescribe directamente.",
+            'pt_BR' => "Gerar uma classe Bootstrap (implementa Webman\\Bootstrap).\n\nRecomendado:\n  php webman make:bootstrap MyBootstrap\n  php webman make:bootstrap MyBootstrap no\n  php webman make:bootstrap MyBootstrap -p admin\n  php webman make:bootstrap MyBootstrap -P plugin/admin/app/bootstrap\n  php webman make:bootstrap MyBootstrap -f\n\nNotas:\n  - Por padrão gera em app/bootstrap (maiúsculas conforme o diretório existente).\n  - Com -p/--plugin gera em plugin/<plugin>/app/bootstrap.\n  - Com -P/--path gera no diretório relativo indicado (em relação à raiz do projeto).\n  - O argumento posicional enable controla se grava em config/bootstrap.php (ativado por padrão; no/false/0/off para desativar).\n  - Se o arquivo existir, pergunta antes de sobrescrever; -f/--force sobrescreve diretamente.",
+            'ru' => "Создать класс Bootstrap (реализует Webman\\Bootstrap).\n\nРекомендуется:\n  php webman make:bootstrap MyBootstrap\n  php webman make:bootstrap MyBootstrap no\n  php webman make:bootstrap MyBootstrap -p admin\n  php webman make:bootstrap MyBootstrap -P plugin/admin/app/bootstrap\n  php webman make:bootstrap MyBootstrap -f\n\nПримечания:\n  - По умолчанию создаётся в app/bootstrap (регистр по существующей директории).\n  - С -p/--plugin создаётся в plugin/<plugin>/app/bootstrap.\n  - С -P/--path создаётся в указанной относительной директории (от корня проекта).\n  - Позиционный аргумент enable управляет записью в config/bootstrap.php (по умолчанию включено; no/false/0/off для отключения).\n  - Если файл существует, запрашивается подтверждение перезаписи; -f/--force перезаписывает сразу.",
+            'vi' => "Tạo lớp Bootstrap (triển khai Webman\\Bootstrap).\n\nKhuyến nghị:\n  php webman make:bootstrap MyBootstrap\n  php webman make:bootstrap MyBootstrap no\n  php webman make:bootstrap MyBootstrap -p admin\n  php webman make:bootstrap MyBootstrap -P plugin/admin/app/bootstrap\n  php webman make:bootstrap MyBootstrap -f\n\nLưu ý:\n  - Mặc định tạo trong app/bootstrap (chữ hoa/thường theo thư mục hiện có).\n  - Với -p/--plugin tạo trong plugin/<plugin>/app/bootstrap.\n  - Với -P/--path tạo trong thư mục tương đối chỉ định (so với thư mục gốc dự án).\n  - Tham số vị trí enable điều khiển ghi vào config/bootstrap.php (mặc định bật; no/false/0/off để tắt).\n  - Nếu tệp đã tồn tại sẽ hỏi trước khi ghi đè; -f/--force ghi đè trực tiếp.",
+            'tr' => "Bootstrap sınıfı oluştur (Webman\\Bootstrap uygular).\n\nÖnerilen:\n  php webman make:bootstrap MyBootstrap\n  php webman make:bootstrap MyBootstrap no\n  php webman make:bootstrap MyBootstrap -p admin\n  php webman make:bootstrap MyBootstrap -P plugin/admin/app/bootstrap\n  php webman make:bootstrap MyBootstrap -f\n\nNotlar:\n  - Varsayılan olarak app/bootstrap altında oluşturulur (büyük/küçük harf mevcut dizine göre).\n  - -p/--plugin ile plugin/<plugin>/app/bootstrap altında oluşturulur.\n  - -P/--path ile belirtilen göreli dizinde oluşturulur (proje köküne göre).\n  - Konum argümanı enable, config/bootstrap.php'ye yazılmasını kontrol eder (varsayılan açık; no/false/0/off ile kapatma).\n  - Dosya varsa üzerine yazmadan önce sorar; -f/--force doğrudan üzerine yazar.",
+            'id' => "Buat kelas Bootstrap (mengimplementasikan Webman\\Bootstrap).\n\nDirekomendasikan:\n  php webman make:bootstrap MyBootstrap\n  php webman make:bootstrap MyBootstrap no\n  php webman make:bootstrap MyBootstrap -p admin\n  php webman make:bootstrap MyBootstrap -P plugin/admin/app/bootstrap\n  php webman make:bootstrap MyBootstrap -f\n\nCatatan:\n  - Secara default dibuat di app/bootstrap (huruf mengikuti direktori yang ada).\n  - Dengan -p/--plugin dibuat di plugin/<plugin>/app/bootstrap.\n  - Dengan -P/--path dibuat di direktori relatif yang ditentukan (terhadap akar proyek).\n  - Argumen posisi enable mengontrol penulisan ke config/bootstrap.php (default aktif; no/false/0/off untuk nonaktif).\n  - Jika file sudah ada akan ditanya sebelum menimpa; -f/--force menimpa langsung.",
+            'th' => "สร้างคลาส Bootstrap (ใช้ Webman\\Bootstrap)\n\nแนะนำ:\n  php webman make:bootstrap MyBootstrap\n  php webman make:bootstrap MyBootstrap no\n  php webman make:bootstrap MyBootstrap -p admin\n  php webman make:bootstrap MyBootstrap -P plugin/admin/app/bootstrap\n  php webman make:bootstrap MyBootstrap -f\n\nหมายเหตุ:\n  - ค่าเริ่มต้นสร้างใต้ app/bootstrap (ตัวพิมพ์ตามไดเรกทอรีที่มีอยู่)\n  - ใช้ -p/--plugin สร้างใต้ plugin/<plugin>/app/bootstrap\n  - ใช้ -P/--path สร้างในไดเรกทอรีสัมพัทธ์ที่ระบุ (เทียบกับรากโปรเจกต์)\n  - อาร์กิวเมนต์ enable ควบคุมการเขียน config/bootstrap.php (ค่าเริ่มต้นเปิด; no/false/0/off เพื่อปิด)\n  - ถ้ามีไฟล์อยู่แล้วจะถามก่อนเขียนทับ -f/--force เขียนทับโดยตรง",
+        ];
+    }
+
+    public static function getMakeProcessMessages(): array
+    {
+        $zh = [
+            'make_process' => "<info>创建进程</info> <comment>{class}</comment>\n<info>配置 key：</info> <comment>{key}</comment>\n<info>配置文件：</info> <comment>{config}</comment>",
+            'invalid_plugin' => '<error>插件名无效：{plugin}。`--plugin/-p` 只能是 plugin/ 目录下的目录名，不能包含 / 或 \\。</error>',
+            'plugin_path_conflict' => "<error>`--plugin/-p` 与 `--path/-P` 同时指定且不一致。\n期望路径：{expected}\n实际路径：{actual}\n请二选一或保持一致。</error>",
+            'invalid_path' => '<error>路径无效：{path}。`--path/-P` 必须是相对路径（相对于项目根目录），不能是绝对路径。</error>',
+            'invalid_config' => '<error>无法读取配置文件（必须 return 数组）：{path}</error>',
+            'config_key_exists' => "<error>进程配置已存在：</error> <comment>{key}</comment>\n<info>handler：</info> <comment>{handler}</comment>\n<info>文件：</info> <comment>{path}</comment>",
+            'ask_listen' => "<question>是否监听端口？</question> [y/N]（回车=N）\n",
+            'ask_protocol' => "<question>请选择协议</question>（可输入数字或协议名）\n  1) websocket  2) http  3) tcp  4) udp  5) unixsocket\n> ",
+            'ask_http_mode' => "<question>HTTP 进程类型</question>\n  1) 新增 webman 内置 http 进程（复用 app\\process\\Http，不创建新文件）\n  2) 自定义 http 进程（生成进程类文件）\n> ",
+            'ask_ip' => "<question>请选择监听地址</question>（可输入数字或手动输入 IP）",
+            'ask_ip_options' => "{options}\n> ",
+            'ip_lan_suffix' => '（本机内网）',
+            'ip_wan_suffix' => '（本机外网）',
+            'ip_manual_hint' => '也可直接输入 IP',
+            'ask_port' => "<question>请输入端口</question>\n> ",
+            'ask_unixsocket' => "<question>请输入 unixsocket 路径</question>（可输入完整 listen，如 unix:///tmp/a.sock）\n默认：{default}\n> ",
+            'ask_count' => "<question>进程数</question>（回车=默认 {default}）\n> ",
+            'process_file_exists' => "<error>进程文件已存在：</error> {path}",
+            'override_prompt' => "<question>文件已存在：{path}</question>\n<question>是否覆盖？[Y/n]（回车=Y）</question>\n",
+            'created' => '<info>已创建：</info> {path}',
+            'reuse_builtin_http' => '<comment>[Info]</comment> 已选择复用内置 HTTP 进程：{handler}',
+            'updated_config' => '<info>已写入配置：</info> {path}  <comment>({key})</comment>',
+            'write_config_failed' => '<error>写入配置失败：</error> {path}',
+            'err_invalid_protocol' => '协议无效，请输入 1-5 或协议名（websocket/http/tcp/udp/unixsocket）',
+            'err_invalid_http_mode' => '选项无效，请输入 1 或 2（builtin/custom）',
+            'err_invalid_ip' => 'IP 无效，请重新输入',
+            'err_invalid_port' => '端口无效，请输入 1-65535 的整数',
+            'err_invalid_port_range' => '端口范围必须在 1-65535',
+            'err_invalid_unixsocket_path' => '路径不能为空',
+            'err_invalid_count_int' => '进程数必须是整数',
+            'err_invalid_count_min' => '进程数必须 >= 1',
+            'arg_name' => '进程类名，例如 MyProcess',
+            'opt_plugin' => '插件名称（plugin/ 下的目录名，例如 admin）',
+            'opt_path' => '目标目录（相对于项目根目录，例如 plugin/admin/app/process）',
+            'opt_force' => '强制覆盖',
+        ];
+
+        $en = [
+            'make_process' => "<info>Make process</info> <comment>{class}</comment>\n<info>Config key:</info> <comment>{key}</comment>\n<info>Config file:</info> <comment>{config}</comment>",
+            'invalid_plugin' => '<error>Invalid plugin name: {plugin}. `--plugin/-p` must be a directory name under plugin/ and must not contain / or \\.</error>',
+            'plugin_path_conflict' => "<error>`--plugin/-p` and `--path/-P` are both provided but inconsistent.\nExpected: {expected}\nActual: {actual}\nPlease provide only one, or make them identical.</error>",
+            'invalid_path' => '<error>Invalid path: {path}. `--path/-P` must be a relative path (to project root) and must not be an absolute path.</error>',
+            'invalid_config' => '<error>Unable to read config file (must return an array): {path}</error>',
+            'config_key_exists' => "<error>Process config already exists:</error> <comment>{key}</comment>\n<info>handler:</info> <comment>{handler}</comment>\n<info>file:</info> <comment>{path}</comment>",
+            'ask_listen' => "<question>Listen on a port?</question> [y/N] (Enter = N)\n",
+            'ask_protocol' => "<question>Select protocol</question> (number or name)\n  1) websocket  2) http  3) tcp  4) udp  5) unixsocket\n> ",
+            'ask_http_mode' => "<question>HTTP process type</question>\n  1) Add built-in webman HTTP process (reuse app\\process\\Http, no new file)\n  2) Custom HTTP process (generate a new process class file)\n> ",
+            'ask_ip' => "<question>Select listen address</question> (number or input IP manually)",
+            'ask_ip_options' => "{options}\n> ",
+            'ip_lan_suffix' => ' (LAN)',
+            'ip_wan_suffix' => ' (WAN)',
+            'ip_manual_hint' => 'Or type an IP directly',
+            'ask_port' => "<question>Enter port</question>\n> ",
+            'ask_unixsocket' => "<question>Enter unixsocket path</question> (you may input full listen like unix:///tmp/a.sock)\nDefault: {default}\n> ",
+            'ask_count' => "<question>Process count</question> (Enter = default {default})\n> ",
+            'process_file_exists' => "<error>Process file already exists:</error> {path}",
+            'override_prompt' => "<question>File already exists: {path}</question>\n<question>Override? [Y/n] (Enter = Y)</question>\n",
+            'created' => '<info>Created:</info> {path}',
+            'reuse_builtin_http' => '<comment>[Info]</comment> Using built-in HTTP process: {handler}',
+            'updated_config' => '<info>Config updated:</info> {path}  <comment>({key})</comment>',
+            'write_config_failed' => '<error>Failed to write config:</error> {path}',
+            'err_invalid_protocol' => 'Invalid protocol. Please input 1-5 or a protocol name (websocket/http/tcp/udp/unixsocket).',
+            'err_invalid_http_mode' => 'Invalid option. Please input 1 or 2 (builtin/custom).',
+            'err_invalid_ip' => 'Invalid IP address.',
+            'err_invalid_port' => 'Invalid port. Please input an integer between 1 and 65535.',
+            'err_invalid_port_range' => 'Port must be between 1 and 65535.',
+            'err_invalid_unixsocket_path' => 'Path must not be empty.',
+            'err_invalid_count_int' => 'Process count must be an integer.',
+            'err_invalid_count_min' => 'Process count must be >= 1.',
+            'arg_name' => 'Process class name, e.g. MyProcess',
+            'opt_plugin' => 'Plugin name under plugin/. e.g. admin',
+            'opt_path' => 'Target directory (relative to base path). e.g. plugin/admin/app/process',
+            'opt_force' => 'Override existing file without confirmation.',
+        ];
+
+        return [
+            'zh_CN' => $zh, 'zh_TW' => $zh, 'en' => $en, 'ja' => $en, 'ko' => $en, 'fr' => $en,
+            'de' => $en, 'es' => $en, 'pt_BR' => $en, 'ru' => $en, 'vi' => $en, 'tr' => $en,
+            'id' => $en, 'th' => $en,
+        ];
+    }
+
+    public static function getMakeProcessHelpText(): array
+    {
+        $zh = <<<'EOF'
+交互式创建自定义进程，并自动写入对应的 process 配置。
+
+推荐用法：
+  php webman make:process MyProcess
+  php webman make:process MyProcess -p admin
+  php webman make:process MyProcess -P plugin/admin/app/process
+  php webman make:process MyProcess -f
+
+说明：
+  - 会先把进程名转换为 snake 作为配置 key，例如 MyTcp => my_tcp。
+  - 若配置 key 已存在，会提示已存在并显示 handler，然后退出。
+  - 若需要生成进程类文件且文件已存在，会提示是否覆盖；使用 -f/--force 可直接覆盖。
+  - 未指定 -p 时，如果 -P 指向 plugin/<name>/...，会自动推断写入 plugin/<name>/config/process.php。
+EOF;
+        $en = <<<'EOF'
+Interactively create a custom process and append it into process config.
+
+Recommended:
+  php webman make:process MyProcess
+  php webman make:process MyProcess -p admin
+  php webman make:process MyProcess -P plugin/admin/app/process
+  php webman make:process MyProcess -f
+
+Notes:
+  - The process name will be converted to snake_case as config key, e.g. MyTcp => my_tcp.
+  - If the config key already exists, it will print the existing handler and exit.
+  - If a process class file already exists, it will ask before overriding; use -f/--force to override directly.
+  - If -p is not provided but -P points to plugin/<name>/..., it will infer the plugin name and write to plugin/<name>/config/process.php.
+EOF;
+
+        return [
+            'zh_CN' => $zh, 'zh_TW' => $zh, 'en' => $en,
+            'ja' => "対話形式でカスタムプロセスを作成し、process 設定に追記。\n\n推奨：\n  php webman make:process MyProcess\n  php webman make:process MyProcess -p admin\n  php webman make:process MyProcess -P plugin/admin/app/process\n  php webman make:process MyProcess -f\n\n説明：\n  - プロセス名は snake_case に変換されて config key になります（例 MyTcp => my_tcp）。\n  - config key が既に存在する場合は既存 handler を表示して終了。\n  - プロセスクラスファイルが既にある場合は上書き確認；-f/--force で直接上書き。\n  - -p を指定せず -P が plugin/<name>/... の場合はプラグイン名を推定し plugin/<name>/config/process.php に書き込み。",
+            'ko' => "대화형으로 커스텀 프로세스를 만들고 process 설정에 추가.\n\n권장:\n  php webman make:process MyProcess\n  php webman make:process MyProcess -p admin\n  php webman make:process MyProcess -P plugin/admin/app/process\n  php webman make:process MyProcess -f\n\n참고:\n  - 프로세스 이름은 snake_case로 변환되어 config key가 됩니다(예: MyTcp => my_tcp).\n  - config key가 이미 있으면 기존 handler를 출력하고 종료.\n  - 프로세스 클래스 파일이 있으면 덮어쓸지 묻고, -f/--force로 직접 덮어쓰기.\n  - -p 없이 -P가 plugin/<name>/... 이면 플러그인 이름을 추론해 plugin/<name>/config/process.php에 기록.",
+            'fr' => "Créer interactivement un processus personnalisé et l'ajouter à la config process.\n\nRecommandé :\n  php webman make:process MyProcess\n  php webman make:process MyProcess -p admin\n  php webman make:process MyProcess -P plugin/admin/app/process\n  php webman make:process MyProcess -f\n\nNotes :\n  - Le nom du processus est converti en snake_case comme clé de config (ex. MyTcp => my_tcp).\n  - Si la clé existe déjà, affiche le handler existant et quitte.\n  - Si le fichier de classe existe, demande avant d'écraser ; -f/--force pour écraser directement.\n  - Sans -p, si -P pointe vers plugin/<name>/..., déduit le plugin et écrit dans plugin/<name>/config/process.php.",
+            'de' => "Interaktiv einen benutzerdefinierten Prozess anlegen und in die process-Config eintragen.\n\nEmpfohlen:\n  php webman make:process MyProcess\n  php webman make:process MyProcess -p admin\n  php webman make:process MyProcess -P plugin/admin/app/process\n  php webman make:process MyProcess -f\n\nHinweise:\n  - Prozessname wird als Config-Key in snake_case umgewandelt (z. B. MyTcp => my_tcp).\n  - Wenn der Key bereits existiert, wird der bestehende Handler ausgegeben und beendet.\n  - Bei existierender Prozessklassendatei wird vor Überschreiben gefragt; -f/--force überschreibt direkt.\n  - Ohne -p, wenn -P auf plugin/<name>/... zeigt, wird der Plugin-Name erkannt und plugin/<name>/config/process.php geschrieben.",
+            'es' => "Crear de forma interactiva un proceso personalizado y añadirlo a la config process.\n\nRecomendado:\n  php webman make:process MyProcess\n  php webman make:process MyProcess -p admin\n  php webman make:process MyProcess -P plugin/admin/app/process\n  php webman make:process MyProcess -f\n\nNotas:\n  - El nombre del proceso se convierte a snake_case como clave de config (ej. MyTcp => my_tcp).\n  - Si la clave ya existe, muestra el handler existente y sale.\n  - Si el archivo de clase ya existe, pregunta antes de sobrescribir; -f/--force sobrescribe directamente.\n  - Sin -p, si -P apunta a plugin/<name>/..., infiere el plugin y escribe en plugin/<name>/config/process.php.",
+            'pt_BR' => "Criar interativamente um processo personalizado e adicionar à config process.\n\nRecomendado:\n  php webman make:process MyProcess\n  php webman make:process MyProcess -p admin\n  php webman make:process MyProcess -P plugin/admin/app/process\n  php webman make:process MyProcess -f\n\nNotas:\n  - O nome do processo é convertido para snake_case como chave de config (ex. MyTcp => my_tcp).\n  - Se a chave já existir, imprime o handler existente e sai.\n  - Se o arquivo da classe já existir, pergunta antes de sobrescrever; -f/--force sobrescreve diretamente.\n  - Sem -p, se -P apontar para plugin/<name>/..., infere o plugin e grava em plugin/<name>/config/process.php.",
+            'ru' => "Интерактивно создать пользовательский процесс и добавить в config process.\n\nРекомендуется:\n  php webman make:process MyProcess\n  php webman make:process MyProcess -p admin\n  php webman make:process MyProcess -P plugin/admin/app/process\n  php webman make:process MyProcess -f\n\nПримечания:\n  - Имя процесса преобразуется в snake_case как ключ config (напр. MyTcp => my_tcp).\n  - Если ключ уже существует, выводится существующий handler и выход.\n  - Если файл класса уже есть, запрашивается подтверждение перезаписи; -f/--force перезаписывает сразу.\n  - Без -p при -P вида plugin/<name>/... подставляется имя плагина и запись в plugin/<name>/config/process.php.",
+            'vi' => "Tạo process tùy chỉnh theo tương tác và ghi vào config process.\n\nKhuyến nghị:\n  php webman make:process MyProcess\n  php webman make:process MyProcess -p admin\n  php webman make:process MyProcess -P plugin/admin/app/process\n  php webman make:process MyProcess -f\n\nLưu ý:\n  - Tên process được chuyển thành snake_case làm config key (vd. MyTcp => my_tcp).\n  - Nếu config key đã tồn tại sẽ in handler hiện có rồi thoát.\n  - Nếu file lớp process đã có sẽ hỏi trước khi ghi đè; -f/--force ghi đè trực tiếp.\n  - Không dùng -p mà -P trỏ tới plugin/<name>/... thì suy ra tên plugin và ghi vào plugin/<name>/config/process.php.",
+            'tr' => "Etkileşimli özel proses oluştur ve process config'e ekle.\n\nÖnerilen:\n  php webman make:process MyProcess\n  php webman make:process MyProcess -p admin\n  php webman make:process MyProcess -P plugin/admin/app/process\n  php webman make:process MyProcess -f\n\nNotlar:\n  - Proses adı config key olarak snake_case'e dönüştürülür (örn. MyTcp => my_tcp).\n  - Key zaten varsa mevcut handler yazdırılır ve çıkılır.\n  - Proses sınıf dosyası varsa üzerine yazmadan önce sorar; -f/--force doğrudan üzerine yazar.\n  - -p verilmez ve -P plugin/<name>/... ise plugin adı çıkarılıp plugin/<name>/config/process.php'ye yazılır.",
+            'id' => "Buat proses kustom secara interaktif dan tambahkan ke config process.\n\nDirekomendasikan:\n  php webman make:process MyProcess\n  php webman make:process MyProcess -p admin\n  php webman make:process MyProcess -P plugin/admin/app/process\n  php webman make:process MyProcess -f\n\nCatatan:\n  - Nama proses dikonversi ke snake_case sebagai config key (mis. MyTcp => my_tcp).\n  - Jika key sudah ada, cetak handler yang ada dan keluar.\n  - Jika file kelas proses sudah ada akan ditanya sebelum menimpa; -f/--force menimpa langsung.\n  - Tanpa -p, jika -P mengarah ke plugin/<name>/..., infer nama plugin dan tulis ke plugin/<name>/config/process.php.",
+            'th' => "สร้าง process แบบกำหนดเองแบบโต้ตอบและเขียนลง config process\n\nแนะนำ:\n  php webman make:process MyProcess\n  php webman make:process MyProcess -p admin\n  php webman make:process MyProcess -P plugin/admin/app/process\n  php webman make:process MyProcess -f\n\nหมายเหตุ:\n  - ชื่อ process จะถูกแปลงเป็น snake_case เป็น config key (เช่น MyTcp => my_tcp)\n  - ถ้า config key มีอยู่แล้วจะแสดง handler ที่มีและออก\n  - ถ้ามีไฟล์คลาสอยู่แล้วจะถามก่อนเขียนทับ -f/--force เขียนทับโดยตรง\n  - ถ้าไม่ใส่ -p แต่ -P ชี้ไป plugin/<name>/... จะสรุปชื่อปลั๊กอินและเขียนไปที่ plugin/<name>/config/process.php",
+        ];
+    }
+
+    public static function getBuildMessages(): array
+    {
+        $zh = [
+            'collect_complete' => '<info>文件收集完成</info> <comment>开始写入 Phar...</comment>',
+            'write_to_disk' => '<info>写入 Phar 归档</info> <comment>并保存到磁盘...</comment>',
+            'phar_packing' => '<comment>Phar 打包中...</comment>',
+            'downloading_php' => "\r\n<comment>正在下载 PHP{version} ...</comment>",
+            'download_failed' => '<error>下载失败：</error> {message}',
+            'use_php' => "\r\n<comment>使用本地 PHP{version} 资源...</comment>",
+            'saved_bin' => "\r\n<info>已保存</info> {name} <comment>→</comment> {path}\r\n<info>构建成功</info>\r\n",
+            'download_stream_failed' => '<error>下载失败：</error> 无法连接下载源',
+            'mkdir_build_dir_failed' => '创建 Phar 输出目录失败，请检查权限。',
+            'bad_signature_algorithm' => '签名算法必须是 Phar::MD5、Phar::SHA1、Phar::SHA256、Phar::SHA512 或 Phar::OPENSSL 之一。',
+            'openssl_private_key_missing' => "当签名算法为 'Phar::OPENSSL' 时，必须配置 private key 文件。",
+            'phar_extension_required' => "打包 Phar 需要启用 'phar' 扩展。",
+            'phar_readonly_on' => "{ini} 中 'phar.readonly' 为 On，打包 Phar 需要将其关闭（设置为 Off）才能打包，也可使用如下命令打包：php -d phar.readonly=0 ./webman {command}",
+            'phar_filename_required' => '请配置 phar 文件名（phar_filename）。',
+            'ini_not_loaded' => 'php.ini（未加载）',
+            'arg_version' => 'PHP 版本',
+        ];
+
+        $en = [
+            'collect_complete' => '<info>Files collected</info> <comment>begin writing Phar...</comment>',
+            'write_to_disk' => '<info>Writing Phar archive</info> <comment>and saving to disk...</comment>',
+            'phar_packing' => '<comment>Phar packing...</comment>',
+            'downloading_php' => "\r\n<comment>Downloading PHP{version} ...</comment>",
+            'download_failed' => '<error>Download failed:</error> {message}',
+            'use_php' => "\r\n<comment>Using local PHP{version} assets...</comment>",
+            'saved_bin' => "\r\n<info>Saved</info> {name} <comment>to</comment> {path}\r\n<info>Build Success!</info>\r\n",
+            'download_stream_failed' => '<error>Download failed:</error> cannot connect to download source',
+            'mkdir_build_dir_failed' => 'Failed to create Phar output directory. Please check permissions.',
+            'bad_signature_algorithm' => 'Signature algorithm must be one of Phar::MD5, Phar::SHA1, Phar::SHA256, Phar::SHA512, or Phar::OPENSSL.',
+            'openssl_private_key_missing' => "When signature algorithm is 'Phar::OPENSSL', you must configure the private key file.",
+            'phar_extension_required' => "The 'phar' extension is required to build a Phar package.",
+            'phar_readonly_on' => "In {ini}, 'phar.readonly' is On. Set it to Off to build Phar, or run: php -d phar.readonly=0 ./webman {command}",
+            'phar_filename_required' => 'Please set the Phar filename (phar_filename).',
+            'ini_not_loaded' => 'php.ini (not loaded)',
+            'arg_version' => 'PHP version',
+        ];
+
+        return [
+            'zh_CN' => $zh, 'zh_TW' => array_merge($zh, [
+                'collect_complete' => '<info>檔案收集完成</info> <comment>開始寫入 Phar...</comment>',
+                'write_to_disk' => '<info>寫入 Phar 歸檔</info> <comment>並儲存到磁碟...</comment>',
+                'downloading_php' => "\r\n<comment>正在下載 PHP{version} ...</comment>",
+                'download_failed' => '<error>下載失敗：</error> {message}',
+                'use_php' => '使用本地 PHP {version} 緩存',
+                'saved_bin' => '構建完成！二進制文件 {name} 已保存至: {path}',
+                'download_stream_failed' => '<error>下載失敗：</error> 無法連線至下載來源',
+                'mkdir_build_dir_failed' => '建立 Phar 輸出目錄失敗，請檢查權限。',
+                'bad_signature_algorithm' => '簽章演算法必須為 Phar::MD5、Phar::SHA1、Phar::SHA256、Phar::SHA512 或 Phar::OPENSSL 之一。',
+                'openssl_private_key_missing' => "當簽章演算法為 'Phar::OPENSSL' 時，必須設定 private key 檔案。",
+                'phar_extension_required' => "打包 Phar 需啟用 'phar' 擴充功能。",
+                'phar_readonly_on' => "{ini} 中 'phar.readonly' 為 On，打包 Phar 需將其關閉（設為 Off），或執行：php -d phar.readonly=0 ./webman {command}",
+                'phar_filename_required' => '請設定 phar 檔名（phar_filename）。',
+                'ini_not_loaded' => 'php.ini（未載入）',
+            ]),
+            'en' => array_merge($en, [
+                'saved_bin' => 'Build complete! Binary file {name} saved to: {path}',
+            ]),
+            'ja' => array_merge($en, [
+                'collect_complete' => '<info>ファイル収集完了</info> <comment>Phar 書き込み開始...</comment>',
+                'write_to_disk' => '<info>Phar アーカイブを書き込み</info> <comment>ディスクに保存中...</comment>',
+                'phar_packing' => '<comment>Phar パッキング中...</comment>',
+                'downloading_php' => "\r\n<comment>PHP{version} をダウンロード中...</comment>",
+                'download_failed' => '<error>ダウンロード失敗：</error> {message}',
+                'use_php' => "\r\n<comment>ローカル PHP{version} を使用...</comment>",
+                'saved_bin' => "\r\n<info>保存しました</info> {name} <comment>→</comment> {path}\r\n<info>ビルド成功</info>\r\n",
+                'download_stream_failed' => '<error>ダウンロード失敗：</error> ダウンロード元に接続できません',
+                'mkdir_build_dir_failed' => 'Phar 出力ディレクトリの作成に失敗しました。権限を確認してください。',
+                'bad_signature_algorithm' => '署名アルゴリズムは Phar::MD5、Phar::SHA1、Phar::SHA256、Phar::SHA512、Phar::OPENSSL のいずれかである必要があります。',
+                'openssl_private_key_missing' => "署名アルゴリズムが 'Phar::OPENSSL' の場合は、秘密鍵ファイルの設定が必要です。",
+                'phar_extension_required' => "Phar のビルドには 'phar' 拡張が必要です。",
+                'phar_readonly_on' => "{ini} で 'phar.readonly' が On です。Phar をビルドするには Off に設定するか、実行: php -d phar.readonly=0 ./webman {command}",
+                'phar_filename_required' => 'Phar ファイル名（phar_filename）を設定してください。',
+                'ini_not_loaded' => 'php.ini（未読み込み）',
+            ]),
+            'ko' => array_merge($en, [
+                'collect_complete' => '<info>파일 수집 완료</info> <comment>Phar 쓰기 시작...</comment>',
+                'write_to_disk' => '<info>Phar 아카이브 쓰기</info> <comment>디스크에 저장 중...</comment>',
+                'phar_packing' => '<comment>Phar 패킹 중...</comment>',
+                'downloading_php' => "\r\n<comment>PHP{version} 다운로드 중...</comment>",
+                'download_failed' => '<error>다운로드 실패:</error> {message}',
+                'use_php' => "\r\n<comment>로컬 PHP{version} 사용 중...</comment>",
+                'saved_bin' => "\r\n<info>저장됨</info> {name} <comment>→</comment> {path}\r\n<info>빌드 성공</info>\r\n",
+                'download_stream_failed' => '<error>다운로드 실패:</error> 다운로드 소스에 연결할 수 없습니다',
+                'mkdir_build_dir_failed' => 'Phar 출력 디렉터리 생성에 실패했습니다. 권한을 확인하세요.',
+                'bad_signature_algorithm' => '서명 알고리즘은 Phar::MD5, Phar::SHA1, Phar::SHA256, Phar::SHA512, Phar::OPENSSL 중 하나여야 합니다.',
+                'openssl_private_key_missing' => "서명 알고리즘이 'Phar::OPENSSL'일 경우 private key 파일을 설정해야 합니다.",
+                'phar_extension_required' => "Phar 패키지 빌드에는 'phar' 확장이 필요합니다.",
+                'phar_readonly_on' => "{ini}에서 'phar.readonly'가 On입니다. Phar 빌드를 위해 Off로 설정하거나 실행: php -d phar.readonly=0 ./webman {command}",
+                'phar_filename_required' => 'Phar 파일명(phar_filename)을 설정하세요.',
+                'ini_not_loaded' => 'php.ini(로드되지 않음)',
+            ]),
+            'fr' => array_merge($en, [
+                'collect_complete' => '<info>Fichiers collectés</info> <comment>écriture du Phar...</comment>',
+                'write_to_disk' => '<info>Écriture de l\'archive Phar</info> <comment>et enregistrement...</comment>',
+                'phar_packing' => '<comment>Création du Phar...</comment>',
+                'downloading_php' => "\r\n<comment>Téléchargement de PHP{version}...</comment>",
+                'download_failed' => '<error>Échec du téléchargement :</error> {message}',
+                'use_php' => "\r\n<comment>Utilisation du PHP{version} local...</comment>",
+                'saved_bin' => "\r\n<info>Enregistré</info> {name} <comment>→</comment> {path}\r\n<info>Build réussi</info>\r\n",
+                'download_stream_failed' => '<error>Échec du téléchargement :</error> impossible de contacter la source',
+                'mkdir_build_dir_failed' => 'Échec de la création du répertoire de sortie Phar. Vérifiez les permissions.',
+                'bad_signature_algorithm' => 'L\'algorithme de signature doit être Phar::MD5, Phar::SHA1, Phar::SHA256, Phar::SHA512 ou Phar::OPENSSL.',
+                'openssl_private_key_missing' => "Quand l'algorithme est 'Phar::OPENSSL', vous devez configurer le fichier de clé privée.",
+                'phar_extension_required' => "L'extension 'phar' est requise pour créer un Phar.",
+                'phar_readonly_on' => "Dans {ini}, 'phar.readonly' est On. Passez à Off pour construire le Phar, ou exécutez : php -d phar.readonly=0 ./webman {command}",
+                'phar_filename_required' => 'Veuillez définir le nom du fichier Phar (phar_filename).',
+                'ini_not_loaded' => 'php.ini (non chargé)',
+            ]),
+            'de' => array_merge($en, [
+                'collect_complete' => '<info>Dateien gesammelt</info> <comment>Schreibe Phar...</comment>',
+                'write_to_disk' => '<info>Phar-Archiv wird geschrieben</info> <comment>und auf Disk gespeichert...</comment>',
+                'phar_packing' => '<comment>Phar wird erstellt...</comment>',
+                'downloading_php' => "\r\n<comment>Lade PHP{version} herunter...</comment>",
+                'download_failed' => '<error>Download fehlgeschlagen:</error> {message}',
+                'use_php' => "\r\n<comment>Lokale PHP{version}-Ressourcen werden verwendet...</comment>",
+                'saved_bin' => "\r\n<info>Gespeichert</info> {name} <comment>→</comment> {path}\r\n<info>Build erfolgreich</info>\r\n",
+                'download_stream_failed' => '<error>Download fehlgeschlagen:</error> Verbindung zur Quelle nicht möglich',
+                'mkdir_build_dir_failed' => 'Phar-Ausgabeverzeichnis konnte nicht erstellt werden. Bitte Berechtigungen prüfen.',
+                'bad_signature_algorithm' => 'Signaturalgorithmus muss Phar::MD5, Phar::SHA1, Phar::SHA256, Phar::SHA512 oder Phar::OPENSSL sein.',
+                'openssl_private_key_missing' => "Bei 'Phar::OPENSSL' muss die Private-Key-Datei konfiguriert werden.",
+                'phar_extension_required' => "Die Extension 'phar' wird zum Erstellen eines Phar-Pakets benötigt.",
+                'phar_readonly_on' => "{ini} ist 'phar.readonly' auf On. Zum Erstellen auf Off setzen oder ausführen: php -d phar.readonly=0 ./webman {command}",
+                'phar_filename_required' => 'Bitte den Phar-Dateinamen (phar_filename) setzen.',
+                'ini_not_loaded' => 'php.ini (nicht geladen)',
+            ]),
+            'es' => array_merge($en, [
+                'collect_complete' => '<info>Archivos recopilados</info> <comment>escribiendo Phar...</comment>',
+                'write_to_disk' => '<info>Escribiendo archivo Phar</info> <comment>y guardando en disco...</comment>',
+                'phar_packing' => '<comment>Empaquetando Phar...</comment>',
+                'downloading_php' => "\r\n<comment>Descargando PHP{version}...</comment>",
+                'download_failed' => '<error>Error de descarga:</error> {message}',
+                'use_php' => "\r\n<comment>Usando PHP{version} local...</comment>",
+                'saved_bin' => "\r\n<info>Guardado</info> {name} <comment>→</comment> {path}\r\n<info>Build correcto</info>\r\n",
+                'download_stream_failed' => '<error>Error de descarga:</error> no se pudo conectar con la fuente',
+                'mkdir_build_dir_failed' => 'No se pudo crear el directorio de salida Phar. Compruebe los permisos.',
+                'bad_signature_algorithm' => 'El algoritmo de firma debe ser Phar::MD5, Phar::SHA1, Phar::SHA256, Phar::SHA512 o Phar::OPENSSL.',
+                'openssl_private_key_missing' => "Cuando el algoritmo es 'Phar::OPENSSL', debe configurar el archivo de clave privada.",
+                'phar_extension_required' => "Se requiere la extensión 'phar' para construir un Phar.",
+                'phar_readonly_on' => "En {ini}, 'phar.readonly' está On. Ponlo en Off para construir Phar, o ejecuta: php -d phar.readonly=0 ./webman {command}",
+                'phar_filename_required' => 'Configure el nombre del archivo Phar (phar_filename).',
+                'ini_not_loaded' => 'php.ini (no cargado)',
+            ]),
+            'pt_BR' => array_merge($en, [
+                'collect_complete' => '<info>Arquivos coletados</info> <comment>escrevendo Phar...</comment>',
+                'write_to_disk' => '<info>Gravando arquivo Phar</info> <comment>e salvando em disco...</comment>',
+                'phar_packing' => '<comment>Empacotando Phar...</comment>',
+                'downloading_php' => "\r\n<comment>Baixando PHP{version}...</comment>",
+                'download_failed' => '<error>Falha no download:</error> {message}',
+                'use_php' => "\r\n<comment>Usando PHP{version} local...</comment>",
+                'saved_bin' => "\r\n<info>Salvo</info> {name} <comment>→</comment> {path}\r\n<info>Build concluído</info>\r\n",
+                'download_stream_failed' => '<error>Falha no download:</error> não foi possível conectar à fonte',
+                'mkdir_build_dir_failed' => 'Falha ao criar o diretório de saída do Phar. Verifique as permissões.',
+                'bad_signature_algorithm' => 'O algoritmo de assinatura deve ser Phar::MD5, Phar::SHA1, Phar::SHA256, Phar::SHA512 ou Phar::OPENSSL.',
+                'openssl_private_key_missing' => "Quando o algoritmo for 'Phar::OPENSSL', é necessário configurar o arquivo da chave privada.",
+                'phar_extension_required' => "A extensão 'phar' é necessária para construir um Phar.",
+                'phar_readonly_on' => "Em {ini}, 'phar.readonly' está On. Defina como Off para construir o Phar, ou execute: php -d phar.readonly=0 ./webman {command}",
+                'phar_filename_required' => 'Defina o nome do arquivo Phar (phar_filename).',
+                'ini_not_loaded' => 'php.ini (não carregado)',
+            ]),
+            'ru' => array_merge($en, [
+                'collect_complete' => '<info>Файлы собраны</info> <comment>запись Phar...</comment>',
+                'write_to_disk' => '<info>Запись архива Phar</info> <comment>и сохранение на диск...</comment>',
+                'phar_packing' => '<comment>Создание Phar...</comment>',
+                'downloading_php' => "\r\n<comment>Загрузка PHP{version}...</comment>",
+                'download_failed' => '<error>Ошибка загрузки:</error> {message}',
+                'use_php' => "\r\n<comment>Используются локальные PHP{version}...</comment>",
+                'saved_bin' => "\r\n<info>Сохранено</info> {name} <comment>→</comment> {path}\r\n<info>Сборка успешна</info>\r\n",
+                'download_stream_failed' => '<error>Ошибка загрузки:</error> не удалось подключиться к источнику',
+                'mkdir_build_dir_failed' => 'Не удалось создать каталог для Phar. Проверьте права доступа.',
+                'bad_signature_algorithm' => 'Алгоритм подписи должен быть Phar::MD5, Phar::SHA1, Phar::SHA256, Phar::SHA512 или Phar::OPENSSL.',
+                'openssl_private_key_missing' => "При алгоритме 'Phar::OPENSSL' необходимо настроить файл закрытого ключа.",
+                'phar_extension_required' => "Для сборки Phar требуется расширение 'phar'.",
+                'phar_readonly_on' => "В {ini} параметр 'phar.readonly' включён. Установите Off для сборки Phar или выполните: php -d phar.readonly=0 ./webman {command}",
+                'phar_filename_required' => 'Укажите имя файла Phar (phar_filename).',
+                'ini_not_loaded' => 'php.ini (не загружен)',
+            ]),
+            'vi' => array_merge($en, [
+                'collect_complete' => '<info>Đã thu thập tệp</info> <comment>đang ghi Phar...</comment>',
+                'write_to_disk' => '<info>Ghi archive Phar</info> <comment>và lưu vào đĩa...</comment>',
+                'phar_packing' => '<comment>Đang đóng gói Phar...</comment>',
+                'downloading_php' => "\r\n<comment>Đang tải PHP{version}...</comment>",
+                'download_failed' => '<error>Tải thất bại:</error> {message}',
+                'use_php' => "\r\n<comment>Đang dùng PHP{version} local...</comment>",
+                'saved_bin' => "\r\n<info>Đã lưu</info> {name} <comment>→</comment> {path}\r\n<info>Build thành công</info>\r\n",
+                'download_stream_failed' => '<error>Tải thất bại:</error> không kết nối được nguồn tải',
+                'mkdir_build_dir_failed' => 'Tạo thư mục xuất Phar thất bại. Vui lòng kiểm tra quyền.',
+                'bad_signature_algorithm' => 'Thuật toán chữ ký phải là Phar::MD5, Phar::SHA1, Phar::SHA256, Phar::SHA512 hoặc Phar::OPENSSL.',
+                'openssl_private_key_missing' => "Khi dùng 'Phar::OPENSSL' bạn phải cấu hình file private key.",
+                'phar_extension_required' => "Cần bật extension 'phar' để build Phar.",
+                'phar_readonly_on' => "Trong {ini}, 'phar.readonly' đang On. Đặt Off để build Phar, hoặc chạy: php -d phar.readonly=0 ./webman {command}",
+                'phar_filename_required' => 'Vui lòng cấu hình tên file Phar (phar_filename).',
+                'ini_not_loaded' => 'php.ini (chưa tải)',
+            ]),
+            'tr' => array_merge($en, [
+                'collect_complete' => '<info>Dosyalar toplandı</info> <comment>Phar yazılıyor...</comment>',
+                'write_to_disk' => '<info>Phar arşivi yazılıyor</info> <comment>diske kaydediliyor...</comment>',
+                'phar_packing' => '<comment>Phar paketleniyor...</comment>',
+                'downloading_php' => "\r\n<comment>PHP{version} indiriliyor...</comment>",
+                'download_failed' => '<error>İndirme başarısız:</error> {message}',
+                'use_php' => "\r\n<comment>Yerel PHP{version} kullanılıyor...</comment>",
+                'saved_bin' => "\r\n<info>Kaydedildi</info> {name} <comment>→</comment> {path}\r\n<info>Derleme başarılı</info>\r\n",
+                'download_stream_failed' => '<error>İndirme başarısız:</error> kaynağa bağlanılamıyor',
+                'mkdir_build_dir_failed' => 'Phar çıktı dizini oluşturulamadı. İzinleri kontrol edin.',
+                'bad_signature_algorithm' => 'İmza algoritması Phar::MD5, Phar::SHA1, Phar::SHA256, Phar::SHA512 veya Phar::OPENSSL olmalıdır.',
+                'openssl_private_key_missing' => "'Phar::OPENSSL' kullanıldığında private key dosyası yapılandırılmalıdır.",
+                'phar_extension_required' => "Phar oluşturmak için 'phar' eklentisi gerekir.",
+                'phar_readonly_on' => "{ini} içinde 'phar.readonly' Açık. Phar için Kapatın veya çalıştırın: php -d phar.readonly=0 ./webman {command}",
+                'phar_filename_required' => 'Phar dosya adını (phar_filename) ayarlayın.',
+                'ini_not_loaded' => 'php.ini (yüklenmedi)',
+            ]),
+            'id' => array_merge($en, [
+                'collect_complete' => '<info>File terkumpul</info> <comment>menulis Phar...</comment>',
+                'write_to_disk' => '<info>Menulis arsip Phar</info> <comment>dan menyimpan ke disk...</comment>',
+                'phar_packing' => '<comment>Membuat paket Phar...</comment>',
+                'downloading_php' => "\r\n<comment>Mengunduh PHP{version}...</comment>",
+                'download_failed' => '<error>Unduhan gagal:</error> {message}',
+                'use_php' => "\r\n<comment>Menggunakan aset PHP{version} lokal...</comment>",
+                'saved_bin' => "\r\n<info>Disimpan</info> {name} <comment>→</comment> {path}\r\n<info>Build berhasil</info>\r\n",
+                'download_stream_failed' => '<error>Unduhan gagal:</error> tidak dapat terhubung ke sumber',
+                'mkdir_build_dir_failed' => 'Gagal membuat direktori keluaran Phar. Periksa izin.',
+                'bad_signature_algorithm' => 'Algoritma tanda tangan harus Phar::MD5, Phar::SHA1, Phar::SHA256, Phar::SHA512, atau Phar::OPENSSL.',
+                'openssl_private_key_missing' => "Jika algoritma 'Phar::OPENSSL', Anda harus mengonfigurasi file private key.",
+                'phar_extension_required' => "Ekstensi 'phar' diperlukan untuk membuat Phar.",
+                'phar_readonly_on' => "Di {ini}, 'phar.readonly' On. Setel Off untuk build Phar, atau jalankan: php -d phar.readonly=0 ./webman {command}",
+                'phar_filename_required' => 'Atur nama file Phar (phar_filename).',
+                'ini_not_loaded' => 'php.ini (tidak dimuat)',
+            ]),
+            'th' => array_merge($en, [
+                'collect_complete' => '<info>รวบรวมไฟล์เสร็จแล้ว</info> <comment>กำลังเขียน Phar...</comment>',
+                'write_to_disk' => '<info>กำลังเขียนไฟล์ Phar</info> <comment>และบันทึกลงดิสก์...</comment>',
+                'phar_packing' => '<comment>กำลังแพ็ก Phar...</comment>',
+                'downloading_php' => "\r\n<comment>กำลังดาวน์โหลด PHP{version}...</comment>",
+                'download_failed' => '<error>ดาวน์โหลดล้มเหลว：</error> {message}',
+                'use_php' => "\r\n<comment>ใช้ PHP{version} ท้องถิ่น...</comment>",
+                'saved_bin' => "\r\n<info>บันทึกแล้ว</info> {name} <comment>→</comment> {path}\r\n<info>Build สำเร็จ</info>\r\n",
+                'download_stream_failed' => '<error>ดาวน์โหลดล้มเหลว：</error> เชื่อมต่อแหล่งดาวน์โหลดไม่ได้',
+                'mkdir_build_dir_failed' => 'สร้างไดเรกทอรีเอาต์พุต Phar ไม่สำเร็จ กรุณาตรวจสอบสิทธิ์',
+                'bad_signature_algorithm' => 'อัลกอริทึมลายเซ็นต้องเป็น Phar::MD5, Phar::SHA1, Phar::SHA256, Phar::SHA512 หรือ Phar::OPENSSL',
+                'openssl_private_key_missing' => "เมื่อใช้อัลกอริทึม 'Phar::OPENSSL' ต้องกำหนดค่าไฟล์ private key",
+                'phar_extension_required' => "ต้องเปิดใช้ extension 'phar' เพื่อ build Phar",
+                'phar_readonly_on' => "ใน {ini} 'phar.readonly' เป็น On ตั้งเป็น Off เพื่อ build Phar หรือรัน: php -d phar.readonly=0 ./webman {command}",
+                'phar_filename_required' => 'กรุณาตั้งค่าชื่อไฟล์ Phar (phar_filename)',
+                'ini_not_loaded' => 'php.ini (ไม่ได้โหลด)',
+            ]),
+        ];
+    }
+
+    public static function getFixDisableFunctionsMessages(): array
+    {
+        $zh = [
+            'no_ini' => '<error>找不到 php.ini</error>',
+            'location' => '<comment>php.ini 路径</comment> {path}',
+            'ok' => '<info>OK</info> <info>disable_functions 为空，无需处理</info>',
+            'ini_empty' => '<error>php.ini 内容为空：</error> {path}',
+            'enabled' => '<info>已启用</info> <comment>{func}</comment>',
+            'success' => '<info>完成</info>',
+        ];
+
+        $en = [
+            'no_ini' => '<error>Cannot find php.ini</error>',
+            'location' => '<comment>php.ini</comment> {path}',
+            'ok' => '<info>OK</info> <info>disable_functions is empty, nothing to fix</info>',
+            'ini_empty' => '<error>php.ini content is empty:</error> {path}',
+            'enabled' => '<info>Enabled</info> <comment>{func}</comment>',
+            'success' => '<info>Done</info>',
+        ];
+
+        return [
+            'zh_CN' => $zh, 'zh_TW' => [
+                'no_ini' => '<error>找不到 php.ini</error>',
+                'location' => '<comment>php.ini 路徑</comment> {path}',
+                'ok' => '<info>OK</info> <info>disable_functions 為空，無需處理</info>',
+                'ini_empty' => '<error>php.ini 內容為空：</error> {path}',
+                'enabled' => '<info>已啟用</info> <comment>{func}</comment>',
+                'success' => '<info>完成</info>',
+            ],
+            'en' => $en,
+            'ja' => [
+                'no_ini' => '<error>php.ini が見つかりません</error>',
+                'location' => '<comment>php.ini のパス</comment> {path}',
+                'ok' => '<info>OK</info> <info>disable_functions は空です。修正不要です</info>',
+                'ini_empty' => '<error>php.ini の内容が空です：</error> {path}',
+                'enabled' => '<info>有効化しました</info> <comment>{func}</comment>',
+                'success' => '<info>完了</info>',
+            ],
+            'ko' => [
+                'no_ini' => '<error>php.ini를 찾을 수 없습니다</error>',
+                'location' => '<comment>php.ini 경로</comment> {path}',
+                'ok' => '<info>OK</info> <info>disable_functions가 비어 있어 수정할 항목이 없습니다</info>',
+                'ini_empty' => '<error>php.ini 내용이 비어 있습니다：</error> {path}',
+                'enabled' => '<info>활성화됨</info> <comment>{func}</comment>',
+                'success' => '<info>완료</info>',
+            ],
+            'fr' => [
+                'no_ini' => '<error>Fichier php.ini introuvable</error>',
+                'location' => '<comment>php.ini</comment> {path}',
+                'ok' => '<info>OK</info> <info>disable_functions est vide, rien à modifier</info>',
+                'ini_empty' => '<error>Le contenu de php.ini est vide :</error> {path}',
+                'enabled' => '<info>Activé</info> <comment>{func}</comment>',
+                'success' => '<info>Terminé</info>',
+            ],
+            'de' => [
+                'no_ini' => '<error>php.ini wurde nicht gefunden</error>',
+                'location' => '<comment>php.ini</comment> {path}',
+                'ok' => '<info>OK</info> <info>disable_functions ist leer, nichts zu ändern</info>',
+                'ini_empty' => '<error>php.ini-Inhalt ist leer:</error> {path}',
+                'enabled' => '<info>Aktiviert</info> <comment>{func}</comment>',
+                'success' => '<info>Fertig</info>',
+            ],
+            'es' => [
+                'no_ini' => '<error>No se encuentra php.ini</error>',
+                'location' => '<comment>php.ini</comment> {path}',
+                'ok' => '<info>OK</info> <info>disable_functions está vacío, nada que corregir</info>',
+                'ini_empty' => '<error>El contenido de php.ini está vacío:</error> {path}',
+                'enabled' => '<info>Habilitado</info> <comment>{func}</comment>',
+                'success' => '<info>Hecho</info>',
+            ],
+            'pt_BR' => [
+                'no_ini' => '<error>Não foi possível encontrar php.ini</error>',
+                'location' => '<comment>php.ini</comment> {path}',
+                'ok' => '<info>OK</info> <info>disable_functions está vazio, nada a corrigir</info>',
+                'ini_empty' => '<error>Conteúdo de php.ini está vazio:</error> {path}',
+                'enabled' => '<info>Habilitado</info> <comment>{func}</comment>',
+                'success' => '<info>Concluído</info>',
+            ],
+            'ru' => [
+                'no_ini' => '<error>Файл php.ini не найден</error>',
+                'location' => '<comment>php.ini</comment> {path}',
+                'ok' => '<info>OK</info> <info>disable_functions пуст, изменений не требуется</info>',
+                'ini_empty' => '<error>Содержимое php.ini пусто:</error> {path}',
+                'enabled' => '<info>Включено</info> <comment>{func}</comment>',
+                'success' => '<info>Готово</info>',
+            ],
+            'vi' => [
+                'no_ini' => '<error>Không tìm thấy php.ini</error>',
+                'location' => '<comment>Đường dẫn php.ini</comment> {path}',
+                'ok' => '<info>OK</info> <info>disable_functions trống, không cần xử lý</info>',
+                'ini_empty' => '<error>Nội dung php.ini trống:</error> {path}',
+                'enabled' => '<info>Đã bật</info> <comment>{func}</comment>',
+                'success' => '<info>Xong</info>',
+            ],
+            'tr' => [
+                'no_ini' => '<error>php.ini bulunamadı</error>',
+                'location' => '<comment>php.ini</comment> {path}',
+                'ok' => '<info>OK</info> <info>disable_functions boş, düzeltilecek bir şey yok</info>',
+                'ini_empty' => '<error>php.ini içeriği boş:</error> {path}',
+                'enabled' => '<info>Etkinleştirildi</info> <comment>{func}</comment>',
+                'success' => '<info>Tamamlandı</info>',
+            ],
+            'id' => [
+                'no_ini' => '<error>Tidak dapat menemukan php.ini</error>',
+                'location' => '<comment>php.ini</comment> {path}',
+                'ok' => '<info>OK</info> <info>disable_functions kosong, tidak ada yang perlu diperbaiki</info>',
+                'ini_empty' => '<error>Konten php.ini kosong:</error> {path}',
+                'enabled' => '<info>Diaktifkan</info> <comment>{func}</comment>',
+                'success' => '<info>Selesai</info>',
+            ],
+            'th' => [
+                'no_ini' => '<error>ไม่พบ php.ini</error>',
+                'location' => '<comment>เส้นทาง php.ini</comment> {path}',
+                'ok' => '<info>OK</info> <info>disable_functions ว่าง ไม่ต้องแก้ไข</info>',
+                'ini_empty' => '<error>เนื้อหา php.ini ว่าง：</error> {path}',
+                'enabled' => '<info>เปิดใช้งานแล้ว</info> <comment>{func}</comment>',
+                'success' => '<info>เสร็จสิ้น</info>',
+            ],
+        ];
+    }
+
+    public static function getInstallMessages(): array
+    {
+        $zh = [
+            'install_title' => '<info>执行 Webman 安装脚本</info>',
+            'done' => '<info>完成</info>',
+            'require_version' => '<error>该命令需要 webman-framework 版本 >= 1.3.0</error>',
+        ];
+
+        $en = [
+            'install_title' => '<info>Execute installation for Webman</info>',
+            'done' => '<info>Done</info>',
+            'require_version' => '<error>This command requires webman-framework version >= 1.3.0</error>',
+        ];
+
+        return [
+            'zh_CN' => $zh, 'zh_TW' => [
+                'install_title' => '<info>執行 Webman 安裝腳本</info>',
+                'done' => '<info>完成</info>',
+                'require_version' => '<error>此命令需要 webman-framework 版本 >= 1.3.0</error>',
+            ],
+            'en' => $en,
+            'ja' => [
+                'install_title' => '<info>Webman インストールスクリプトを実行</info>',
+                'done' => '<info>完了</info>',
+                'require_version' => '<error>このコマンドには webman-framework 1.3.0 以上が必要です</error>',
+            ],
+            'ko' => [
+                'install_title' => '<info>Webman 설치 스크립트 실행</info>',
+                'done' => '<info>완료</info>',
+                'require_version' => '<error>이 명령은 webman-framework 1.3.0 이상이 필요합니다</error>',
+            ],
+            'fr' => [
+                'install_title' => '<info>Exécuter le script d\'installation Webman</info>',
+                'done' => '<info>Terminé</info>',
+                'require_version' => '<error>Cette commande requiert webman-framework >= 1.3.0</error>',
+            ],
+            'de' => [
+                'install_title' => '<info>Webman-Installation ausführen</info>',
+                'done' => '<info>Fertig</info>',
+                'require_version' => '<error>Dieser Befehl erfordert webman-framework >= 1.3.0</error>',
+            ],
+            'es' => [
+                'install_title' => '<info>Ejecutar script de instalación de Webman</info>',
+                'done' => '<info>Hecho</info>',
+                'require_version' => '<error>Este comando requiere webman-framework >= 1.3.0</error>',
+            ],
+            'pt_BR' => [
+                'install_title' => '<info>Executar script de instalação do Webman</info>',
+                'done' => '<info>Concluído</info>',
+                'require_version' => '<error>Este comando requer webman-framework >= 1.3.0</error>',
+            ],
+            'ru' => [
+                'install_title' => '<info>Выполнить скрипт установки Webman</info>',
+                'done' => '<info>Готово</info>',
+                'require_version' => '<error>Для этой команды требуется webman-framework >= 1.3.0</error>',
+            ],
+            'vi' => [
+                'install_title' => '<info>Chạy script cài đặt Webman</info>',
+                'done' => '<info>Xong</info>',
+                'require_version' => '<error>Lệnh này yêu cầu webman-framework >= 1.3.0</error>',
+            ],
+            'tr' => [
+                'install_title' => '<info>Webman kurulum betiğini çalıştır</info>',
+                'done' => '<info>Tamamlandı</info>',
+                'require_version' => '<error>Bu komut webman-framework 1.3.0 veya üstü gerektirir</error>',
+            ],
+            'id' => [
+                'install_title' => '<info>Jalankan skrip instalasi Webman</info>',
+                'done' => '<info>Selesai</info>',
+                'require_version' => '<error>Perintah ini memerlukan webman-framework >= 1.3.0</error>',
+            ],
+            'th' => [
+                'install_title' => '<info>รันสคริปต์ติดตั้ง Webman</info>',
+                'done' => '<info>เสร็จสิ้น</info>',
+                'require_version' => '<error>คำสั่งนี้ต้องใช้ webman-framework >= 1.3.0</error>',
+            ],
+        ];
+    }
+
+    public static function getRouteListMessages(): array
+    {
+        $zh = [
+            'title' => '<info>路由列表</info>',
+            'headers' => ['URI', '方法', '回调', '中间件', '名称'],
+            'closure_label' => '闭包',
+            'desc' => '路由列表',
+        ];
+
+        $tw = [
+            'title' => '<info>路由列表</info>',
+            'headers' => ['URI', '方法', '回調', '中間件', '名稱'],
+            'closure_label' => '閉包',
+            'desc' => '路由列表',
+        ];
+
+        $en = [
+            'title' => '<info>Route list</info>',
+            'headers' => ['uri', 'method', 'callback', 'middleware', 'name'],
+            'closure_label' => 'Closure',
+            'desc' => 'Route list',
+        ];
+
+        $ja = [
+            'title' => '<info>ルート一覧</info>',
+            'headers' => ['URI', 'メソッド', 'コールバック', 'ミドルウェア', '名前'],
+            'closure_label' => 'クロージャ',
+            'desc' => 'ルート一覧',
+        ];
+
+        $ko = [
+            'title' => '<info>라우트 목록</info>',
+            'headers' => ['URI', '메서드', '콜백', '미들웨어', '이름'],
+            'closure_label' => '클로저',
+            'desc' => '라우트 목록',
+        ];
+
+        $fr = [
+            'title' => '<info>Liste des routes</info>',
+            'headers' => ['uri', 'méthode', 'callback', 'middleware', 'nom'],
+            'closure_label' => 'Closure',
+            'desc' => 'Liste des routes',
+        ];
+
+        $de = [
+            'title' => '<info>Routenliste</info>',
+            'headers' => ['URI', 'Methode', 'Callback', 'Middleware', 'Name'],
+            'closure_label' => 'Closure',
+            'desc' => 'Routenliste',
+        ];
+
+        $es = [
+            'title' => '<info>Lista de rutas</info>',
+            'headers' => ['uri', 'método', 'callback', 'middleware', 'nombre'],
+            'closure_label' => 'Closure',
+            'desc' => 'Lista de rutas',
+        ];
+
+        $pt = [
+            'title' => '<info>Lista de rotas</info>',
+            'headers' => ['uri', 'método', 'callback', 'middleware', 'nome'],
+            'closure_label' => 'Closure',
+            'desc' => 'Lista de rotas',
+        ];
+
+        $ru = [
+            'title' => '<info>Список маршрутов</info>',
+            'headers' => ['URI', 'Метод', 'Обработчик', 'ПО', 'Имя'],
+            'closure_label' => 'Замыкание',
+            'desc' => 'Список маршрутов',
+        ];
+
+        $vi = [
+            'title' => '<info>Danh sách route</info>',
+            'headers' => ['uri', 'phương thức', 'callback', 'middleware', 'tên'],
+            'closure_label' => 'Closure',
+            'desc' => 'Danh sách route',
+        ];
+
+        $tr = [
+            'title' => '<info>Rota listesi</info>',
+            'headers' => ['uri', 'metot', 'callback', 'middleware', 'ad'],
+            'closure_label' => 'Closure',
+            'desc' => 'Rota listesi',
+        ];
+
+        $id = [
+            'title' => '<info>Daftar rute</info>',
+            'headers' => ['uri', 'metode', 'callback', 'middleware', 'nama'],
+            'closure_label' => 'Closure',
+            'desc' => 'Daftar rute',
+        ];
+
+        $th = [
+            'title' => '<info>รายการเส้นทาง</info>',
+            'headers' => ['URI', 'เมธอด', 'callback', 'middleware', 'ชื่อ'],
+            'closure_label' => 'Closure',
+            'desc' => 'รายการเส้นทาง',
+        ];
+
+        return [
+            'zh_CN' => $zh, 'zh_TW' => $tw, 'en' => $en, 'ja' => $ja, 'ko' => $ko,
+            'fr' => $fr, 'de' => $de, 'es' => $es, 'pt_BR' => $pt, 'ru' => $ru,
+            'vi' => $vi, 'tr' => $tr, 'id' => $id, 'th' => $th,
+        ];
+    }
+
+    public static function getConnectionsMessages(): array
+    {
+        return [
+            'zh_CN' => ['desc' => '获取 worker 链接'],
+            'zh_TW' => ['desc' => '獲取 worker 連結'],
+            'en' => ['desc' => 'Get worker connections'],
+            'ja' => ['desc' => 'ワーカー接続を取得'],
+            'ko' => ['desc' => '워커 연결 가져오기'],
+            'fr' => ['desc' => 'Obtenir les connexions des workers'],
+            'de' => ['desc' => 'Worker-Verbindungen abrufen'],
+            'es' => ['desc' => 'Obtener conexiones de worker'],
+            'pt_BR' => ['desc' => 'Obter conexões do worker'],
+            'ru' => ['desc' => 'Получить соединения worker'],
+            'vi' => ['desc' => 'Lấy kết nối worker'],
+            'tr' => ['desc' => 'Çalışan bağlantılarını al'],
+            'id' => ['desc' => 'Dapatkan koneksi pekerja'],
+            'th' => ['desc' => 'รับการเชื่อมต่อ worker'],
+        ];
+    }
+
+
+
+    public static function getVersionMessages(): array
+    {
+        return [
+            'zh_CN' => [
+                'desc' => '显示 webman 版本',
+                'version' => '<info>Webman-framework 版本</info> <comment>{version}</comment>',
+                'not_found' => '<error>无法读取 workerman/webman-framework 版本信息</error>',
+            ],
+            'zh_TW' => [
+                'desc' => '顯示 webman 版本',
+                'version' => '<info>Webman-framework 版本</info> <comment>{version}</comment>',
+                'not_found' => '<error>無法讀取 workerman/webman-framework 版本資訊</error>',
+            ],
+            'en' => [
+                'desc' => 'Show webman version',
+                'version' => '<info>Webman-framework</info> <comment>{version}</comment>',
+                'not_found' => '<error>Unable to read version info for workerman/webman-framework</error>',
+            ],
+            'ja' => [
+                'desc' => 'webman のバージョンを表示',
+                'version' => '<info>Webman-framework バージョン</info> <comment>{version}</comment>',
+                'not_found' => '<error>workerman/webman-framework のバージョン情報を読み取れません</error>',
+            ],
+            'ko' => [
+                'desc' => 'webman 버전 표시',
+                'version' => '<info>Webman-framework 버전</info> <comment>{version}</comment>',
+                'not_found' => '<error>workerman/webman-framework 버전 정보를 읽을 수 없습니다</error>',
+            ],
+            'fr' => [
+                'desc' => 'Afficher la version de webman',
+                'version' => '<info>Webman-framework</info> <comment>{version}</comment>',
+                'not_found' => '<error>Impossible de lire la version workerman/webman-framework</error>',
+            ],
+            'de' => [
+                'desc' => 'Webman-Version anzeigen',
+                'version' => '<info>Webman-framework</info> <comment>{version}</comment>',
+                'not_found' => '<error>Versionsinfo für workerman/webman-framework konnte nicht gelesen werden</error>',
+            ],
+            'es' => [
+                'desc' => 'Mostrar la versión de webman',
+                'version' => '<info>Webman-framework</info> <comment>{version}</comment>',
+                'not_found' => '<error>No se pudo leer la versión de workerman/webman-framework</error>',
+            ],
+            'pt_BR' => [
+                'desc' => 'Mostrar versão do webman',
+                'version' => '<info>Webman-framework</info> <comment>{version}</comment>',
+                'not_found' => '<error>Não foi possível ler a versão do workerman/webman-framework</error>',
+            ],
+            'ru' => [
+                'desc' => 'Показать версию webman',
+                'version' => '<info>Webman-framework</info> <comment>{version}</comment>',
+                'not_found' => '<error>Не удалось прочитать версию workerman/webman-framework</error>',
+            ],
+            'vi' => [
+                'desc' => 'Hiển thị phiên bản webman',
+                'version' => '<info>Webman-framework</info> <comment>{version}</comment>',
+                'not_found' => '<error>Không đọc được thông tin phiên bản workerman/webman-framework</error>',
+            ],
+            'tr' => [
+                'desc' => 'Webman sürümünü göster',
+                'version' => '<info>Webman-framework</info> <comment>{version}</comment>',
+                'not_found' => '<error>workerman/webman-framework sürüm bilgisi okunamadı</error>',
+            ],
+            'id' => [
+                'desc' => 'Tampilkan versi webman',
+                'version' => '<info>Webman-framework</info> <comment>{version}</comment>',
+                'not_found' => '<error>Tidak dapat membaca info versi workerman/webman-framework</error>',
+            ],
+            'th' => [
+                'desc' => 'แสดงเวอร์ชัน webman',
+                'version' => '<info>Webman-framework</info> <comment>{version}</comment>',
+                'not_found' => '<error>อ่านข้อมูลเวอร์ชัน workerman/webman-framework ไม่ได้</error>',
+            ],
+        ];
+    }
+
+    public static function getServiceMessages(): array
+    {
+        $zhCn = [
+            'start_desc' => '以 DEBUG 模式启动 worker。使用 -d 参数以 DAEMON 模式启动。',
+            'stop_desc' => '停止 worker。使用 -g 参数平滑停止。',
+            'reload_desc' => '平滑重启 worker。使用 -g 参数平滑重载。', // Wait, reload description said "Reload codes" in en.
+            // Chinese usually: "重载代码" or "重启 worker". 
+            // In ReloadCommand: "Reload codes. Use mode -g to reload gracefully."
+            // In ReStartCommand: "Restart workers..."
+            // I'll stick to accurate translation.
+            'reload_desc' => '重载代码。使用 -g 参数平滑重载。',
+            'restart_desc' => '重启 worker。使用 -d 参数以 DAEMON 模式启动。使用 -g 参数平滑停止。',
+            'status_desc' => '获取 worker 状态。使用 -d 参数显示详情。',
+            'daemon_option' => 'DAEMON 模式',
+            'graceful_stop' => '平滑停止',
+            'graceful_reload' => '平滑重载',
+            'live_status' => '显示详情',
+        ];
+
+        $zhTw = [
+            'start_desc' => '以 DEBUG 模式啟動 worker。使用 -d 參數以 DAEMON 模式啟動。',
+            'stop_desc' => '停止 worker。使用 -g 參數平滑停止。',
+            'reload_desc' => '重載程式碼。使用 -g 參數平滑重載。',
+            'restart_desc' => '重啟 worker。使用 -d 參數以 DAEMON 模式啟動。使用 -g 參數平滑停止。',
+            'status_desc' => '獲取 worker 狀態。使用 -d 參數顯示詳情。',
+            'daemon_option' => 'DAEMON 模式',
+            'graceful_stop' => '平滑停止',
+            'graceful_reload' => '平滑重載',
+            'live_status' => '顯示詳情',
+        ];
+
+        $en = [
+            'start_desc' => 'Start worker in DEBUG mode. Use mode -d to start in DAEMON mode.',
+            'stop_desc' => 'Stop worker. Use mode -g to stop gracefully.',
+            'reload_desc' => 'Reload codes. Use mode -g to reload gracefully.',
+            'restart_desc' => 'Restart workers. Use mode -d to start in DAEMON mode. Use mode -g to stop gracefully.',
+            'status_desc' => 'Get worker status. Use mode -d to show live status.',
+            'daemon_option' => 'DAEMON mode',
+            'graceful_stop' => 'graceful stop',
+            'graceful_reload' => 'graceful reload',
+            'live_status' => 'show live status',
+        ];
+
+        return [
+            'zh_CN' => $zhCn,
+            'zh_TW' => $zhTw,
+            'en' => $en,
+        ];
+    }
+    public static function getPluginMessages(): array
+    {
+        $zhCn = [
+            'bad_name' => "<error>插件名无效：{name}\n要求：必须是 composer 包名，格式为 vendor/name（建议全小写），例如 foo/my-admin。</error>",
+            'name_conflict' => "<error>参数冲突：位置参数与 --name 不一致：{arg} vs {opt}\n请只保留一个，或确保两者一致。</error>",
+            'plugin_not_found' => "<error>插件不存在：{name}\n请先安装该插件（例如：composer require {name}），或确认目录存在：{path}</error>",
+            'create_title' => "<info>创建插件</info> <comment>{name}</comment>",
+            'enable_title' => "<info>启用插件</info> <comment>{name}</comment>",
+            'disable_title' => "<info>禁用插件</info> <comment>{name}</comment>",
+            'export_title' => "<info>导出插件</info> <comment>{name}</comment>",
+            'install_title' => "<info>执行安装脚本</info> <comment>{name}</comment>",
+            'uninstall_title' => "<info>执行卸载脚本</info> <comment>{name}</comment>",
+            'missing_name' => "<error>缺少参数：请通过位置参数或 `--name` 指定插件包名（例如 foo/my-admin）。</error>",
+            'dir_exists' => "<error>目录已存在：</error> {path}",
+            'create_failed' => "<error>创建失败：</error> {error}",
+            'step_psr4' => "<comment>步骤</comment> 添加 PSR-4 映射：<info>{key}</info> -> <info>{path}</info>",
+            'psr4_ok' => "<info>PSR-4 映射已写入 composer.json</info>",
+            'psr4_failed' => "<error>写入 composer.json 失败：</error> {error}",
+            'step_config' => "<comment>步骤</comment> 生成配置目录：{path}",
+            'step_vendor' => "<comment>步骤</comment> 生成插件代码目录：{path}",
+            'created' => "<info>已创建：</info> {path}",
+            'dumpautoload_ok' => "<info>已执行：</info> composer dumpautoload",
+            'dumpautoload_failed' => "<comment>提示</comment> 自动执行失败，请手动运行：<info>{cmd}</info>",
+            'dumpautoload_manual' => "<comment>提示</comment> 当前环境无法自动执行命令，请手动运行：<info>composer dumpautoload</info>",
+            'done' => "<info>完成</info> 插件 {name} 创建成功",
+            'config_file' => "<comment>配置文件</comment> {path}",
+            'config_missing' => "<comment>提示</comment> 配置文件不存在，跳过：{path}",
+            'enable_key_missing' => "<comment>提示</comment> 配置项 `enable` 不存在，跳过：{path}",
+            'already_enabled' => "<comment>提示</comment> 已是启用状态，无需修改",
+            'already_disabled' => "<comment>提示</comment> 已是禁用状态，无需修改",
+            'enabled_ok' => "<info>已启用</info> {name}",
+            'disabled_ok' => "<info>已禁用</info> {name}",
+            'updated_ok' => "<info>已更新</info> {path}",
+            'update_failed' => "<error>更新失败：</error> {error}",
+            'export_install_created' => "<info>已生成：</info> {path}",
+            'export_copy' => "<info>复制</info> {src} <comment>→</comment> {dest}",
+            'export_skip_missing' => "<comment>跳过</comment> 路径不存在：{path}",
+            'export_saved' => "<info>已导出</info> {name} <comment>→</comment> {dest}",
+            'script_missing' => "<comment>提示</comment> 未找到安装/卸载脚本（Install::WEBMAN_PLUGIN 或方法不存在）。如刚修改过 composer.json，请先执行：<info>composer dumpautoload</info>",
+            'script_ok' => "<info>执行完成</info>",
+            'script_failed' => "<error>执行失败：</error> {error}",
+            'config_key_missing' => "<error>配置项 `{key}` 不存在：</error> {path}",
+            'description_name' => '插件包名 (vendor/name)',
+            'description_source' => '要导出的目录',
+        ];
+
+        $en = [
+            'bad_name' => "<error>Invalid plugin name: {name}\nIt must be a composer package name in vendor/name format (prefer lowercase), e.g. foo/my-admin.</error>",
+            'name_conflict' => "<error>Argument conflict: positional name differs from --name: {arg} vs {opt}\nPlease keep only one or make them identical.</error>",
+            'plugin_not_found' => "<error>Plugin not found: {name}\nPlease install it first (e.g. composer require {name}) or ensure directory exists: {path}</error>",
+            'create_title' => "<info>Create plugin</info> <comment>{name}</comment>",
+            'enable_title' => "<info>Enable plugin</info> <comment>{name}</comment>",
+            'disable_title' => "<info>Disable plugin</info> <comment>{name}</comment>",
+            'export_title' => "<info>Export plugin</info> <comment>{name}</comment>",
+            'install_title' => "<info>Execute install script</info> <comment>{name}</comment>",
+            'uninstall_title' => "<info>Execute uninstall script</info> <comment>{name}</comment>",
+            'missing_name' => "<error>Missing argument: please provide package name by positional argument or `--name` (e.g. foo/my-admin).</error>",
+            'dir_exists' => "<error>Directory already exists:</error> {path}",
+            'create_failed' => "<error>Create failed:</error> {error}",
+            'step_psr4' => "<comment>Step</comment> Add PSR-4 mapping: <info>{key}</info> -> <info>{path}</info>",
+            'psr4_ok' => "<info>PSR-4 mapping updated in composer.json</info>",
+            'psr4_failed' => "<error>Failed to update composer.json:</error> {error}",
+            'step_config' => "<comment>Step</comment> Create config directory: {path}",
+            'step_vendor' => "<comment>Step</comment> Create plugin source directory: {path}",
+            'created' => "<info>Created:</info> {path}",
+            'dumpautoload_ok' => "<info>Executed:</info> composer dumpautoload",
+            'dumpautoload_failed' => "<comment>Note</comment> Auto execution failed, please run manually: <info>{cmd}</info>",
+            'dumpautoload_manual' => "<comment>Note</comment> Cannot execute commands in this environment, please run: <info>composer dumpautoload</info>",
+            'done' => "<info>Done</info> Plugin {name} created successfully",
+            'config_file' => "<comment>Config file</comment> {path}",
+            'config_missing' => "<comment>Note</comment> Config file not found, skipped: {path}",
+            'enable_key_missing' => "<comment>Note</comment> Config key `enable` not found, skipped: {path}",
+            'already_enabled' => "<comment>Note</comment> Already enabled, no changes needed",
+            'already_disabled' => "<comment>Note</comment> Already disabled, no changes needed",
+            'enabled_ok' => "<info>Enabled</info> {name}",
+            'disabled_ok' => "<info>Disabled</info> {name}",
+            'updated_ok' => "<info>Updated</info> {path}",
+            'update_failed' => "<error>Update failed:</error> {error}",
+            'export_install_created' => "<info>Generated:</info> {path}",
+            'export_copy' => "<info>Copy</info> {src} <comment>→</comment> {dest}",
+            'export_skip_missing' => "<comment>Skip</comment> Path not found: {path}",
+            'export_saved' => "<info>Exported</info> {name} <comment>→</comment> {dest}",
+            'script_missing' => "<comment>Note</comment> Install/Uninstall script not found (Install::WEBMAN_PLUGIN or method missing). If you just changed composer.json, please run: <info>composer dumpautoload</info>",
+            'script_ok' => "<info>Done</info>",
+            'script_failed' => "<error>Execution failed:</error> {error}",
+            'config_key_missing' => "<error>Config item `{key}` not found:</error> {path}",
+            'description_name' => 'Plugin package name (vendor/name)',
+            'description_source' => 'Directories to export',
+        ];
+
+        $zhTw = [
+            'bad_name' => "<error>插件名稱無效：{name}\n要求：必須是 composer 套件名，格式為 vendor/name（建議全小寫），例如 foo/my-admin。</error>",
+            'name_conflict' => "<error>參數衝突：位置參數與 --name 不一致：{arg} vs {opt}\n請只保留一個，或確保兩者一致。</error>",
+            'plugin_not_found' => "<error>插件不存在：{name}\n請先安裝該插件（例如：composer require {name}），或確認目錄存在：{path}</error>",
+            'create_title' => "<info>建立插件</info> <comment>{name}</comment>",
+            'enable_title' => "<info>啟用插件</info> <comment>{name}</comment>",
+            'disable_title' => "<info>停用插件</info> <comment>{name}</comment>",
+            'export_title' => "<info>匯出插件</info> <comment>{name}</comment>",
+            'install_title' => "<info>執行安裝腳本</info> <comment>{name}</comment>",
+            'uninstall_title' => "<info>執行卸載腳本</info> <comment>{name}</comment>",
+            'missing_name' => "<error>缺少參數：請透過位置參數或 `--name` 指定插件套件名（例如 foo/my-admin）。</error>",
+            'dir_exists' => "<error>目錄已存在：</error> {path}",
+            'create_failed' => "<error>建立失敗：</error> {error}",
+            'step_psr4' => "<comment>步驟</comment> 新增 PSR-4 對應：<info>{key}</info> -> <info>{path}</info>",
+            'psr4_ok' => "<info>PSR-4 對應已寫入 composer.json</info>",
+            'psr4_failed' => "<error>寫入 composer.json 失敗：</error> {error}",
+            'step_config' => "<comment>步驟</comment> 產生設定目錄：{path}",
+            'step_vendor' => "<comment>步驟</comment> 產生插件程式目錄：{path}",
+            'created' => "<info>已建立：</info> {path}",
+            'dumpautoload_ok' => "<info>已執行：</info> composer dumpautoload",
+            'dumpautoload_failed' => "<comment>提示</comment> 自動執行失敗，請手動執行：<info>{cmd}</info>",
+            'dumpautoload_manual' => "<comment>提示</comment> 目前環境無法自動執行指令，請手動執行：<info>composer dumpautoload</info>",
+            'done' => "<info>完成</info> 插件 {name} 建立成功",
+            'config_file' => "<comment>設定檔</comment> {path}",
+            'config_missing' => "<comment>提示</comment> 設定檔不存在，略過：{path}",
+            'enable_key_missing' => "<comment>提示</comment> 設定項 `enable` 不存在，略過：{path}",
+            'already_enabled' => "<comment>提示</comment> 已是啟用狀態，無需修改",
+            'already_disabled' => "<comment>提示</comment> 已是停用狀態，無需修改",
+            'enabled_ok' => "<info>已啟用</info> {name}",
+            'disabled_ok' => "<info>已停用</info> {name}",
+            'updated_ok' => "<info>已更新</info> {path}",
+            'update_failed' => "<error>更新失敗：</error> {error}",
+            'export_install_created' => "<info>已產生：</info> {path}",
+            'export_copy' => "<info>複製</info> {src} <comment>→</comment> {dest}",
+            'export_skip_missing' => "<comment>略過</comment> 路徑不存在：{path}",
+            'export_saved' => "<info>已匯出</info> {name} <comment>→</comment> {dest}",
+            'script_missing' => "<comment>提示</comment> 未找到安裝/卸載腳本（Install::WEBMAN_PLUGIN 或方法不存在）。如剛修改過 composer.json，請先執行：<info>composer dumpautoload</info>",
+            'script_ok' => "<info>執行完成</info>",
+            'script_failed' => "<error>執行失敗：</error> {error}",
+        ];
+
+        $ja = [
+            'bad_name' => "<error>無効なプラグイン名：{name}\ncomposer パッケージ名（vendor/name、小推奨）が必要です。例：foo/my-admin。</error>",
+            'name_conflict' => "<error>引数の衝突：位置引数と --name が一致しません：{arg} vs {opt}\nどちらか一方に統一してください。</error>",
+            'plugin_not_found' => "<error>プラグインが見つかりません：{name}\n先にインストール（例：composer require {name}）するか、ディレクトリ {path} の存在を確認してください。</error>",
+            'create_title' => "<info>プラグインを作成</info> <comment>{name}</comment>",
+            'enable_title' => "<info>プラグインを有効化</info> <comment>{name}</comment>",
+            'disable_title' => "<info>プラグインを無効化</info> <comment>{name}</comment>",
+            'export_title' => "<info>プラグインをエクスポート</info> <comment>{name}</comment>",
+            'install_title' => "<info>インストールスクリプトを実行</info> <comment>{name}</comment>",
+            'uninstall_title' => "<info>アンインストールスクリプトを実行</info> <comment>{name}</comment>",
+            'missing_name' => "<error>引数がありません。位置引数または `--name` でパッケージ名（例：foo/my-admin）を指定してください。</error>",
+            'dir_exists' => "<error>ディレクトリが既に存在します：</error> {path}",
+            'create_failed' => "<error>作成に失敗しました：</error> {error}",
+            'step_psr4' => "<comment>手順</comment> PSR-4 マッピングを追加：<info>{key}</info> -> <info>{path}</info>",
+            'psr4_ok' => "<info>composer.json に PSR-4 マッピングを反映しました</info>",
+            'psr4_failed' => "<error>composer.json の更新に失敗しました：</error> {error}",
+            'step_config' => "<comment>手順</comment> 設定ディレクトリを作成：{path}",
+            'step_vendor' => "<comment>手順</comment> プラグインソースディレクトリを作成：{path}",
+            'created' => "<info>作成しました：</info> {path}",
+            'dumpautoload_ok' => "<info>実行しました：</info> composer dumpautoload",
+            'dumpautoload_failed' => "<comment>注意</comment> 自動実行に失敗しました。手動で実行してください：<info>{cmd}</info>",
+            'dumpautoload_manual' => "<comment>注意</comment> この環境ではコマンドを自動実行できません。手動で <info>composer dumpautoload</info> を実行してください。",
+            'done' => "<info>完了</info> プラグイン {name} の作成に成功しました",
+            'config_file' => "<comment>設定ファイル</comment> {path}",
+            'config_missing' => "<comment>注意</comment> 設定ファイルが見つかりません、スキップ：{path}",
+            'enable_key_missing' => "<comment>注意</comment> 設定キー `enable` が見つかりません、スキップ：{path}",
+            'already_enabled' => "<comment>注意</comment> 既に有効です。変更不要です。",
+            'already_disabled' => "<comment>注意</comment> 既に無効です。変更不要です。",
+            'enabled_ok' => "<info>有効にしました</info> {name}",
+            'disabled_ok' => "<info>無効にしました</info> {name}",
+            'updated_ok' => "<info>更新しました</info> {path}",
+            'update_failed' => "<error>更新に失敗しました：</error> {error}",
+            'export_install_created' => "<info>生成しました：</info> {path}",
+            'export_copy' => "<info>コピー</info> {src} <comment>→</comment> {dest}",
+            'export_skip_missing' => "<comment>スキップ</comment> パスが見つかりません：{path}",
+            'export_saved' => "<info>エクスポートしました</info> {name} <comment>→</comment> {dest}",
+            'script_missing' => "<comment>注意</comment> インストール/アンインストールスクリプトが見つかりません（Install::WEBMAN_PLUGIN またはメソッドがありません）。composer.json を変更した場合は <info>composer dumpautoload</info> を実行してください。",
+            'script_ok' => "<info>完了</info>",
+            'script_failed' => "<error>実行に失敗しました：</error> {error}",
+        ];
+
+        $ko = [
+            'bad_name' => "<error>잘못된 플러그인 이름: {name}\ncomposer 패키지 이름(vendor/name, 소문자 권장)이어야 합니다. 예: foo/my-admin.</error>",
+            'name_conflict' => "<error>인자 충돌: 위치 인자와 --name이 일치하지 않습니다: {arg} vs {opt}\n하나만 사용하거나 동일하게 맞추세요.</error>",
+            'plugin_not_found' => "<error>플러그인을 찾을 수 없습니다: {name}\n먼저 설치하세요(예: composer require {name}) 또는 디렉터리 존재 여부 확인: {path}</error>",
+            'create_title' => "<info>플러그인 생성</info> <comment>{name}</comment>",
+            'enable_title' => "<info>플러그인 활성화</info> <comment>{name}</comment>",
+            'disable_title' => "<info>플러그인 비활성화</info> <comment>{name}</comment>",
+            'export_title' => "<info>플러그인 내보내기</info> <comment>{name}</comment>",
+            'install_title' => "<info>설치 스크립트 실행</info> <comment>{name}</comment>",
+            'uninstall_title' => "<info>제거 스크립트 실행</info> <comment>{name}</comment>",
+            'missing_name' => "<error>인자가 없습니다. 위치 인자 또는 `--name`으로 패키지 이름(예: foo/my-admin)을 지정하세요.</error>",
+            'dir_exists' => "<error>디렉터리가 이미 있습니다:</error> {path}",
+            'create_failed' => "<error>생성 실패:</error> {error}",
+            'step_psr4' => "<comment>단계</comment> PSR-4 매핑 추가: <info>{key}</info> -> <info>{path}</info>",
+            'psr4_ok' => "<info>composer.json에 PSR-4 매핑이 반영되었습니다</info>",
+            'psr4_failed' => "<error>composer.json 업데이트 실패:</error> {error}",
+            'step_config' => "<comment>단계</comment> 설정 디렉터리 생성: {path}",
+            'step_vendor' => "<comment>단계</comment> 플러그인 소스 디렉터리 생성: {path}",
+            'created' => "<info>생성됨:</info> {path}",
+            'dumpautoload_ok' => "<info>실행됨:</info> composer dumpautoload",
+            'dumpautoload_failed' => "<comment>참고</comment> 자동 실행에 실패했습니다. 수동으로 실행하세요: <info>{cmd}</info>",
+            'dumpautoload_manual' => "<comment>참고</comment> 이 환경에서는 명령을 자동 실행할 수 없습니다. 수동으로 <info>composer dumpautoload</info>를 실행하세요.",
+            'done' => "<info>완료</info> 플러그인 {name}이(가) 성공적으로 생성되었습니다",
+            'config_file' => "<comment>설정 파일</comment> {path}",
+            'config_missing' => "<comment>참고</comment> 설정 파일을 찾을 수 없어 건너뜁니다: {path}",
+            'enable_key_missing' => "<comment>참고</comment> 설정 키 `enable`을 찾을 수 없어 건너뜁니다: {path}",
+            'already_enabled' => "<comment>참고</comment> 이미 활성화되어 있습니다. 변경할 필요 없습니다.",
+            'already_disabled' => "<comment>참고</comment> 이미 비활성화되어 있습니다. 변경할 필요 없습니다.",
+            'enabled_ok' => "<info>활성화됨</info> {name}",
+            'disabled_ok' => "<info>비활성화됨</info> {name}",
+            'updated_ok' => "<info>업데이트됨</info> {path}",
+            'update_failed' => "<error>업데이트 실패:</error> {error}",
+            'export_install_created' => "<info>생성됨:</info> {path}",
+            'export_copy' => "<info>복사</info> {src} <comment>→</comment> {dest}",
+            'export_skip_missing' => "<comment>건너뜀</comment> 경로를 찾을 수 없습니다: {path}",
+            'export_saved' => "<info>내보냄</info> {name} <comment>→</comment> {dest}",
+            'script_missing' => "<comment>참고</comment> 설치/제거 스크립트를 찾을 수 없습니다(Install::WEBMAN_PLUGIN 또는 메서드 없음). composer.json을 수정했다면 <info>composer dumpautoload</info>를 실행하세요.",
+            'script_ok' => "<info>완료</info>",
+            'script_failed' => "<error>실행 실패:</error> {error}",
+        ];
+
+        return [
+            'zh_CN' => $zhCn,
+            'zh_TW' => $zhTw,
+            'en' => $en,
+            'ja' => $ja,
+            'ko' => $ko,
+        ];
+    }
+
+    public static function getPluginCreateHelpText(): array
+    {
+        $zh = <<<'EOF'
+创建一个 Webman 插件骨架（composer 包形式）。
+
+用法：
+  php webman plugin:create foo/my-admin
+  php webman plugin:create --name foo/my-admin
+
+说明：
+  - 插件名必须是 composer 包名：vendor/name（全小写）。
+  - 会创建目录：
+      - config/plugin/<vendor>/<name>
+      - vendor/<vendor>/<name>/src
+  - 会在项目 composer.json 的 autoload.psr-4 中追加命名空间映射，并尝试执行 `composer dumpautoload`。
+EOF;
+        $en = <<<'EOF'
+Create a Webman plugin skeleton (as a composer package).
+
+Usage:
+  php webman plugin:create foo/my-admin
+  php webman plugin:create --name foo/my-admin
+
+Notes:
+  - Plugin name must be a composer package name: vendor/name (lowercase).
+  - It will create:
+      - config/plugin/<vendor>/<name>
+      - vendor/<vendor>/<name>/src
+  - It will append a PSR-4 mapping into project composer.json and try to run `composer dumpautoload`.
+EOF;
+        return [
+            'zh_CN' => $zh, 'zh_TW' => $zh, 'en' => $en,
+            'ja' => "Webman プラグインのスケルトンを作成（composer パッケージとして）。\n\n用法：\n  php webman plugin:create foo/my-admin\n  php webman plugin:create --name foo/my-admin\n\n説明：\n  - プラグイン名は composer パッケージ名（vendor/name、小推奨）が必要です。\n  - 作成するもの：config/plugin/<vendor>/<name>、vendor/<vendor>/<name>/src\n  - プロジェクト composer.json に PSR-4 を追加し `composer dumpautoload` を実行。",
+            'ko' => "Webman 플러그인 스켈레톤 생성 (composer 패키지로).\n\n사용법:\n  php webman plugin:create foo/my-admin\n  php webman plugin:create --name foo/my-admin\n\n참고:\n  - 플러그인 이름은 composer 패키지명: vendor/name(소문자).\n  - 생성: config/plugin/<vendor>/<name>, vendor/<vendor>/<name>/src\n  - 프로젝트 composer.json에 PSR-4 매핑 추가 후 `composer dumpautoload` 실행.",
+            'fr' => "Créer un squelette de plugin Webman (en tant que paquet composer).\n\nUsage :\n  php webman plugin:create foo/my-admin\n  php webman plugin:create --name foo/my-admin\n\nNotes :\n  - Le nom doit être un paquet composer : vendor/name (minuscules).\n  - Crée : config/plugin/<vendor>/<name>, vendor/<vendor>/<name>/src\n  - Ajoute le mapping PSR-4 dans composer.json et exécute `composer dumpautoload`.",
+            'de' => "Webman-Plugin-Gerüst erstellen (als Composer-Paket).\n\nVerwendung:\n  php webman plugin:create foo/my-admin\n  php webman plugin:create --name foo/my-admin\n\nHinweise:\n  - Plugin-Name muss Composer-Paketname sein: vendor/name (Kleinbuchstaben).\n  - Erstellt: config/plugin/<vendor>/<name>, vendor/<vendor>/<name>/src\n  - Fügt PSR-4-Mapping in composer.json ein und führt `composer dumpautoload` aus.",
+            'es' => "Crear esqueleto de plugin Webman (como paquete composer).\n\nUso:\n  php webman plugin:create foo/my-admin\n  php webman plugin:create --name foo/my-admin\n\nNotas:\n  - El nombre debe ser un paquete composer: vendor/name (minúsculas).\n  - Crea: config/plugin/<vendor>/<name>, vendor/<vendor>/<name>/src\n  - Añade mapeo PSR-4 en composer.json e intenta ejecutar `composer dumpautoload`.",
+            'pt_BR' => "Criar esqueleto de plugin Webman (como pacote composer).\n\nUso:\n  php webman plugin:create foo/my-admin\n  php webman plugin:create --name foo/my-admin\n\nNotas:\n  - Nome deve ser pacote composer: vendor/name (minúsculas).\n  - Cria: config/plugin/<vendor>/<name>, vendor/<vendor>/<name>/src\n  - Adiciona mapeamento PSR-4 no composer.json e tenta executar `composer dumpautoload`.",
+            'ru' => "Создать каркас плагина Webman (как пакет composer).\n\nИспользование:\n  php webman plugin:create foo/my-admin\n  php webman plugin:create --name foo/my-admin\n\nПримечания:\n  - Имя должно быть именем пакета composer: vendor/name (нижний регистр).\n  - Создаёт: config/plugin/<vendor>/<name>, vendor/<vendor>/<name>/src\n  - Добавляет PSR-4 в composer.json и запускает `composer dumpautoload`.",
+            'vi' => "Tạo khung plugin Webman (dưới dạng gói composer).\n\nCách dùng:\n  php webman plugin:create foo/my-admin\n  php webman plugin:create --name foo/my-admin\n\nLưu ý:\n  - Tên plugin phải là tên gói composer: vendor/name (chữ thường).\n  - Tạo: config/plugin/<vendor>/<name>, vendor/<vendor>/<name>/src\n  - Thêm ánh xạ PSR-4 vào composer.json và chạy `composer dumpautoload`.",
+            'tr' => "Webman eklenti iskeleti oluştur (composer paketi olarak).\n\nKullanım:\n  php webman plugin:create foo/my-admin\n  php webman plugin:create --name foo/my-admin\n\nNotlar:\n  - Eklenti adı composer paket adı olmalı: vendor/name (küçük harf).\n  - Oluşturur: config/plugin/<vendor>/<name>, vendor/<vendor>/<name>/src\n  - composer.json'a PSR-4 eşlemesi ekler ve `composer dumpautoload` çalıştırır.",
+            'id' => "Buat kerangka plugin Webman (sebagai paket composer).\n\nPenggunaan:\n  php webman plugin:create foo/my-admin\n  php webman plugin:create --name foo/my-admin\n\nCatatan:\n  - Nama plugin harus nama paket composer: vendor/name (huruf kecil).\n  - Membuat: config/plugin/<vendor>/<name>, vendor/<vendor>/<name>/src\n  - Menambah pemetaan PSR-4 ke composer.json dan menjalankan `composer dumpautoload`.",
+            'th' => "สร้างโครงปลั๊กอิน Webman (เป็นแพ็กเกจ composer)\n\nวิธีใช้:\n  php webman plugin:create foo/my-admin\n  php webman plugin:create --name foo/my-admin\n\nหมายเหตุ:\n  - ชื่อปลั๊กอินต้องเป็นชื่อแพ็กเกจ composer: vendor/name (ตัวพิมพ์เล็ก)\n  - สร้าง: config/plugin/<vendor>/<name>, vendor/<vendor>/<name>/src\n  - เพิ่ม PSR-4 mapping ใน composer.json และรัน `composer dumpautoload`",
+        ];
+    }
+
+    public static function getPluginDisableHelpText(): array
+    {
+        $zh = <<<'EOF'
+禁用指定插件（修改 config/plugin/<vendor>/<name>/app.php 中的 enable 值）。
+
+用法：
+  php webman plugin:disable foo/my-admin
+  php webman plugin:disable --name foo/my-admin
+EOF;
+        $en = <<<'EOF'
+Disable a plugin (toggle enable in config/plugin/<vendor>/<name>/app.php).
+
+Usage:
+  php webman plugin:disable foo/my-admin
+  php webman plugin:disable --name foo/my-admin
+EOF;
+        return [
+            'zh_CN' => $zh, 'zh_TW' => $zh, 'en' => $en,
+            'ja' => "プラグインを無効化（config/plugin/<vendor>/<name>/app.php の enable を切り替え）。\n\n用法：\n  php webman plugin:disable foo/my-admin\n  php webman plugin:disable --name foo/my-admin",
+            'ko' => "플러그인 비활성화 (config/plugin/<vendor>/<name>/app.php의 enable 변경).\n\n사용법:\n  php webman plugin:disable foo/my-admin\n  php webman plugin:disable --name foo/my-admin",
+            'fr' => "Désactiver un plugin (modifier enable dans config/plugin/<vendor>/<name>/app.php).\n\nUsage :\n  php webman plugin:disable foo/my-admin\n  php webman plugin:disable --name foo/my-admin",
+            'de' => "Plugin deaktivieren (enable in config/plugin/<vendor>/<name>/app.php umschalten).\n\nVerwendung:\n  php webman plugin:disable foo/my-admin\n  php webman plugin:disable --name foo/my-admin",
+            'es' => "Desactivar un plugin (cambiar enable en config/plugin/<vendor>/<name>/app.php).\n\nUso:\n  php webman plugin:disable foo/my-admin\n  php webman plugin:disable --name foo/my-admin",
+            'pt_BR' => "Desativar um plugin (alterar enable em config/plugin/<vendor>/<name>/app.php).\n\nUso:\n  php webman plugin:disable foo/my-admin\n  php webman plugin:disable --name foo/my-admin",
+            'ru' => "Отключить плагин (изменить enable в config/plugin/<vendor>/<name>/app.php).\n\nИспользование:\n  php webman plugin:disable foo/my-admin\n  php webman plugin:disable --name foo/my-admin",
+            'vi' => "Tắt plugin (đổi enable trong config/plugin/<vendor>/<name>/app.php).\n\nCách dùng:\n  php webman plugin:disable foo/my-admin\n  php webman plugin:disable --name foo/my-admin",
+            'tr' => "Eklentiyi devre dışı bırak (config/plugin/<vendor>/<name>/app.php içinde enable değiştir).\n\nKullanım:\n  php webman plugin:disable foo/my-admin\n  php webman plugin:disable --name foo/my-admin",
+            'id' => "Nonaktifkan plugin (ubah enable di config/plugin/<vendor>/<name>/app.php).\n\nPenggunaan:\n  php webman plugin:disable foo/my-admin\n  php webman plugin:disable --name foo/my-admin",
+            'th' => "ปิดใช้งานปลั๊กอิน (เปลี่ยน enable ใน config/plugin/<vendor>/<name>/app.php)\n\nวิธีใช้:\n  php webman plugin:disable foo/my-admin\n  php webman plugin:disable --name foo/my-admin",
+        ];
+    }
+
+    public static function getPluginEnableHelpText(): array
+    {
+        $zh = <<<'EOF'
+启用指定插件（将 config/plugin/<vendor>/<name>/app.php 中的 enable 设置为 true）。
+
+用法：
+  php webman plugin:enable foo/my-admin
+  php webman plugin:enable --name foo/my-admin
+EOF;
+        $en = <<<'EOF'
+Enable a plugin (set enable to true in config/plugin/<vendor>/<name>/app.php).
+
+Usage:
+  php webman plugin:enable foo/my-admin
+  php webman plugin:enable --name foo/my-admin
+EOF;
+        return [
+            'zh_CN' => $zh, 'zh_TW' => $zh, 'en' => $en,
+            'ja' => "プラグインを有効化（config/plugin/<vendor>/<name>/app.php の enable を true に設定）。\n\n用法：\n  php webman plugin:enable foo/my-admin\n  php webman plugin:enable --name foo/my-admin",
+            'ko' => "플러그인 활성화 (config/plugin/<vendor>/<name>/app.php의 enable을 true로 설정).\n\n사용법:\n  php webman plugin:enable foo/my-admin\n  php webman plugin:enable --name foo/my-admin",
+            'fr' => "Activer un plugin (mettre enable à true dans config/plugin/<vendor>/<name>/app.php).\n\nUsage :\n  php webman plugin:enable foo/my-admin\n  php webman plugin:enable --name foo/my-admin",
+            'de' => "Plugin aktivieren (enable in config/plugin/<vendor>/<name>/app.php auf true setzen).\n\nVerwendung:\n  php webman plugin:enable foo/my-admin\n  php webman plugin:enable --name foo/my-admin",
+            'es' => "Activar un plugin (poner enable en true en config/plugin/<vendor>/<name>/app.php).\n\nUso:\n  php webman plugin:enable foo/my-admin\n  php webman plugin:enable --name foo/my-admin",
+            'pt_BR' => "Ativar um plugin (definir enable como true em config/plugin/<vendor>/<name>/app.php).\n\nUso:\n  php webman plugin:enable foo/my-admin\n  php webman plugin:enable --name foo/my-admin",
+            'ru' => "Включить плагин (установить enable в true в config/plugin/<vendor>/<name>/app.php).\n\nИспользование:\n  php webman plugin:enable foo/my-admin\n  php webman plugin:enable --name foo/my-admin",
+            'vi' => "Bật plugin (đặt enable thành true trong config/plugin/<vendor>/<name>/app.php).\n\nCách dùng:\n  php webman plugin:enable foo/my-admin\n  php webman plugin:enable --name foo/my-admin",
+            'tr' => "Eklentiyi etkinleştir (config/plugin/<vendor>/<name>/app.php içinde enable true yap).\n\nKullanım:\n  php webman plugin:enable foo/my-admin\n  php webman plugin:enable --name foo/my-admin",
+            'id' => "Aktifkan plugin (atur enable ke true di config/plugin/<vendor>/<name>/app.php).\n\nPenggunaan:\n  php webman plugin:enable foo/my-admin\n  php webman plugin:enable --name foo/my-admin",
+            'th' => "เปิดใช้งานปลั๊กอิน (ตั้งค่า enable เป็น true ใน config/plugin/<vendor>/<name>/app.php)\n\nวิธีใช้:\n  php webman plugin:enable foo/my-admin\n  php webman plugin:enable --name foo/my-admin",
+        ];
+    }
+
+    public static function getPluginExportHelpText(): array
+    {
+        $zh = <<<'EOF'
+导出指定插件为本地骨架文件（用于离线分发或二次开发）。
+
+用法：
+  php webman plugin:export foo/my-admin
+  php webman plugin:export --name foo/my-admin
+EOF;
+        $en = <<<'EOF'
+Export a plugin as local skeleton files (for offline distribution or development).
+
+Usage:
+  php webman plugin:export foo/my-admin
+  php webman plugin:export --name foo/my-admin
+EOF;
+        return [
+            'zh_CN' => $zh, 'zh_TW' => $zh, 'en' => $en,
+            'ja' => "プラグインをローカルのスケルトンファイルとしてエクスポート（オフライン配布や開発用）。\n\n用法：\n  php webman plugin:export foo/my-admin\n  php webman plugin:export --name foo/my-admin",
+            'ko' => "플러그인을 로컬 스켈레톤 파일로 내보내기 (오프라인 배포 또는 개발용).\n\n사용법:\n  php webman plugin:export foo/my-admin\n  php webman plugin:export --name foo/my-admin",
+            'fr' => "Exporter un plugin en fichiers squelettes locaux (pour distribution hors ligne ou développement).\n\nUsage :\n  php webman plugin:export foo/my-admin\n  php webman plugin:export --name foo/my-admin",
+            'de' => "Plugin als lokale Skeleton-Dateien exportieren (für Offline-Distribution oder Entwicklung).\n\nVerwendung:\n  php webman plugin:export foo/my-admin\n  php webman plugin:export --name foo/my-admin",
+            'es' => "Exportar un plugin como archivos de esqueleto locales (para distribución offline o desarrollo).\n\nUso:\n  php webman plugin:export foo/my-admin\n  php webman plugin:export --name foo/my-admin",
+            'pt_BR' => "Exportar um plugin como arquivos de esqueleto locais (para distribuição offline ou desenvolvimento).\n\nUso:\n  php webman plugin:export foo/my-admin\n  php webman plugin:export --name foo/my-admin",
+            'ru' => "Экспортировать плагин как локальные файлы каркаса (для офлайн-дистрибуции или разработки).\n\nИспользование:\n  php webman plugin:export foo/my-admin\n  php webman plugin:export --name foo/my-admin",
+            'vi' => "Xuất plugin dưới dạng các tệp khung cục bộ (để phân phối ngoại tuyến hoặc phát triển).\n\nCách dùng:\n  php webman plugin:export foo/my-admin\n  php webman plugin:export --name foo/my-admin",
+            'tr' => "Eklentiyi yerel iskelet dosyaları olarak dışa aktar (çevrimdışı dağıtım veya geliştirme için).\n\nKullanım:\n  php webman plugin:export foo/my-admin\n  php webman plugin:export --name foo/my-admin",
+            'id' => "Ekspor plugin sebagai file kerangka lokal (untuk distribusi offline atau pengembangan).\n\nPenggunaan:\n  php webman plugin:export foo/my-admin\n  php webman plugin:export --name foo/my-admin",
+            'th' => "ส่งออกปลั๊กอินเป็นไฟล์โครงสร้างท้องถิ่น (สำหรับการแจกจ่ายแบบออฟไลน์หรือการพัฒนาต่อ)\n\nวิธีใช้:\n  php webman plugin:export foo/my-admin\n  php webman plugin:export --name foo/my-admin",
+        ];
+    }
+
+    public static function getPluginInstallHelpText(): array
+    {
+        $zh = <<<'EOF'
+手动触发插件的安装脚本（Install.php）。通常在 composer require 后自动执行。
+
+用法：
+  php webman plugin:install foo/my-admin
+  php webman plugin:install --name foo/my-admin
+EOF;
+        $en = <<<'EOF'
+Manually trigger the plugin's install script (Install.php). Usually runs automatically after composer require.
+
+Usage:
+  php webman plugin:install foo/my-admin
+  php webman plugin:install --name foo/my-admin
+EOF;
+        return [
+            'zh_CN' => $zh, 'zh_TW' => $zh, 'en' => $en,
+            'ja' => "プラグインのインストールスクリプト（Install.php）を手動で実行。通常は composer require 後に自動実行されます。\n\n用法：\n  php webman plugin:install foo/my-admin\n  php webman plugin:install --name foo/my-admin",
+            'ko' => "플러그인의 설치 스크립트(Install.php)를 수동으로 실행. 보통 composer require 후에 자동 실행됩니다.\n\n사용법:\n  php webman plugin:install foo/my-admin\n  php webman plugin:install --name foo/my-admin",
+            'fr' => "Déclencher manuellement le script d'installation du plugin (Install.php). s'exécute normalement automatiquement après composer require.\n\nUsage :\n  php webman plugin:install foo/my-admin\n  php webman plugin:install --name foo/my-admin",
+            'de' => "Installationsskript des Plugins (Install.php) manuell auslösen. Wird normalerweise automatisch nach composer require ausgeführt.\n\nVerwendung:\n  php webman plugin:install foo/my-admin\n  php webman plugin:install --name foo/my-admin",
+            'es' => "Activar manualmente el script de instalación del plugin (Install.php). Normalmente se ejecuta automáticamente después de composer require.\n\nUso:\n  php webman plugin:install foo/my-admin\n  php webman plugin:install --name foo/my-admin",
+            'pt_BR' => "Acionar manualmente o script de instalação do plugin (Install.php). Geralmente é executado automaticamente após composer require.\n\nUso:\n  php webman plugin:install foo/my-admin\n  php webman plugin:install --name foo/my-admin",
+            'ru' => "Вручную запустить инсталляционный скрипт плагина (Install.php). Обычно запускается автоматически после composer require.\n\nИспользование:\n  php webman plugin:install foo/my-admin\n  php webman plugin:install --name foo/my-admin",
+            'vi' => "Kích hoạt thủ công tập lệnh cài đặt của plugin (Install.php). Thường tự động chạy sau khi tải composer require.\n\nCách dùng:\n  php webman plugin:install foo/my-admin\n  php webman plugin:install --name foo/my-admin",
+            'tr' => "Eklentinin kurulum betiğini (Install.php) manuel olarak tetikleyin. Genellikle composer require sonrası otomatik çalışır.\n\nKullanım:\n  php webman plugin:install foo/my-admin\n  php webman plugin:install --name foo/my-admin",
+            'id' => "Memicu skrip penginstalan plugin secara manual (Install.php). Biasanya berjalan secara otomatis setelah composer require.\n\nPenggunaan:\n  php webman plugin:install foo/my-admin\n  php webman plugin:install --name foo/my-admin",
+            'th' => "เรียกใช้งานสคริปต์ติดตั้งปลั๊กอินด้วยตนเอง (Install.php) ปกติจะทำงานโดยอัตโนมัติหลังจากรัน composer require\n\nวิธีใช้:\n  php webman plugin:install foo/my-admin\n  php webman plugin:install --name foo/my-admin",
+        ];
+    }
+
+    public static function getPluginUninstallHelpText(): array
+    {
+        $zh = <<<'EOF'
+手动触发插件的卸载脚本（Install.php@uninstall）。通常在 composer remove 前自动执行。
+
+用法：
+  php webman plugin:uninstall foo/my-admin
+  php webman plugin:uninstall --name foo/my-admin
+EOF;
+        $en = <<<'EOF'
+Manually trigger the plugin's uninstall script (Install.php@uninstall). Usually runs automatically before composer remove.
+
+Usage:
+  php webman plugin:uninstall foo/my-admin
+  php webman plugin:uninstall --name foo/my-admin
+EOF;
+        return [
+            'zh_CN' => $zh, 'zh_TW' => $zh, 'en' => $en,
+            'ja' => "プラグインのアンインストールスクリプト（Install.php@uninstall）を手動で実行。通常は composer remove 前に自動実行されます。\n\n用法：\n  php webman plugin:uninstall foo/my-admin\n  php webman plugin:uninstall --name foo/my-admin",
+            'ko' => "플러그인의 제거 스크립트(Install.php@uninstall)를 수동으로 실행. 보통 composer remove 이전에 자동 실행됩니다.\n\n사용법:\n  php webman plugin:uninstall foo/my-admin\n  php webman plugin:uninstall --name foo/my-admin",
+            'fr' => "Déclencher manuellement le script de désinstallation du plugin (Install.php@uninstall). s'exécute normalement automatiquement avant composer remove.\n\nUsage :\n  php webman plugin:uninstall foo/my-admin\n  php webman plugin:uninstall --name foo/my-admin",
+            'de' => "Deinstallationsskript des Plugins (Install.php@uninstall) manuell auslösen. Wird normalerweise automatisch vor composer remove ausgeführt.\n\nVerwendung:\n  php webman plugin:uninstall foo/my-admin\n  php webman plugin:uninstall --name foo/my-admin",
+            'es' => "Activar manualmente el script de desinstalación del plugin (Install.php@uninstall). Normalmente se ejecuta automáticamente antes de composer remove.\n\nUso:\n  php webman plugin:uninstall foo/my-admin\n  php webman plugin:uninstall --name foo/my-admin",
+            'pt_BR' => "Acionar manualmente o script de desinstalação do plugin (Install.php@uninstall). Geralmente é executado automaticamente antes de composer remove.\n\nUso:\n  php webman plugin:uninstall foo/my-admin\n  php webman plugin:uninstall --name foo/my-admin",
+            'ru' => "Вручную запустить скрипт удаления плагина (Install.php@uninstall). Обычно запускается автоматически перед composer remove.\n\nИспользование:\n  php webman plugin:uninstall foo/my-admin\n  php webman plugin:uninstall --name foo/my-admin",
+            'vi' => "Kích hoạt thủ công tập lệnh gỡ cài đặt của plugin (Install.php@uninstall). Thường tự động chạy trước khi composer remove.\n\nCách dùng:\n  php webman plugin:uninstall foo/my-admin\n  php webman plugin:uninstall --name foo/my-admin",
+            'tr' => "Eklentinin kaldırma betiğini (Install.php@uninstall) manuel olarak tetikleyin. Genellikle composer remove öncesi otomatik çalışır.\n\nKullanım:\n  php webman plugin:uninstall foo/my-admin\n  php webman plugin:uninstall --name foo/my-admin",
+            'id' => "Memicu skrip penghapusan plugin secara manual (Install.php@uninstall). Biasanya berjalan secara otomatis sebelum composer remove.\n\nPenggunaan:\n  php webman plugin:uninstall foo/my-admin\n  php webman plugin:uninstall --name foo/my-admin",
+            'th' => "เรียกใช้งานสคริปต์ถอนการติดตั้งปลั๊กอินด้วยตนเอง (Install.php@uninstall) ปกติจะทำงานโดยอัตโนมัติก่อนรัน composer remove\n\nวิธีใช้:\n  php webman plugin:uninstall foo/my-admin\n  php webman plugin:uninstall --name foo/my-admin",
+        ];
+    }
+}

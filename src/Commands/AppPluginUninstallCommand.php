@@ -21,8 +21,14 @@ class AppPluginUninstallCommand extends Command
      */
     protected function configure()
     {
-        $this->addArgument('name', InputArgument::REQUIRED, 'App plugin name');
-        $this->addOption('yes', 'y', InputOption::VALUE_NONE, 'Skip confirmation');
+        $this->addArgument('name', InputArgument::REQUIRED, $this->msg('description_name'));
+        $this->addOption('yes', 'y', InputOption::VALUE_NONE, $this->msg('description_yes'));
+        $this->setHelp($this->buildHelpText());
+    }
+
+    protected function buildHelpText(): string
+    {
+        return Util::selectLocaleMessages(Messages::getAppPluginUninstallHelpText());
     }
 
     /**

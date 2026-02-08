@@ -22,8 +22,8 @@ class PluginCreateCommand extends Command
     protected function configure()
     {
         // Do NOT use "-n": Symfony Console already reserves "-n" for "--no-interaction".
-        $this->addArgument('name', InputArgument::OPTIONAL, 'Plugin name, e.g. foo/my-admin');
-        $this->addOption('name', null, InputOption::VALUE_REQUIRED, 'Plugin name, e.g. foo/my-admin');
+        $this->addArgument('name', InputArgument::OPTIONAL, $this->pluginMsg('description_name'));
+        $this->addOption('name', null, InputOption::VALUE_REQUIRED, $this->pluginMsg('description_name'));
         $this->setHelp($this->buildHelpText());
         $this->addUsage('foo/my-admin');
         $this->addUsage('--name foo/my-admin');
@@ -239,47 +239,6 @@ EOT;
      */
     protected function buildHelpText(): string
     {
-        $zh = <<<'EOF'
-创建一个 Webman 插件骨架（composer 包形式）。
-
-用法：
-  php webman plugin:create foo/my-admin
-  php webman plugin:create --name foo/my-admin
-
-说明：
-  - 插件名必须是 composer 包名：vendor/name（全小写）。
-  - 会创建目录：
-      - config/plugin/<vendor>/<name>
-      - vendor/<vendor>/<name>/src
-  - 会在项目 composer.json 的 autoload.psr-4 中追加命名空间映射，并尝试执行 `composer dumpautoload`。
-EOF;
-        $en = <<<'EOF'
-Create a Webman plugin skeleton (as a composer package).
-
-Usage:
-  php webman plugin:create foo/my-admin
-  php webman plugin:create --name foo/my-admin
-
-Notes:
-  - Plugin name must be a composer package name: vendor/name (lowercase).
-  - It will create:
-      - config/plugin/<vendor>/<name>
-      - vendor/<vendor>/<name>/src
-  - It will append a PSR-4 mapping into project composer.json and try to run `composer dumpautoload`.
-EOF;
-        return Util::selectByLocale([
-            'zh_CN' => $zh, 'zh_TW' => $zh, 'en' => $en,
-            'ja' => "Webman プラグインのスケルトンを作成（composer パッケージとして）。\n\n用法：\n  php webman plugin:create foo/my-admin\n  php webman plugin:create --name foo/my-admin\n\n説明：\n  - プラグイン名は composer パッケージ名（vendor/name、小文字）。\n  - 作成するもの：config/plugin/<vendor>/<name>、vendor/<vendor>/<name>/src\n  - プロジェクト composer.json に PSR-4 を追加し `composer dumpautoload` を実行。",
-            'ko' => "Webman 플러그인 스켈레톤 생성 (composer 패키지로).\n\n사용법:\n  php webman plugin:create foo/my-admin\n  php webman plugin:create --name foo/my-admin\n\n참고:\n  - 플러그인 이름은 composer 패키지명: vendor/name(소문자).\n  - 생성: config/plugin/<vendor>/<name>, vendor/<vendor>/<name>/src\n  - 프로젝트 composer.json에 PSR-4 매핑 추가 후 `composer dumpautoload` 실행.",
-            'fr' => "Créer un squelette de plugin Webman (en tant que paquet composer).\n\nUsage :\n  php webman plugin:create foo/my-admin\n  php webman plugin:create --name foo/my-admin\n\nNotes :\n  - Le nom doit être un paquet composer : vendor/name (minuscules).\n  - Crée : config/plugin/<vendor>/<name>, vendor/<vendor>/<name>/src\n  - Ajoute le mapping PSR-4 dans composer.json et exécute `composer dumpautoload`.",
-            'de' => "Webman-Plugin-Gerüst erstellen (als Composer-Paket).\n\nVerwendung:\n  php webman plugin:create foo/my-admin\n  php webman plugin:create --name foo/my-admin\n\nHinweise:\n  - Plugin-Name muss Composer-Paketname sein: vendor/name (Kleinbuchstaben).\n  - Erstellt: config/plugin/<vendor>/<name>, vendor/<vendor>/<name>/src\n  - Fügt PSR-4-Mapping in composer.json ein und führt `composer dumpautoload` aus.",
-            'es' => "Crear esqueleto de plugin Webman (como paquete composer).\n\nUso:\n  php webman plugin:create foo/my-admin\n  php webman plugin:create --name foo/my-admin\n\nNotas:\n  - El nombre debe ser un paquete composer: vendor/name (minúsculas).\n  - Crea: config/plugin/<vendor>/<name>, vendor/<vendor>/<name>/src\n  - Añade mapeo PSR-4 en composer.json e intenta ejecutar `composer dumpautoload`.",
-            'pt_BR' => "Criar esqueleto de plugin Webman (como pacote composer).\n\nUso:\n  php webman plugin:create foo/my-admin\n  php webman plugin:create --name foo/my-admin\n\nNotas:\n  - Nome deve ser pacote composer: vendor/name (minúsculas).\n  - Cria: config/plugin/<vendor>/<name>, vendor/<vendor>/<name>/src\n  - Adiciona mapeamento PSR-4 no composer.json e tenta executar `composer dumpautoload`.",
-            'ru' => "Создать каркас плагина Webman (как пакет composer).\n\nИспользование:\n  php webman plugin:create foo/my-admin\n  php webman plugin:create --name foo/my-admin\n\nПримечания:\n  - Имя должно быть именем пакета composer: vendor/name (нижний регистр).\n  - Создаёт: config/plugin/<vendor>/<name>, vendor/<vendor>/<name>/src\n  - Добавляет PSR-4 в composer.json и запускает `composer dumpautoload`.",
-            'vi' => "Tạo khung plugin Webman (dưới dạng gói composer).\n\nCách dùng:\n  php webman plugin:create foo/my-admin\n  php webman plugin:create --name foo/my-admin\n\nLưu ý:\n  - Tên plugin phải là tên gói composer: vendor/name (chữ thường).\n  - Tạo: config/plugin/<vendor>/<name>, vendor/<vendor>/<name>/src\n  - Thêm ánh xạ PSR-4 vào composer.json và chạy `composer dumpautoload`.",
-            'tr' => "Webman eklenti iskeleti oluştur (composer paketi olarak).\n\nKullanım:\n  php webman plugin:create foo/my-admin\n  php webman plugin:create --name foo/my-admin\n\nNotlar:\n  - Eklenti adı composer paket adı olmalı: vendor/name (küçük harf).\n  - Oluşturur: config/plugin/<vendor>/<name>, vendor/<vendor>/<name>/src\n  - composer.json'a PSR-4 eşlemesi ekler ve `composer dumpautoload` çalıştırır.",
-            'id' => "Buat kerangka plugin Webman (sebagai paket composer).\n\nPenggunaan:\n  php webman plugin:create foo/my-admin\n  php webman plugin:create --name foo/my-admin\n\nCatatan:\n  - Nama plugin harus nama paket composer: vendor/name (huruf kecil).\n  - Membuat: config/plugin/<vendor>/<name>, vendor/<vendor>/<name>/src\n  - Menambah pemetaan PSR-4 ke composer.json dan menjalankan `composer dumpautoload`.",
-            'th' => "สร้างโครงปลั๊กอิน Webman (เป็นแพ็กเกจ composer)\n\nวิธีใช้:\n  php webman plugin:create foo/my-admin\n  php webman plugin:create --name foo/my-admin\n\nหมายเหตุ:\n  - ชื่อปลั๊กอินต้องเป็นชื่อแพ็กเกจ composer: vendor/name (ตัวพิมพ์เล็ก)\n  - สร้าง: config/plugin/<vendor>/<name>, vendor/<vendor>/<name>/src\n  - เพิ่ม PSR-4 mapping ใน composer.json และรัน `composer dumpautoload`",
-        ]);
+        return Util::selectLocaleMessages(\Webman\Console\Messages::getPluginCreateHelpText());
     }
 }

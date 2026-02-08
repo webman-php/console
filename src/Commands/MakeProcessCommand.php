@@ -12,6 +12,7 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
 use Webman\Console\Commands\Concerns\MakeCommandHelpers;
 use Webman\Console\Util;
+use Webman\Console\Messages;
 
 #[AsCommand('make:process', 'Make a custom process.')]
 class MakeProcessCommand extends Command
@@ -31,10 +32,10 @@ class MakeProcessCommand extends Command
      */
     protected function configure()
     {
-        $this->addArgument('name', InputArgument::REQUIRED, 'Process class name, e.g. MyProcess');
-        $this->addOption('plugin', 'p', InputOption::VALUE_REQUIRED, 'Plugin name under plugin/. e.g. admin');
-        $this->addOption('path', 'P', InputOption::VALUE_REQUIRED, 'Target directory (relative to base path). e.g. plugin/admin/app/process');
-        $this->addOption('force', 'f', InputOption::VALUE_NONE, 'Override existing file without confirmation.');
+        $this->addArgument('name', InputArgument::REQUIRED, $this->msg('arg_name'));
+        $this->addOption('plugin', 'p', InputOption::VALUE_REQUIRED, $this->msg('opt_plugin'));
+        $this->addOption('path', 'P', InputOption::VALUE_REQUIRED, $this->msg('opt_path'));
+        $this->addOption('force', 'f', InputOption::VALUE_NONE, $this->msg('opt_force'));
 
         $this->setHelp($this->buildHelpText());
 
@@ -1034,138 +1035,13 @@ PHP;
     /**
      * @return string
      */
-    private function buildHelpText(): string
+    protected function buildHelpText(): string
     {
-        $zh = <<<'EOF'
-交互式创建自定义进程，并自动写入对应的 process 配置。
-
-推荐用法：
-  php webman make:process MyProcess
-  php webman make:process MyProcess -p admin
-  php webman make:process MyProcess -P plugin/admin/app/process
-  php webman make:process MyProcess -f
-
-说明：
-  - 会先把进程名转换为 snake 作为配置 key，例如 MyTcp => my_tcp。
-  - 若配置 key 已存在，会提示已存在并显示 handler，然后退出。
-  - 若需要生成进程类文件且文件已存在，会提示是否覆盖；使用 -f/--force 可直接覆盖。
-  - 未指定 -p 时，如果 -P 指向 plugin/<name>/...，会自动推断写入 plugin/<name>/config/process.php。
-EOF;
-        $en = <<<'EOF'
-Interactively create a custom process and append it into process config.
-
-Recommended:
-  php webman make:process MyProcess
-  php webman make:process MyProcess -p admin
-  php webman make:process MyProcess -P plugin/admin/app/process
-  php webman make:process MyProcess -f
-
-Notes:
-  - The process name will be converted to snake_case as config key, e.g. MyTcp => my_tcp.
-  - If the config key already exists, it will print the existing handler and exit.
-  - If a process class file already exists, it will ask before overriding; use -f/--force to override directly.
-  - If -p is not provided but -P points to plugin/<name>/..., it will infer the plugin name and write to plugin/<name>/config/process.php.
-EOF;
-        return Util::selectByLocale([
-            'zh_CN' => $zh, 'zh_TW' => $zh, 'en' => $en,
-            'ja' => "対話形式でカスタムプロセスを作成し、process 設定に追記。\n\n推奨：\n  php webman make:process MyProcess\n  php webman make:process MyProcess -p admin\n  php webman make:process MyProcess -P plugin/admin/app/process\n  php webman make:process MyProcess -f\n\n説明：\n  - プロセス名は snake_case に変換されて config key になります（例 MyTcp => my_tcp）。\n  - config key が既に存在する場合は既存 handler を表示して終了。\n  - プロセスクラスファイルが既にある場合は上書き確認；-f/--force で直接上書き。\n  - -p を指定せず -P が plugin/<name>/... の場合はプラグイン名を推定し plugin/<name>/config/process.php に書き込み。",
-            'ko' => "대화형으로 커스텀 프로세스를 만들고 process 설정에 추가.\n\n권장:\n  php webman make:process MyProcess\n  php webman make:process MyProcess -p admin\n  php webman make:process MyProcess -P plugin/admin/app/process\n  php webman make:process MyProcess -f\n\n참고:\n  - 프로세스 이름은 snake_case로 변환되어 config key가 됩니다(예: MyTcp => my_tcp).\n  - config key가 이미 있으면 기존 handler를 출력하고 종료.\n  - 프로세스 클래스 파일이 있으면 덮어쓸지 묻고, -f/--force로 직접 덮어쓰기.\n  - -p 없이 -P가 plugin/<name>/... 이면 플러그인 이름을 추론해 plugin/<name>/config/process.php에 기록.",
-            'fr' => "Créer interactivement un processus personnalisé et l'ajouter à la config process.\n\nRecommandé :\n  php webman make:process MyProcess\n  php webman make:process MyProcess -p admin\n  php webman make:process MyProcess -P plugin/admin/app/process\n  php webman make:process MyProcess -f\n\nNotes :\n  - Le nom du processus est converti en snake_case comme clé de config (ex. MyTcp => my_tcp).\n  - Si la clé existe déjà, affiche le handler existant et quitte.\n  - Si le fichier de classe existe, demande avant d'écraser ; -f/--force pour écraser directement.\n  - Sans -p, si -P pointe vers plugin/<name>/..., déduit le plugin et écrit dans plugin/<name>/config/process.php.",
-            'de' => "Interaktiv einen benutzerdefinierten Prozess anlegen und in die process-Config eintragen.\n\nEmpfohlen:\n  php webman make:process MyProcess\n  php webman make:process MyProcess -p admin\n  php webman make:process MyProcess -P plugin/admin/app/process\n  php webman make:process MyProcess -f\n\nHinweise:\n  - Prozessname wird als Config-Key in snake_case umgewandelt (z. B. MyTcp => my_tcp).\n  - Wenn der Key bereits existiert, wird der bestehende Handler ausgegeben und beendet.\n  - Bei existierender Prozessklassendatei wird vor Überschreiben gefragt; -f/--force überschreibt direkt.\n  - Ohne -p, wenn -P auf plugin/<name>/... zeigt, wird der Plugin-Name erkannt und plugin/<name>/config/process.php geschrieben.",
-            'es' => "Crear de forma interactiva un proceso personalizado y añadirlo a la config process.\n\nRecomendado:\n  php webman make:process MyProcess\n  php webman make:process MyProcess -p admin\n  php webman make:process MyProcess -P plugin/admin/app/process\n  php webman make:process MyProcess -f\n\nNotas:\n  - El nombre del proceso se convierte a snake_case como clave de config (ej. MyTcp => my_tcp).\n  - Si la clave ya existe, muestra el handler existente y sale.\n  - Si el archivo de clase ya existe, pregunta antes de sobrescribir; -f/--force sobrescribe directamente.\n  - Sin -p, si -P apunta a plugin/<name>/..., infiere el plugin y escribe en plugin/<name>/config/process.php.",
-            'pt_BR' => "Criar interativamente um processo personalizado e adicionar à config process.\n\nRecomendado:\n  php webman make:process MyProcess\n  php webman make:process MyProcess -p admin\n  php webman make:process MyProcess -P plugin/admin/app/process\n  php webman make:process MyProcess -f\n\nNotas:\n  - O nome do processo é convertido para snake_case como chave de config (ex. MyTcp => my_tcp).\n  - Se a chave já existir, imprime o handler existente e sai.\n  - Se o arquivo da classe já existir, pergunta antes de sobrescrever; -f/--force sobrescreve diretamente.\n  - Sem -p, se -P apontar para plugin/<name>/..., infere o plugin e grava em plugin/<name>/config/process.php.",
-            'ru' => "Интерактивно создать пользовательский процесс и добавить в config process.\n\nРекомендуется:\n  php webman make:process MyProcess\n  php webman make:process MyProcess -p admin\n  php webman make:process MyProcess -P plugin/admin/app/process\n  php webman make:process MyProcess -f\n\nПримечания:\n  - Имя процесса преобразуется в snake_case как ключ config (напр. MyTcp => my_tcp).\n  - Если ключ уже существует, выводится существующий handler и выход.\n  - Если файл класса уже есть, запрашивается подтверждение перезаписи; -f/--force перезаписывает сразу.\n  - Без -p при -P вида plugin/<name>/... подставляется имя плагина и запись в plugin/<name>/config/process.php.",
-            'vi' => "Tạo process tùy chỉnh theo tương tác và ghi vào config process.\n\nKhuyến nghị:\n  php webman make:process MyProcess\n  php webman make:process MyProcess -p admin\n  php webman make:process MyProcess -P plugin/admin/app/process\n  php webman make:process MyProcess -f\n\nLưu ý:\n  - Tên process được chuyển thành snake_case làm config key (vd. MyTcp => my_tcp).\n  - Nếu config key đã tồn tại sẽ in handler hiện có rồi thoát.\n  - Nếu file lớp process đã có sẽ hỏi trước khi ghi đè; -f/--force ghi đè trực tiếp.\n  - Không dùng -p mà -P trỏ tới plugin/<name>/... thì suy ra tên plugin và ghi vào plugin/<name>/config/process.php.",
-            'tr' => "Etkileşimli özel proses oluştur ve process config'e ekle.\n\nÖnerilen:\n  php webman make:process MyProcess\n  php webman make:process MyProcess -p admin\n  php webman make:process MyProcess -P plugin/admin/app/process\n  php webman make:process MyProcess -f\n\nNotlar:\n  - Proses adı config key olarak snake_case'e dönüştürülür (örn. MyTcp => my_tcp).\n  - Key zaten varsa mevcut handler yazdırılır ve çıkılır.\n  - Proses sınıf dosyası varsa üzerine yazmadan önce sorar; -f/--force doğrudan üzerine yazar.\n  - -p verilmez ve -P plugin/<name>/... ise plugin adı çıkarılıp plugin/<name>/config/process.php'ye yazılır.",
-            'id' => "Buat proses kustom secara interaktif dan tambahkan ke config process.\n\nDirekomendasikan:\n  php webman make:process MyProcess\n  php webman make:process MyProcess -p admin\n  php webman make:process MyProcess -P plugin/admin/app/process\n  php webman make:process MyProcess -f\n\nCatatan:\n  - Nama proses dikonversi ke snake_case sebagai config key (mis. MyTcp => my_tcp).\n  - Jika key sudah ada, cetak handler yang ada dan keluar.\n  - Jika file kelas proses sudah ada akan ditanya sebelum menimpa; -f/--force menimpa langsung.\n  - Tanpa -p, jika -P mengarah ke plugin/<name>/..., infer nama plugin dan tulis ke plugin/<name>/config/process.php.",
-            'th' => "สร้าง process แบบกำหนดเองแบบโต้ตอบและเขียนลง config process\n\nแนะนำ:\n  php webman make:process MyProcess\n  php webman make:process MyProcess -p admin\n  php webman make:process MyProcess -P plugin/admin/app/process\n  php webman make:process MyProcess -f\n\nหมายเหตุ:\n  - ชื่อ process จะถูกแปลงเป็น snake_case เป็น config key (เช่น MyTcp => my_tcp)\n  - ถ้า config key มีอยู่แล้วจะแสดง handler ที่มีและออก\n  - ถ้ามีไฟล์คลาสอยู่แล้วจะถามก่อนเขียนทับ -f/--force เขียนทับโดยตรง\n  - ถ้าไม่ใส่ -p แต่ -P ชี้ไป plugin/<name>/... จะสรุปชื่อปลั๊กอินและเขียนไปที่ plugin/<name>/config/process.php",
-        ]);
+        return Util::selectLocaleMessages(Messages::getMakeProcessHelpText());
     }
 
-    /**
-     * CLI messages (multilingual).
-     *
-     * @param string $key
-     * @param array $replace
-     * @return string
-     */
-    private function msg(string $key, array $replace = []): string
+    protected function msg(string $key, array $replace = []): string
     {
-        $zh = [
-            'make_process' => "<info>创建进程</info> <comment>{class}</comment>\n<info>配置 key：</info> <comment>{key}</comment>\n<info>配置文件：</info> <comment>{config}</comment>",
-            'invalid_plugin' => '<error>插件名无效：{plugin}。`--plugin/-p` 只能是 plugin/ 目录下的目录名，不能包含 / 或 \\。</error>',
-            'plugin_path_conflict' => "<error>`--plugin/-p` 与 `--path/-P` 同时指定且不一致。\n期望路径：{expected}\n实际路径：{actual}\n请二选一或保持一致。</error>",
-            'invalid_path' => '<error>路径无效：{path}。`--path/-P` 必须是相对路径（相对于项目根目录），不能是绝对路径。</error>',
-            'invalid_config' => '<error>无法读取配置文件（必须 return 数组）：{path}</error>',
-            'config_key_exists' => "<error>进程配置已存在：</error> <comment>{key}</comment>\n<info>handler：</info> <comment>{handler}</comment>\n<info>文件：</info> <comment>{path}</comment>",
-            'ask_listen' => "<question>是否监听端口？</question> [y/N]（回车=N）\n",
-            'ask_protocol' => "<question>请选择协议</question>（可输入数字或协议名）\n  1) websocket  2) http  3) tcp  4) udp  5) unixsocket\n> ",
-            'ask_http_mode' => "<question>HTTP 进程类型</question>\n  1) 新增 webman 内置 http 进程（复用 app\\process\\Http，不创建新文件）\n  2) 自定义 http 进程（生成进程类文件）\n> ",
-            'ask_ip' => "<question>请选择监听地址</question>（可输入数字或手动输入 IP）",
-            'ask_ip_options' => "{options}\n> ",
-            'ip_lan_suffix' => '（本机内网）',
-            'ip_wan_suffix' => '（本机外网）',
-            'ip_manual_hint' => '也可直接输入 IP',
-            'ask_port' => "<question>请输入端口</question>\n> ",
-            'ask_unixsocket' => "<question>请输入 unixsocket 路径</question>（可输入完整 listen，如 unix:///tmp/a.sock）\n默认：{default}\n> ",
-            'ask_count' => "<question>进程数</question>（回车=默认 {default}）\n> ",
-            'process_file_exists' => "<error>进程文件已存在：</error> {path}",
-            'override_prompt' => "<question>文件已存在：{path}</question>\n<question>是否覆盖？[Y/n]（回车=Y）</question>\n",
-            'created' => '<info>已创建：</info> {path}',
-            'reuse_builtin_http' => '<comment>[Info]</comment> 已选择复用内置 HTTP 进程：{handler}',
-            'updated_config' => '<info>已写入配置：</info> {path}  <comment>({key})</comment>',
-            'write_config_failed' => '<error>写入配置失败：</error> {path}',
-            'err_invalid_protocol' => '协议无效，请输入 1-5 或协议名（websocket/http/tcp/udp/unixsocket）',
-            'err_invalid_http_mode' => '选项无效，请输入 1 或 2（builtin/custom）',
-            'err_invalid_ip' => 'IP 无效，请重新输入',
-            'err_invalid_port' => '端口无效，请输入 1-65535 的整数',
-            'err_invalid_port_range' => '端口范围必须在 1-65535',
-            'err_invalid_unixsocket_path' => '路径不能为空',
-            'err_invalid_count_int' => '进程数必须是整数',
-            'err_invalid_count_min' => '进程数必须 >= 1',
-        ];
-
-        $en = [
-            'make_process' => "<info>Make process</info> <comment>{class}</comment>\n<info>Config key:</info> <comment>{key}</comment>\n<info>Config file:</info> <comment>{config}</comment>",
-            'invalid_plugin' => '<error>Invalid plugin name: {plugin}. `--plugin/-p` must be a directory name under plugin/ and must not contain / or \\.</error>',
-            'plugin_path_conflict' => "<error>`--plugin/-p` and `--path/-P` are both provided but inconsistent.\nExpected: {expected}\nActual: {actual}\nPlease provide only one, or make them identical.</error>",
-            'invalid_path' => '<error>Invalid path: {path}. `--path/-P` must be a relative path (to project root) and must not be an absolute path.</error>',
-            'invalid_config' => '<error>Unable to read config file (must return an array): {path}</error>',
-            'config_key_exists' => "<error>Process config already exists:</error> <comment>{key}</comment>\n<info>handler:</info> <comment>{handler}</comment>\n<info>file:</info> <comment>{path}</comment>",
-            'ask_listen' => "<question>Listen on a port?</question> [y/N] (Enter = N)\n",
-            'ask_protocol' => "<question>Select protocol</question> (number or name)\n  1) websocket  2) http  3) tcp  4) udp  5) unixsocket\n> ",
-            'ask_http_mode' => "<question>HTTP process type</question>\n  1) Add built-in webman HTTP process (reuse app\\process\\Http, no new file)\n  2) Custom HTTP process (generate a new process class file)\n> ",
-            'ask_ip' => "<question>Select listen address</question> (number or input IP manually)",
-            'ask_ip_options' => "{options}\n> ",
-            'ip_lan_suffix' => ' (LAN)',
-            'ip_wan_suffix' => ' (WAN)',
-            'ip_manual_hint' => 'Or type an IP directly',
-            'ask_port' => "<question>Enter port</question>\n> ",
-            'ask_unixsocket' => "<question>Enter unixsocket path</question> (you may input full listen like unix:///tmp/a.sock)\nDefault: {default}\n> ",
-            'ask_count' => "<question>Process count</question> (Enter = default {default})\n> ",
-            'process_file_exists' => "<error>Process file already exists:</error> {path}",
-            'override_prompt' => "<question>File already exists: {path}</question>\n<question>Override? [Y/n] (Enter = Y)</question>\n",
-            'created' => '<info>Created:</info> {path}',
-            'reuse_builtin_http' => '<comment>[Info]</comment> Using built-in HTTP process: {handler}',
-            'updated_config' => '<info>Config updated:</info> {path}  <comment>({key})</comment>',
-            'write_config_failed' => '<error>Failed to write config:</error> {path}',
-            'err_invalid_protocol' => 'Invalid protocol. Please input 1-5 or a protocol name (websocket/http/tcp/udp/unixsocket).',
-            'err_invalid_http_mode' => 'Invalid option. Please input 1 or 2 (builtin/custom).',
-            'err_invalid_ip' => 'Invalid IP address.',
-            'err_invalid_port' => 'Invalid port. Please input an integer between 1 and 65535.',
-            'err_invalid_port_range' => 'Port must be between 1 and 65535.',
-            'err_invalid_unixsocket_path' => 'Path must not be empty.',
-            'err_invalid_count_int' => 'Process count must be an integer.',
-            'err_invalid_count_min' => 'Process count must be >= 1.',
-        ];
-
-        $map = Util::selectLocaleMessages([
-            'zh_CN' => $zh, 'zh_TW' => $zh, 'en' => $en, 'ja' => $en, 'ko' => $en, 'fr' => $en,
-            'de' => $en, 'es' => $en, 'pt_BR' => $en, 'ru' => $en, 'vi' => $en, 'tr' => $en,
-            'id' => $en, 'th' => $en,
-        ]);
-        $text = $map[$key] ?? $key;
-        return $replace ? strtr($text, $replace) : $text;
+        return strtr(Util::selectLocaleMessages(Messages::getMakeProcessMessages())[$key] ?? $key, $replace);
     }
 }
-

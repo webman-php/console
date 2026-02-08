@@ -22,8 +22,8 @@ class PluginDisableCommand extends Command
     protected function configure()
     {
         // Do NOT use "-n": Symfony Console already reserves "-n" for "--no-interaction".
-        $this->addArgument('name', InputArgument::OPTIONAL, 'Plugin name, for example foo/my-admin');
-        $this->addOption('name', null, InputOption::VALUE_REQUIRED, 'Plugin name, for example foo/my-admin');
+        $this->addArgument('name', InputArgument::OPTIONAL, $this->pluginMsg('description_name'));
+        $this->addOption('name', null, InputOption::VALUE_REQUIRED, $this->pluginMsg('description_name'));
         $this->setHelp($this->buildHelpText());
         $this->addUsage('foo/my-admin');
         $this->addUsage('--name foo/my-admin');
@@ -86,33 +86,6 @@ class PluginDisableCommand extends Command
 
     protected function buildHelpText(): string
     {
-        $zh = <<<'EOF'
-禁用指定插件（修改 config/plugin/<vendor>/<name>/app.php 中的 enable 值）。
-
-用法：
-  php webman plugin:disable foo/my-admin
-  php webman plugin:disable --name foo/my-admin
-EOF;
-        $en = <<<'EOF'
-Disable a plugin (toggle enable in config/plugin/<vendor>/<name>/app.php).
-
-Usage:
-  php webman plugin:disable foo/my-admin
-  php webman plugin:disable --name foo/my-admin
-EOF;
-        return Util::selectByLocale([
-            'zh_CN' => $zh, 'zh_TW' => $zh, 'en' => $en,
-            'ja' => "プラグインを無効化（config/plugin/<vendor>/<name>/app.php の enable を切り替え）。\n\n用法：\n  php webman plugin:disable foo/my-admin\n  php webman plugin:disable --name foo/my-admin",
-            'ko' => "플러그인 비활성화 (config/plugin/<vendor>/<name>/app.php의 enable 변경).\n\n사용법:\n  php webman plugin:disable foo/my-admin\n  php webman plugin:disable --name foo/my-admin",
-            'fr' => "Désactiver un plugin (modifier enable dans config/plugin/<vendor>/<name>/app.php).\n\nUsage :\n  php webman plugin:disable foo/my-admin\n  php webman plugin:disable --name foo/my-admin",
-            'de' => "Plugin deaktivieren (enable in config/plugin/<vendor>/<name>/app.php umschalten).\n\nVerwendung:\n  php webman plugin:disable foo/my-admin\n  php webman plugin:disable --name foo/my-admin",
-            'es' => "Desactivar un plugin (cambiar enable en config/plugin/<vendor>/<name>/app.php).\n\nUso:\n  php webman plugin:disable foo/my-admin\n  php webman plugin:disable --name foo/my-admin",
-            'pt_BR' => "Desativar um plugin (alterar enable em config/plugin/<vendor>/<name>/app.php).\n\nUso:\n  php webman plugin:disable foo/my-admin\n  php webman plugin:disable --name foo/my-admin",
-            'ru' => "Отключить плагин (изменить enable в config/plugin/<vendor>/<name>/app.php).\n\nИспользование:\n  php webman plugin:disable foo/my-admin\n  php webman plugin:disable --name foo/my-admin",
-            'vi' => "Tắt plugin (đổi enable trong config/plugin/<vendor>/<name>/app.php).\n\nCách dùng:\n  php webman plugin:disable foo/my-admin\n  php webman plugin:disable --name foo/my-admin",
-            'tr' => "Eklentiyi devre dışı bırak (config/plugin/<vendor>/<name>/app.php içinde enable değiştir).\n\nKullanım:\n  php webman plugin:disable foo/my-admin\n  php webman plugin:disable --name foo/my-admin",
-            'id' => "Nonaktifkan plugin (ubah enable di config/plugin/<vendor>/<name>/app.php).\n\nPenggunaan:\n  php webman plugin:disable foo/my-admin\n  php webman plugin:disable --name foo/my-admin",
-            'th' => "ปิดใช้งานปลั๊กอิน (เปลี่ยน enable ใน config/plugin/<vendor>/<name>/app.php)\n\nวิธีใช้:\n  php webman plugin:disable foo/my-admin\n  php webman plugin:disable --name foo/my-admin",
-        ]);
+        return Util::selectLocaleMessages(\Webman\Console\Messages::getPluginDisableHelpText());
     }
 }

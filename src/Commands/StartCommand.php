@@ -8,13 +8,17 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Webman\Console\Application;
+use Webman\Console\Messages;
+use Webman\Console\Util;
 
 #[AsCommand('start', 'Start worker in DEBUG mode. Use mode -d to start in DAEMON mode.')]
 class StartCommand extends Command
 {
     protected function configure() : void
     {
-        $this->addOption('daemon', 'd', InputOption::VALUE_NONE, 'DAEMON mode');
+        $messages = Util::selectLocaleMessages(Messages::getServiceMessages());
+        $this->setDescription($messages['start_desc']);
+        $this->addOption('daemon', 'd', InputOption::VALUE_NONE, $messages['daemon_option']);
     }
 
     /**

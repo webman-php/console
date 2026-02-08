@@ -7,10 +7,22 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webman\Console\Application;
+use Webman\Console\Messages;
+use Webman\Console\Util;
 
 #[AsCommand('connections', 'Get worker connections.')]
 class ConnectionsCommand extends Command
 {
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
+     */
+    protected function configure(): void
+    {
+        $this->setDescription(Util::selectLocaleMessages(Messages::getConnectionsMessages())['desc']);
+    }
+
     /**
      * @param InputInterface $input
      * @param OutputInterface $output

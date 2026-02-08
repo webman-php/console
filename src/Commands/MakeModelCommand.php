@@ -14,6 +14,7 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Webman\Console\Util;
 use Webman\Console\Commands\Concerns\MakeCommandHelpers;
 use Webman\Console\Commands\Concerns\OrmTableCommandHelpers;
+use Webman\Console\Messages;
 
 #[AsCommand('make:model', 'Make model')]
 class MakeModelCommand extends Command
@@ -595,67 +596,7 @@ EOF;
      */
     protected function msg(string $key, array $replace = []): string
     {
-        $zh = [
-            'make_model' => "<info>创建模型</info> <comment>{name}</comment>",
-            'created' => '<info>已创建：</info> {path}',
-            'override_prompt' => "<question>文件已存在：{path}</question>\n<question>是否覆盖？[Y/n]（回车=Y）</question>\n",
-            'invalid_plugin' => '<error>插件名无效：{plugin}。`--plugin/-p` 只能是 plugin/ 目录下的目录名，不能包含 / 或 \\。</error>',
-            'plugin_path_conflict' => "<error>`--plugin/-p` 与 `--path/-P` 同时指定且不一致。\n期望路径：{expected}\n实际路径：{actual}\n请二选一或保持一致。</error>",
-            'invalid_path' => '<error>路径无效：{path}。`--path/-P` 必须是相对路径（相对于项目根目录），不能是绝对路径。</error>',
-            'connection_not_found' => '<error>数据库连接不存在：{connection}</error>',
-            'connection_not_found_plugin' => '<error>插件 {plugin} 未配置数据库连接：{connection}</error>',
-            'connection_plugin_mismatch' => '<error>数据库连接与插件不匹配：当前插件={plugin}，连接={connection}</error>',
-            'plugin_default_connection_invalid' => '<error>插件 {plugin} 的默认数据库连接无效：{connection}</error>',
-            'db_unavailable' => '<comment>[Warning]</comment> 数据库不可用或无权限读取表信息，将生成空模型（可使用 -t/--table 指定）。',
-            'table_list_failed' => '<comment>[Warning]</comment> 无法获取数据表列表，将生成空模型（可使用 -t/--table 指定）。',
-            'no_match' => '<comment>[Info]</comment> 未找到与模型名匹配的表（按约定推断失败）。',
-            'prompt_help' => '<comment>[Info]</comment> 输入序号选择；输入表名；回车=更多；输入 0=空模型；输入 /关键字 过滤（输入 / 清除过滤）。',
-            'no_more' => '<comment>[Info]</comment> 没有更多表可显示。',
-            'end_of_list' => '<comment>[Info]</comment> 已到列表末尾。可输入表名、序号、0（空模型）或 /关键字。',
-            'filter_cleared' => '<comment>[Info]</comment> 已清除过滤条件。',
-            'filter_applied' => '<comment>[Info]</comment> 已应用过滤：`{keyword}`。',
-            'filter_no_match' => '<comment>[Warning]</comment> 没有表匹配过滤 `{keyword}`。输入 / 清除过滤或换个关键字。',
-            'selection_out_of_range' => '<comment>[Warning]</comment> 序号超出范围。可回车查看更多或输入有效序号。',
-            'table_not_in_list' => '<comment>[Warning]</comment> 表 `{table}` 不在当前数据库列表中，将继续尝试生成（注释可能为空）。',
-            'table_not_found_schema' => "<comment>[Warning]</comment> 表 `{table}` 未找到，将生成无注释的模型。",
-            'table_not_found_empty' => '<comment>[Warning]</comment> 未找到数据表，将生成空模型（可使用 -t/--table 指定，交互终端下也可选择）。',
-            'showing_range' => '<comment>[Info]</comment> 当前已显示 {start}-{end}（累计 {shown}）。',
-        ];
-
-        $en = [
-            'make_model' => "<info>Make model</info> <comment>{name}</comment>",
-            'created' => '<info>Created:</info> {path}',
-            'override_prompt' => "<question>File already exists: {path}</question>\n<question>Override? [Y/n] (Enter = Y)</question>\n",
-            'invalid_plugin' => '<error>Invalid plugin name: {plugin}. `--plugin/-p` must be a directory name under plugin/ and must not contain / or \\.</error>',
-            'plugin_path_conflict' => "<error>`--plugin/-p` and `--path/-P` are both provided but inconsistent.\nExpected: {expected}\nActual: {actual}\nPlease provide only one, or make them identical.</error>",
-            'invalid_path' => '<error>Invalid path: {path}. `--path/-P` must be a relative path (to project root) and must not be an absolute path.</error>',
-            'connection_not_found' => '<error>Database connection not found: {connection}</error>',
-            'connection_not_found_plugin' => '<error>Plugin {plugin} has no database connection configured: {connection}</error>',
-            'connection_plugin_mismatch' => '<error>Database connection does not match plugin: plugin={plugin}, connection={connection}</error>',
-            'plugin_default_connection_invalid' => '<error>Invalid default database connection for plugin {plugin}: {connection}</error>',
-            'db_unavailable' => '<comment>[Warning]</comment> Database is not accessible or permission denied. Generating an empty model (use -t/--table to specify).',
-            'table_list_failed' => '<comment>[Warning]</comment> Unable to fetch table list. Generating an empty model (use -t/--table to specify).',
-            'no_match' => '<comment>[Info]</comment> No table matched the model name by convention.',
-            'prompt_help' => '<comment>[Info]</comment> Enter a number to select, type a table name, press Enter for more, enter 0 for an empty model, or use /keyword to filter (use / to clear).',
-            'no_more' => '<comment>[Info]</comment> No more tables to show.',
-            'end_of_list' => '<comment>[Info]</comment> End of list. Type a table name, a number, 0 for empty, or /keyword.',
-            'filter_cleared' => '<comment>[Info]</comment> Filter cleared.',
-            'filter_applied' => '<comment>[Info]</comment> Filter applied: `{keyword}`.',
-            'filter_no_match' => '<comment>[Warning]</comment> No tables matched filter `{keyword}`. Use / to clear or try another keyword.',
-            'selection_out_of_range' => '<comment>[Warning]</comment> Selection out of range. Press Enter for more, or choose a valid number.',
-            'table_not_in_list' => '<comment>[Warning]</comment> Table `{table}` is not in the current database list. Will try to generate anyway (schema annotations may be empty).',
-            'table_not_found_schema' => "<comment>[Warning]</comment> Table `{table}` not found, generating model without schema annotations.",
-            'table_not_found_empty' => '<comment>[Warning]</comment> Table not found. Generating an empty model (use -t/--table to specify, or choose interactively in a supported terminal).',
-            'showing_range' => '<comment>[Info]</comment> Showing {start}-{end} (total shown: {shown}).',
-        ];
-
-        $map = Util::selectLocaleMessages([
-            'zh_CN' => $zh, 'zh_TW' => $zh, 'en' => $en, 'ja' => $en, 'ko' => $en, 'fr' => $en,
-            'de' => $en, 'es' => $en, 'pt_BR' => $en, 'ru' => $en, 'vi' => $en, 'tr' => $en,
-            'id' => $en, 'th' => $en,
-        ]);
-        $text = $map[$key] ?? $key;
-        return $replace ? strtr($text, $replace) : $text;
+        return strtr(Util::selectLocaleMessages(Messages::getMakeModelMessages())[$key] ?? $key, $replace);
     }
 
     /**
@@ -665,56 +606,7 @@ EOF;
      */
     protected function buildHelpText(): string
     {
-        $zh = <<<'EOF'
-生成模型文件，并在表存在时自动读取表结构生成 @property 注释。
-
-推荐用法：
-  php webman make:model User
-  php webman make:model User -p admin
-  php webman make:model User -P plugin/admin/app/model
-  php webman make:model User -t wa_users -o laravel
-  php webman make:model User -t wa_users -o thinkorm
-  php webman make:model User -f
-
-交互式选表（仅支持交互终端且推断失败时出现）：
-  - 回车：显示更多表
-  - 输入数字：选择已展示表
-  - 输入表名：直接使用
-  - 输入 0：生成空模型
-  - 输入 /关键字：过滤（输入 / 清除过滤）
-EOF;
-        $en = <<<'EOF'
-Generate a model file and (when the table exists) generate @property annotations from the table schema.
-
-Recommended:
-  php webman make:model User
-  php webman make:model User -p admin
-  php webman make:model User -P plugin/admin/app/model
-  php webman make:model User -t wa_users -o laravel
-  php webman make:model User -t wa_users -o thinkorm
-  php webman make:model User -f
-
-Interactive table picker (only in interactive terminals when guessing fails):
-  - Enter: show more tables
-  - Number: select from shown list
-  - Table name: use directly
-  - 0: generate an empty model
-  - /keyword: filter (use / to clear)
-EOF;
-        return Util::selectByLocale([
-            'zh_CN' => $zh, 'zh_TW' => $zh, 'en' => $en,
-            'ja' => "モデルファイルを生成し、テーブルが存在する場合はスキーマから @property を生成。\n\n推奨：\n  php webman make:model User\n  php webman make:model User -p admin\n  php webman make:model User -P plugin/admin/app/model\n  php webman make:model User -t wa_users -o laravel\n  php webman make:model User -t wa_users -o thinkorm\n  php webman make:model User -f\n\n対話式テーブル選択（対応端末で推定失敗時）：\n  - Enter: さらに表示\n  - 数字: 一覧から選択\n  - テーブル名: そのまま使用\n  - 0: 空モデルを生成\n  - /キーワード: 絞り込み（/ で解除）",
-            'ko' => "모델 파일 생성. 테이블이 있으면 스키마에서 @property 주석 생성.\n\n권장:\n  php webman make:model User\n  php webman make:model User -p admin\n  php webman make:model User -P plugin/admin/app/model\n  php webman make:model User -t wa_users -o laravel\n  php webman make:model User -t wa_users -o thinkorm\n  php webman make:model User -f\n\n대화형 테이블 선택(지원 터미널에서 추측 실패 시):\n  - Enter: 더 보기\n  - 숫자: 목록에서 선택\n  - 테이블명: 직접 사용\n  - 0: 빈 모델 생성\n  - /키워드: 필터 (/ 로 해제)",
-            'fr' => "Générer un fichier modèle et (si la table existe) des annotations @property depuis le schéma.\n\nRecommandé :\n  php webman make:model User\n  php webman make:model User -p admin\n  php webman make:model User -P plugin/admin/app/model\n  php webman make:model User -t wa_users -o laravel\n  php webman make:model User -t wa_users -o thinkorm\n  php webman make:model User -f\n\nSélection de table interactive (terminal interactif, si la détection échoue) :\n  - Entrée : afficher plus\n  - Numéro : choisir dans la liste\n  - Nom de table : utiliser tel quel\n  - 0 : modèle vide\n  - /mot-clé : filtrer (/ pour effacer)",
-            'de' => "Modelldatei erzeugen und (bei existierender Tabelle) @property aus dem Schema.\n\nEmpfohlen:\n  php webman make:model User\n  php webman make:model User -p admin\n  php webman make:model User -P plugin/admin/app/model\n  php webman make:model User -t wa_users -o laravel\n  php webman make:model User -t wa_users -o thinkorm\n  php webman make:model User -f\n\nInteraktive Tabellenauswahl (nur in interaktiven Terminals bei Fehlschlag):\n  - Enter: mehr anzeigen\n  - Zahl: aus Liste wählen\n  - Tabellenname: direkt verwenden\n  - 0: leeres Modell\n  - /keyword: filtern (/ zum Löschen)",
-            'es' => "Generar archivo de modelo y (si la tabla existe) anotaciones @property desde el esquema.\n\nRecomendado:\n  php webman make:model User\n  php webman make:model User -p admin\n  php webman make:model User -P plugin/admin/app/model\n  php webman make:model User -t wa_users -o laravel\n  php webman make:model User -t wa_users -o thinkorm\n  php webman make:model User -f\n\nSelector de tabla interactivo (solo en terminal interactivo si falla la detección):\n  - Enter: mostrar más\n  - Número: elegir de la lista\n  - Nombre de tabla: usar directamente\n  - 0: modelo vacío\n  - /keyword: filtrar (/ para limpiar)",
-            'pt_BR' => "Gerar arquivo de modelo e (quando a tabela existe) anotações @property do esquema.\n\nRecomendado:\n  php webman make:model User\n  php webman make:model User -p admin\n  php webman make:model User -P plugin/admin/app/model\n  php webman make:model User -t wa_users -o laravel\n  php webman make:model User -t wa_users -o thinkorm\n  php webman make:model User -f\n\nSeleção interativa de tabela (apenas em terminal interativo quando falha):\n  - Enter: mostrar mais\n  - Número: escolher da lista\n  - Nome da tabela: usar diretamente\n  - 0: modelo vazio\n  - /keyword: filtrar (use / para limpar)",
-            'ru' => "Создать файл модели и (при существующей таблице) аннотации @property из схемы.\n\nРекомендуется:\n  php webman make:model User\n  php webman make:model User -p admin\n  php webman make:model User -P plugin/admin/app/model\n  php webman make:model User -t wa_users -o laravel\n  php webman make:model User -t wa_users -o thinkorm\n  php webman make:model User -f\n\nИнтерактивный выбор таблицы (только в интерактивном терминале при сбое):\n  - Enter: показать ещё\n  - Номер: выбрать из списка\n  - Имя таблицы: использовать как есть\n  - 0: пустая модель\n  - /ключ: фильтр (/ для сброса)",
-            'vi' => "Tạo file model và (khi bảng tồn tại) chú thích @property từ schema.\n\nKhuyến nghị:\n  php webman make:model User\n  php webman make:model User -p admin\n  php webman make:model User -P plugin/admin/app/model\n  php webman make:model User -t wa_users -o laravel\n  php webman make:model User -t wa_users -o thinkorm\n  php webman make:model User -f\n\nChọn bảng tương tác (chỉ khi đoán thất bại trong terminal tương tác):\n  - Enter: xem thêm\n  - Số: chọn từ danh sách\n  - Tên bảng: dùng trực tiếp\n  - 0: model rỗng\n  - /từ khóa: lọc (dùng / để xóa)",
-            'tr' => "Model dosyası oluştur ve (tablo varsa) şemadan @property ekle.\n\nÖnerilen:\n  php webman make:model User\n  php webman make:model User -p admin\n  php webman make:model User -P plugin/admin/app/model\n  php webman make:model User -t wa_users -o laravel\n  php webman make:model User -t wa_users -o thinkorm\n  php webman make:model User -f\n\nİnteraktif tablo seçici (yalnızca tahmin başarısız olduğunda):\n  - Enter: daha fazla göster\n  - Numara: listeden seç\n  - Tablo adı: doğrudan kullan\n  - 0: boş model\n  - /anahtar: filtre (/ ile temizle)",
-            'id' => "Buat file model dan (jika tabel ada) anotasi @property dari skema.\n\nDirekomendasikan:\n  php webman make:model User\n  php webman make:model User -p admin\n  php webman make:model User -P plugin/admin/app/model\n  php webman make:model User -t wa_users -o laravel\n  php webman make:model User -t wa_users -o thinkorm\n  php webman make:model User -f\n\nPemilih tabel interaktif (hanya di terminal interaktif saat tebakan gagal):\n  - Enter: tampilkan lebih banyak\n  - Angka: pilih dari daftar\n  - Nama tabel: gunakan langsung\n  - 0: model kosong\n  - /kata kunci: filter (gunakan / untuk hapus)",
-            'th' => "สร้างไฟล์โมเดล และ (เมื่อมีตาราง) สร้าง @property จาก schema\n\nแนะนำ:\n  php webman make:model User\n  php webman make:model User -p admin\n  php webman make:model User -P plugin/admin/app/model\n  php webman make:model User -t wa_users -o laravel\n  php webman make:model User -t wa_users -o thinkorm\n  php webman make:model User -f\n\nตัวเลือกตารางแบบโต้ตอบ (เฉพาะเมื่อการเดาล้มเหลว):\n  - Enter: แสดงเพิ่ม\n  - ตัวเลข: เลือกจากรายการ\n  - ชื่อตาราง: ใช้โดยตรง\n  - 0: โมเดลว่าง\n  - /คำค้น: กรอง (ใช้ / เพื่อล้าง)",
-        ]);
+        return Util::selectLocaleMessages(Messages::getMakeModelHelpText());
     }
 
     /**

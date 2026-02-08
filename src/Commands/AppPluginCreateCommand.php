@@ -19,7 +19,13 @@ class AppPluginCreateCommand extends Command
      */
     protected function configure()
     {
-        $this->addArgument('name', InputArgument::REQUIRED, 'App plugin name');
+        $this->addArgument('name', InputArgument::REQUIRED, $this->msg('description_name'));
+        $this->setHelp($this->buildHelpText());
+    }
+
+    protected function buildHelpText(): string
+    {
+        return Util::selectLocaleMessages(Messages::getAppPluginCreateHelpText());
     }
 
     /**

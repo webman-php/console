@@ -24,7 +24,7 @@ class BuildBinCommand extends BuildPharCommand
      */
     protected function configure()
     {
-        $this->addArgument('version', InputArgument::OPTIONAL, 'PHP version');
+        $this->addArgument('version', InputArgument::OPTIONAL, $this->msg('arg_version'));
     }
 
     /**

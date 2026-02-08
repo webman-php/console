@@ -20,9 +20,15 @@ class AppPluginUpdateCommand extends Command
      */
     protected function configure()
     {
-        $this->addArgument('name', InputArgument::REQUIRED, 'App plugin name');
-        $this->addOption('from', 'f', InputOption::VALUE_REQUIRED, 'From version (default: current version)');
-        $this->addOption('to', 't', InputOption::VALUE_REQUIRED, 'To version (default: current version)');
+        $this->addArgument('name', InputArgument::REQUIRED, $this->msg('description_name'));
+        $this->addOption('from', 'f', InputOption::VALUE_REQUIRED, $this->msg('description_from'));
+        $this->addOption('to', 't', InputOption::VALUE_REQUIRED, $this->msg('description_to'));
+        $this->setHelp($this->buildHelpText());
+    }
+
+    protected function buildHelpText(): string
+    {
+        return Util::selectLocaleMessages(Messages::getAppPluginUpdateHelpText());
     }
 
     /**

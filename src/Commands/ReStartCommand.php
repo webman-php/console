@@ -8,15 +8,19 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Webman\Console\Application;
+use Webman\Console\Messages;
+use Webman\Console\Util;
 
 #[AsCommand('restart', 'Restart workers. Use mode -d to start in DAEMON mode. Use mode -g to stop gracefully.')]
 class ReStartCommand extends Command
 {
     protected function configure() : void
     {
+        $messages = Util::selectLocaleMessages(Messages::getServiceMessages());
+        $this->setDescription($messages['restart_desc']);
         $this
-            ->addOption('daemon', 'd', InputOption::VALUE_NONE, 'DAEMON mode')
-            ->addOption('graceful', 'g', InputOption::VALUE_NONE, 'graceful stop');
+            ->addOption('daemon', 'd', InputOption::VALUE_NONE, $messages['daemon_option'])
+            ->addOption('graceful', 'g', InputOption::VALUE_NONE, $messages['graceful_stop']);
     }
 
     /**
