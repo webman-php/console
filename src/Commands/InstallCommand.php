@@ -7,6 +7,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webman\Console\Commands\Concerns\MakeCommandHelpers;
+use Webman\Console\Util;
 
 #[AsCommand('install', 'Execute webman installation script')]
 class InstallCommand extends Command
@@ -44,7 +45,7 @@ class InstallCommand extends Command
             'require_version' => '<error>This command requires webman-framework version >= 1.3.0</error>',
         ];
 
-        $map = $this->isZhLocale() ? $zh : $en;
+        $map = Util::selectLocaleMessages(['zh_CN' => $zh, 'en' => $en]);
         $text = $map[$key] ?? $key;
         return $replace ? strtr($text, $replace) : $text;
     }

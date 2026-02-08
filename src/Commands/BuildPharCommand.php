@@ -9,6 +9,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webman\Console\Commands\Concerns\MakeCommandHelpers;
+use Webman\Console\Util;
 
 #[AsCommand('build:phar', 'Can be easily packaged a project into phar files. Easy to distribute and use.')]
 class BuildPharCommand extends Command
@@ -153,7 +154,7 @@ __HALT_COMPILER();
             'download_stream_failed' => '<error>Download failed:</error> cannot connect to download source',
         ];
 
-        $map = $this->isZhLocale() ? $zh : $en;
+        $map = Util::selectLocaleMessages(['zh_CN' => $zh, 'en' => $en]);
         $text = $map[$key] ?? $key;
         return $replace ? strtr($text, $replace) : $text;
     }
@@ -183,7 +184,7 @@ __HALT_COMPILER();
             'phar_readonly_on' => "In {ini}, 'phar.readonly' is On. Set it to Off to build Phar, or run: php -d phar.readonly=0 ./webman {command}",
             'phar_filename_required' => 'Please set the Phar filename (phar_filename).',
         ];
-        $map = $this->isZhLocale() ? $zh : $en;
+        $map = Util::selectLocaleMessages(['zh_CN' => $zh, 'en' => $en]);
         $text = $map[$key] ?? $key;
         return $replace ? strtr($text, $replace) : $text;
     }
@@ -194,7 +195,7 @@ __HALT_COMPILER();
         if (is_string($loaded) && $loaded !== '') {
             return $loaded;
         }
-        return $this->isZhLocale() ? 'php.ini（未加载）' : 'php.ini (not loaded)';
+        return Util::selectByLocale(['zh_CN' => 'php.ini（未加载）', 'en' => 'php.ini (not loaded)']);
     }
 
     /**

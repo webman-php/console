@@ -8,6 +8,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webman\Console\Commands\Concerns\AppPluginCommandHelpers;
+use Webman\Console\Util;
 use ZipArchive;
 use Exception;
 use RecursiveIteratorIterator;
@@ -82,18 +83,14 @@ class AppPluginZipCommand extends Command
         $zip = new ZipArchive();
 
         if ($zip->open($zipFilePath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== TRUE) {
-            $msg = $this->isZhLocale()
-                ? "无法创建 zip 文件：{$zipFilePath}"
-                : "Unable to create zip file: {$zipFilePath}";
+            $msg = Util::selectByLocale(['zh_CN' => "无法创建 zip 文件：{$zipFilePath}", 'en' => "Unable to create zip file: {$zipFilePath}"]);
             throw new Exception($msg);
         }
 
         $rawSourceDir = $sourceDir;
         $sourceDir = realpath($sourceDir);
         if ($sourceDir === false) {
-            $msg = $this->isZhLocale()
-                ? "源目录不存在：{$rawSourceDir}"
-                : "Source directory not exists: {$rawSourceDir}";
+            $msg = Util::selectByLocale(['zh_CN' => "源目录不存在：{$rawSourceDir}", 'en' => "Source directory not exists: {$rawSourceDir}"]);
             throw new Exception($msg);
         }
 

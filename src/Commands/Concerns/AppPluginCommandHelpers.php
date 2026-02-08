@@ -3,6 +3,7 @@
 namespace Webman\Console\Commands\Concerns;
 
 use Symfony\Component\Console\Output\OutputInterface;
+use Webman\Console\Util;
 
 /**
  * Helpers for AppPlugin* commands (plugin/<name>).
@@ -10,6 +11,56 @@ use Symfony\Component\Console\Output\OutputInterface;
 trait AppPluginCommandHelpers
 {
     use MakeCommandHelpers;
+
+    /**
+     * Prefer admin plugin locale if available, fallback to global translation/app locale.
+     *
+     * @return string
+     */
+    protected function getLocale(): string
+    {
+        $locale = null;
+        if (function_exists('config')) {
+            $locale = config('plugin.admin.translation.locale')
+                ?: config('translation.locale')
+                ?: config('app.locale');
+        }
+
+        $locale = is_string($locale) ? trim($locale) : '';
+        if ($locale === '') {
+            $locale = $this->resolveLocaleFromAdminTranslationConfigFile() ?? '';
+        }
+
+        return $locale !== '' ? $locale : Util::getLocale();
+    }
+
+    /**
+     * Resolve locale from admin plugin translation config file.
+     * This is a fallback when config() is not ready or the admin plugin is not loaded.
+     *
+     * @return string|null
+     */
+    protected function resolveLocaleFromAdminTranslationConfigFile(): ?string
+    {
+        $ds = DIRECTORY_SEPARATOR;
+        $candidates = [
+            base_path('plugin' . $ds . 'admin' . $ds . 'config' . $ds . 'translation.php'),
+            base_path('vendor' . $ds . 'webman' . $ds . 'admin' . $ds . 'src' . $ds . 'plugin' . $ds . 'admin' . $ds . 'config' . $ds . 'translation.php'),
+        ];
+
+        foreach ($candidates as $file) {
+            $config = $this->loadPhpConfigArray($file);
+            if ($config === null || $config === []) {
+                continue;
+            }
+            $locale = $config['locale'] ?? null;
+            $locale = is_string($locale) ? trim($locale) : '';
+            if ($locale !== '') {
+                return $locale;
+            }
+        }
+        return null;
+    }
 
     /**
      * @param mixed $value
@@ -159,7 +210,7 @@ trait AppPluginCommandHelpers
             'zip_open_failed' => "<error>Cannot create zip file:</error> {path}",
         ];
 
-        $map = $this->isZhLocale() ? $zh : $en;
+        $map = Util::selectLocaleMessages(['zh_CN' => $zh, 'en' => $en]);
         $text = $map[$key] ?? $key;
         return $replace ? strtr($text, $replace) : $text;
     }

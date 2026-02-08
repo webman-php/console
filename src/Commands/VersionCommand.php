@@ -7,6 +7,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webman\Console\Commands\Concerns\MakeCommandHelpers;
+use Webman\Console\Util;
 
 #[AsCommand('version', 'Show webman version')]
 class VersionCommand extends Command
@@ -46,7 +47,7 @@ class VersionCommand extends Command
             'not_found' => '<error>Unable to read version info for workerman/webman-framework</error>',
         ];
 
-        $map = $this->isZhLocale() ? $zh : $en;
+        $map = Util::selectLocaleMessages(['zh_CN' => $zh, 'en' => $en]);
         $text = $map[$key] ?? $key;
         return $replace ? strtr($text, $replace) : $text;
     }

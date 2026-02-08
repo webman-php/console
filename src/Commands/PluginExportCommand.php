@@ -189,8 +189,7 @@ EOT;
 
     protected function buildHelpText(): string
     {
-        if ($this->isZhLocale()) {
-            return <<<'EOF'
+        $zh = <<<'EOF'
 将指定目录打包导出到 vendor/<vendor>/<name>/src，并生成 Install.php（用于 plugin:install / plugin:uninstall）。
 
 用法：
@@ -201,9 +200,7 @@ EOT;
   - `--source/-s` 可重复多次指定要导出的目录/文件（相对项目根目录）。
   - 若存在 `config/plugin/<vendor>/<name>` 且未显式包含，会自动追加到导出列表。
 EOF;
-        }
-
-        return <<<'EOF'
+        $en = <<<'EOF'
 Export directories into vendor/<vendor>/<name>/src and generate Install.php (for plugin:install / plugin:uninstall).
 
 Usage:
@@ -214,6 +211,7 @@ Notes:
   - `--source/-s` can be provided multiple times (relative to project root).
   - If `config/plugin/<vendor>/<name>` exists and not provided, it will be appended automatically.
 EOF;
+        return Util::selectByLocale(['zh_CN' => $zh, 'en' => $en]);
     }
 
 }

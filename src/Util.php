@@ -5,6 +5,103 @@ use Doctrine\Inflector\InflectorFactory;
 
 class Util
 {
+    /**
+     * Get current locale for CLI messages. Default is en.
+     * All commands can use this to get the current language for prompts.
+     *
+     * @return string
+     */
+    public static function getLocale(): string
+    {
+        $locale = 'en';
+        if (function_exists('config')) {
+            $value = config('translation.locale', 'en');
+            $value = is_string($value) ? trim($value) : '';
+            if ($value !== '') {
+                $locale = $value;
+            }
+        }
+        return $locale;
+    }
+
+    /**
+     * Select message map by current locale. Fallback: exact -> language prefix -> en -> zh_CN -> first.
+     *
+     * @param array<string, array<string, string>> $localeToMessages e.g. ['zh_CN' => ['key' => '...'], 'en' => [...]]
+     * @return array<string, string>
+     */
+    public static function selectLocaleMessages(array $localeToMessages): array
+    {
+        $locale = self::getLocale();
+        if (isset($localeToMessages[$locale])) {
+            return $localeToMessages[$locale];
+        }
+        $lang = explode('_', $locale)[0] ?? '';
+        if ($lang !== '' && isset($localeToMessages[$lang])) {
+            return $localeToMessages[$lang];
+        }
+        if (isset($localeToMessages['en'])) {
+            return $localeToMessages['en'];
+        }
+        if (isset($localeToMessages['zh_CN'])) {
+            return $localeToMessages['zh_CN'];
+        }
+        $first = reset($localeToMessages);
+        return is_array($first) ? $first : [];
+    }
+
+    /**
+     * Select one value by current locale. Fallback: exact -> language prefix -> en -> zh_CN -> first.
+     *
+     * @param array<string, string> $localeToValue e.g. ['zh_CN' => '简体', 'en' => 'English']
+     * @return string
+     */
+    public static function selectByLocale(array $localeToValue): string
+    {
+        $locale = self::getLocale();
+        if (isset($localeToValue[$locale])) {
+            return $localeToValue[$locale];
+        }
+        $lang = explode('_', $locale)[0] ?? '';
+        if ($lang !== '' && isset($localeToValue[$lang])) {
+            return $localeToValue[$lang];
+        }
+        if (isset($localeToValue['en'])) {
+            return $localeToValue['en'];
+        }
+        if (isset($localeToValue['zh_CN'])) {
+            return $localeToValue['zh_CN'];
+        }
+        $first = reset($localeToValue);
+        return is_string($first) ? $first : '';
+    }
+
+    /**
+     * Select an array by current locale (e.g. table headers). Fallback: exact -> language prefix -> en -> zh_CN -> first.
+     *
+     * @param array<string, array> $localeToArray e.g. ['zh_CN' => ['A','B'], 'en' => ['A','B']]
+     * @return array
+     */
+    public static function selectLocaleArray(array $localeToArray): array
+    {
+        $locale = self::getLocale();
+        if (isset($localeToArray[$locale])) {
+            return $localeToArray[$locale];
+        }
+        $lang = explode('_', $locale)[0] ?? '';
+        if ($lang !== '' && isset($localeToArray[$lang])) {
+            return $localeToArray[$lang];
+        }
+        if (isset($localeToArray['en'])) {
+            return $localeToArray['en'];
+        }
+        if (isset($localeToArray['zh_CN'])) {
+            return $localeToArray['zh_CN'];
+        }
+        $first = reset($localeToArray);
+        return is_array($first) ? $first : [];
+    }
+
     public static function nameToNamespace($name)
     {
         $namespace = ucfirst($name);

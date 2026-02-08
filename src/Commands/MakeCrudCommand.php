@@ -408,11 +408,10 @@ class MakeCrudCommand extends Command
 
     protected function getNameLabel(string $type): string
     {
-        $labels = [
-            'model' => $this->isZhLocale() ? '模型名' : 'Model name',
-            'controller' => $this->isZhLocale() ? '控制器名' : 'Controller name',
-            'validator' => $this->isZhLocale() ? '验证器名' : 'Validator name',
-        ];
+        $labels = Util::selectLocaleMessages([
+            'zh_CN' => ['model' => '模型名', 'controller' => '控制器名', 'validator' => '验证器名'],
+            'en' => ['model' => 'Model name', 'controller' => 'Controller name', 'validator' => 'Validator name'],
+        ]);
         return $labels[$type] ?? $type;
     }
 
@@ -479,11 +478,10 @@ class MakeCrudCommand extends Command
 
     protected function getTypeLabel(string $type): string
     {
-        $labels = [
-            'model' => $this->isZhLocale() ? '模型' : 'Model',
-            'controller' => $this->isZhLocale() ? '控制器' : 'Controller',
-            'validation' => $this->isZhLocale() ? '验证器' : 'Validator',
-        ];
+        $labels = Util::selectLocaleMessages([
+            'zh_CN' => ['model' => '模型', 'controller' => '控制器', 'validation' => '验证器'],
+            'en' => ['model' => 'Model', 'controller' => 'Controller', 'validation' => 'Validator'],
+        ]);
         return $labels[$type] ?? $type;
     }
 
@@ -491,9 +489,7 @@ class MakeCrudCommand extends Command
     {
         $helper = $this->getHelper('question');
         $question = new ConfirmationQuestion(
-            $this->isZhLocale()
-                ? '是否添加验证器？[Y/n] (回车=Y): '
-                : 'Add validator? [Y/n] (Enter = Y): ',
+            Util::selectByLocale(['zh_CN' => '是否添加验证器？[Y/n] (回车=Y): ', 'en' => 'Add validator? [Y/n] (Enter = Y): ']),
             true
         );
         return (bool)$helper->ask($input, $output, $question);
@@ -1194,15 +1190,14 @@ EOF;
             'reference_only' => '<comment>Note: Generated code is for reference only. Please adapt it to your business needs.</comment>',
         ];
 
-        $map = $this->isZhLocale() ? $zh : $en;
+        $map = Util::selectLocaleMessages(['zh_CN' => $zh, 'en' => $en]);
         $text = $map[$key] ?? $key;
         return $replace ? strtr($text, $replace) : $text;
     }
 
     protected function buildHelpText(): string
     {
-        if ($this->isZhLocale()) {
-            return <<<'EOF'
+        $zh = <<<'EOF'
 生成 CRUD（模型、控制器、验证器）。
 
 示例：
@@ -1212,9 +1207,7 @@ EOF;
   php webman make:crud --table=users --no-validator
   php webman make:crud --table=users --no-interaction
 EOF;
-        }
-
-        return <<<'EOF'
+        $en = <<<'EOF'
 Generate CRUD (Model, Controller, Validator).
 
 Examples:
@@ -1224,5 +1217,6 @@ Examples:
   php webman make:crud --table=users --no-validator
   php webman make:crud --table=users --no-interaction
 EOF;
+        return Util::selectByLocale(['zh_CN' => $zh, 'en' => $en]);
     }
 }

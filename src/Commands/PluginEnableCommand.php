@@ -9,6 +9,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Webman\Console\Commands\Concerns\PluginCommandHelpers;
+use Webman\Console\Util;
 
 #[AsCommand('plugin:enable', 'Enable plugin by name')]
 class PluginEnableCommand extends Command
@@ -82,22 +83,20 @@ class PluginEnableCommand extends Command
 
     protected function buildHelpText(): string
     {
-        if ($this->isZhLocale()) {
-            return <<<'EOF'
+        $zh = <<<'EOF'
 启用指定插件（修改 config/plugin/<vendor>/<name>/app.php 中的 enable 值）。
 
 用法：
   php webman plugin:enable foo/my-admin
   php webman plugin:enable --name foo/my-admin
 EOF;
-        }
-
-        return <<<'EOF'
+        $en = <<<'EOF'
 Enable a plugin (toggle enable in config/plugin/<vendor>/<name>/app.php).
 
 Usage:
   php webman plugin:enable foo/my-admin
   php webman plugin:enable --name foo/my-admin
 EOF;
+        return Util::selectByLocale(['zh_CN' => $zh, 'en' => $en]);
     }
 }

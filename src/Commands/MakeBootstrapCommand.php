@@ -254,7 +254,7 @@ EOF;
             'invalid_path' => '<error>Invalid path: {path}. `--path/-P` must be a relative path (to project root) and must not be an absolute path.</error>',
         ];
 
-        $map = $this->isZhLocale() ? $zh : $en;
+        $map = Util::selectLocaleMessages(['zh_CN' => $zh, 'en' => $en]);
         $text = $map[$key] ?? $key;
         return $replace ? strtr($text, $replace) : $text;
     }
@@ -266,8 +266,7 @@ EOF;
      */
     protected function buildHelpText(): string
     {
-        if ($this->isZhLocale()) {
-            return <<<'EOF'
+        $zh = <<<'EOF'
 生成 Bootstrap 启动项类（实现 Webman\Bootstrap）。
 
 推荐用法：
@@ -284,9 +283,7 @@ EOF;
   - enable 位置参数用于控制是否写入 config/bootstrap.php（默认启用；传 no/false/0/off 等表示不启用）。
   - 文件已存在时默认会提示是否覆盖；使用 -f/--force 可直接覆盖。
 EOF;
-        }
-
-        return <<<'EOF'
+        $en = <<<'EOF'
 Generate a Bootstrap class (implements Webman\Bootstrap).
 
 Recommended:
@@ -303,5 +300,6 @@ Notes:
   - The positional `enable` argument controls whether to append to config/bootstrap.php (enabled by default; use no/false/0/off to disable).
   - If the file already exists, it will ask before overriding; use -f/--force to override directly.
 EOF;
+        return Util::selectByLocale(['zh_CN' => $zh, 'en' => $en]);
     }
 }

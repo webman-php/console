@@ -7,6 +7,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webman\Console\Commands\Concerns\MakeCommandHelpers;
+use Webman\Console\Util;
 
 #[AsCommand('fix-disable-functions', 'Fix disbale_functions in php.ini')]
 class FixDisbaleFunctionsCommand extends Command
@@ -122,7 +123,7 @@ class FixDisbaleFunctionsCommand extends Command
             'success' => '<info>Done</info>',
         ];
 
-        $map = $this->isZhLocale() ? $zh : $en;
+        $map = Util::selectLocaleMessages(['zh_CN' => $zh, 'en' => $en]);
         $text = $map[$key] ?? $key;
         return $replace ? strtr($text, $replace) : $text;
     }

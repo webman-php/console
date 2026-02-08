@@ -9,6 +9,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Webman\Console\Commands\Concerns\PluginCommandHelpers;
+use Webman\Console\Util;
 
 #[AsCommand('plugin:disable', 'Disable plugin by name')]
 class PluginDisableCommand extends Command
@@ -85,22 +86,20 @@ class PluginDisableCommand extends Command
 
     protected function buildHelpText(): string
     {
-        if ($this->isZhLocale()) {
-            return <<<'EOF'
+        $zh = <<<'EOF'
 禁用指定插件（修改 config/plugin/<vendor>/<name>/app.php 中的 enable 值）。
 
 用法：
   php webman plugin:disable foo/my-admin
   php webman plugin:disable --name foo/my-admin
 EOF;
-        }
-
-        return <<<'EOF'
+        $en = <<<'EOF'
 Disable a plugin (toggle enable in config/plugin/<vendor>/<name>/app.php).
 
 Usage:
   php webman plugin:disable foo/my-admin
   php webman plugin:disable --name foo/my-admin
 EOF;
+        return Util::selectByLocale(['zh_CN' => $zh, 'en' => $en]);
     }
 }

@@ -218,7 +218,7 @@ EOF;
             'invalid_path' => '<error>Invalid path: {path}. `--path/-P` must be a relative path (to project root) and must not be an absolute path.</error>',
         ];
 
-        $map = $this->isZhLocale() ? $zh : $en;
+        $map = Util::selectLocaleMessages(['zh_CN' => $zh, 'en' => $en]);
         $text = $map[$key] ?? $key;
         return $replace ? strtr($text, $replace) : $text;
     }
@@ -230,8 +230,7 @@ EOF;
      */
     protected function buildHelpText(): string
     {
-        if ($this->isZhLocale()) {
-            return <<<'EOF'
+        $zh = <<<'EOF'
 生成中间件文件。
 
 推荐用法：
@@ -246,9 +245,7 @@ EOF;
   - 使用 -P/--path 时生成到指定相对目录（相对于项目根目录）。
   - 文件已存在时默认会提示是否覆盖；使用 -f/--force 可直接覆盖。
 EOF;
-        }
-
-        return <<<'EOF'
+        $en = <<<'EOF'
 Generate a middleware file.
 
 Recommended:
@@ -263,6 +260,7 @@ Notes:
   - With -P/--path, it generates under the specified relative directory (to project root).
   - If the file already exists, it will ask before overriding; use -f/--force to override directly.
 EOF;
+        return Util::selectByLocale(['zh_CN' => $zh, 'en' => $en]);
     }
 
 }

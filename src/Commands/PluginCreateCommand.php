@@ -239,8 +239,7 @@ EOT;
      */
     protected function buildHelpText(): string
     {
-        if ($this->isZhLocale()) {
-            return <<<'EOF'
+        $zh = <<<'EOF'
 创建一个 Webman 插件骨架（composer 包形式）。
 
 用法：
@@ -254,9 +253,7 @@ EOT;
       - vendor/<vendor>/<name>/src
   - 会在项目 composer.json 的 autoload.psr-4 中追加命名空间映射，并尝试执行 `composer dumpautoload`。
 EOF;
-        }
-
-        return <<<'EOF'
+        $en = <<<'EOF'
 Create a Webman plugin skeleton (as a composer package).
 
 Usage:
@@ -270,5 +267,6 @@ Notes:
       - vendor/<vendor>/<name>/src
   - It will append a PSR-4 mapping into project composer.json and try to run `composer dumpautoload`.
 EOF;
+        return Util::selectByLocale(['zh_CN' => $zh, 'en' => $en]);
     }
 }

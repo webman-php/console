@@ -3,6 +3,7 @@
 namespace Webman\Console\Commands\Concerns;
 
 use Webman\Console\Commands\Concerns\MakeCommandHelpers;
+use Webman\Console\Util;
 
 trait PluginCommandHelpers
 {
@@ -222,7 +223,7 @@ trait PluginCommandHelpers
             'script_failed' => "<error>Execution failed:</error> {error}",
         ];
 
-        $map = $this->isZhLocale() ? $zh : $en;
+        $map = Util::selectLocaleMessages(['zh_CN' => $zh, 'en' => $en]);
         $text = $map[$key] ?? $key;
         return $replace ? strtr($text, $replace) : $text;
     }

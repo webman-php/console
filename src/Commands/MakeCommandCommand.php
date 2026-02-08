@@ -169,52 +169,20 @@ namespace $namespace;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
-use Webman\Console\Commands\Concerns\MakeCommandHelpers;
 
 #[AsCommand('$command', '$desc')]
 class $name extends Command
 {
-    use MakeCommandHelpers;
-
-    /**
-     * @return void
-     */
-    protected function configure()
+    protected function configure(): void
     {
-        \$this->addArgument('name', InputArgument::OPTIONAL, 'Name description');
     }
 
-    /**
-     * @param InputInterface \$input
-     * @param OutputInterface \$output
-     * @return int
-     */
     protected function execute(InputInterface \$input, OutputInterface \$output): int
     {
-        \$who = (string)(\$input->getArgument('name') ?? '');
-        \$output->writeln(\$this->msg('hello', [
-            '{command}' => '$command',
-            '{name}' => \$who !== '' ? \$who : (\$this->isZhLocale() ? '世界' : 'world'),
-        ]));
+        \$output->writeln('<info>Hello</info> <comment>' . \$this->getName() . '</comment>');
         return self::SUCCESS;
     }
-
-    protected function msg(string \$key, array \$replace = []): string
-    {
-        \$zh = [
-            'hello' => '<info>Hello</info> <comment>{command}</comment>：{name}',
-        ];
-        \$en = [
-            'hello' => '<info>Hello</info> <comment>{command}</comment>: {name}',
-        ];
-        \$map = \$this->isZhLocale() ? \$zh : \$en;
-        \$text = \$map[\$key] ?? \$key;
-        return \$replace ? strtr(\$text, \$replace) : \$text;
-    }
-
 }
 
 EOF;
@@ -250,7 +218,7 @@ EOF;
             'invalid_command' => '<error>Command name cannot be empty.</error>',
         ];
 
-        $map = $this->isZhLocale() ? $zh : $en;
+        $map = Util::selectLocaleMessages(['zh_CN' => $zh, 'en' => $en]);
         $text = $map[$key] ?? $key;
         return $replace ? strtr($text, $replace) : $text;
     }
@@ -262,8 +230,7 @@ EOF;
      */
     protected function buildHelpText(): string
     {
-        if ($this->isZhLocale()) {
-            return <<<'EOF'
+        $zh = <<<'EOF'
 生成 Console 命令类（Symfony Console）。
 
 推荐用法：
@@ -279,9 +246,7 @@ EOF;
   - 使用 -P/--path 时生成到指定相对目录（相对于项目根目录）。
   - 文件已存在时默认会提示是否覆盖；使用 -f/--force 可直接覆盖。
 EOF;
-        }
-
-        return <<<'EOF'
+        $en = <<<'EOF'
 Generate a Console command class (Symfony Console).
 
 Recommended:
@@ -297,6 +262,7 @@ Notes:
   - With -P/--path, it generates under the specified relative directory (to project root).
   - If the file already exists, it will ask before overriding; use -f/--force to override directly.
 EOF;
+        return Util::selectByLocale(['zh_CN' => $zh, 'en' => $en]);
     }
 
 }

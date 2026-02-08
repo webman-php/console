@@ -83,8 +83,7 @@ class PluginInstallCommand extends Command
 
     protected function buildHelpText(): string
     {
-        if ($this->isZhLocale()) {
-            return <<<'EOF'
+        $zh = <<<'EOF'
 执行插件安装脚本（Install::install）。
 
 用法：
@@ -94,9 +93,7 @@ class PluginInstallCommand extends Command
 说明：
   - 需要插件包中存在 `Install::WEBMAN_PLUGIN` 常量且 `Install::install` 可调用。
 EOF;
-        }
-
-        return <<<'EOF'
+        $en = <<<'EOF'
 Execute plugin install script (Install::install).
 
 Usage:
@@ -106,5 +103,6 @@ Usage:
 Notes:
   - The plugin package must define `Install::WEBMAN_PLUGIN` and provide callable `Install::install`.
 EOF;
+        return Util::selectByLocale(['zh_CN' => $zh, 'en' => $en]);
     }
 }

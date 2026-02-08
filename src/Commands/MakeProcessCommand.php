@@ -1036,8 +1036,7 @@ PHP;
      */
     private function buildHelpText(): string
     {
-        if ($this->isZhLocale()) {
-            return <<<'EOF'
+        $zh = <<<'EOF'
 交互式创建自定义进程，并自动写入对应的 process 配置。
 
 推荐用法：
@@ -1052,9 +1051,7 @@ PHP;
   - 若需要生成进程类文件且文件已存在，会提示是否覆盖；使用 -f/--force 可直接覆盖。
   - 未指定 -p 时，如果 -P 指向 plugin/<name>/...，会自动推断写入 plugin/<name>/config/process.php。
 EOF;
-        }
-
-        return <<<'EOF'
+        $en = <<<'EOF'
 Interactively create a custom process and append it into process config.
 
 Recommended:
@@ -1069,6 +1066,7 @@ Notes:
   - If a process class file already exists, it will ask before overriding; use -f/--force to override directly.
   - If -p is not provided but -P points to plugin/<name>/..., it will infer the plugin name and write to plugin/<name>/config/process.php.
 EOF;
+        return Util::selectByLocale(['zh_CN' => $zh, 'en' => $en]);
     }
 
     /**
@@ -1148,7 +1146,7 @@ EOF;
             'err_invalid_count_min' => 'Process count must be >= 1.',
         ];
 
-        $map = $this->isZhLocale() ? $zh : $en;
+        $map = Util::selectLocaleMessages(['zh_CN' => $zh, 'en' => $en]);
         $text = $map[$key] ?? $key;
         return $replace ? strtr($text, $replace) : $text;
     }

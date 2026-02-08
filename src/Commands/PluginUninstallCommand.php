@@ -83,8 +83,7 @@ class PluginUninstallCommand extends Command
 
     protected function buildHelpText(): string
     {
-        if ($this->isZhLocale()) {
-            return <<<'EOF'
+        $zh = <<<'EOF'
 执行插件卸载脚本（Install::uninstall）。
 
 用法：
@@ -94,9 +93,7 @@ class PluginUninstallCommand extends Command
 说明：
   - 需要插件包中存在 `Install::WEBMAN_PLUGIN` 常量且 `Install::uninstall` 可调用。
 EOF;
-        }
-
-        return <<<'EOF'
+        $en = <<<'EOF'
 Execute plugin uninstall script (Install::uninstall).
 
 Usage:
@@ -106,5 +103,6 @@ Usage:
 Notes:
   - The plugin package must define `Install::WEBMAN_PLUGIN` and provide callable `Install::uninstall`.
 EOF;
+        return Util::selectByLocale(['zh_CN' => $zh, 'en' => $en]);
     }
 }

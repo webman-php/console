@@ -649,7 +649,7 @@ EOF;
             'showing_range' => '<comment>[Info]</comment> Showing {start}-{end} (total shown: {shown}).',
         ];
 
-        $map = $this->isZhLocale() ? $zh : $en;
+        $map = Util::selectLocaleMessages(['zh_CN' => $zh, 'en' => $en]);
         $text = $map[$key] ?? $key;
         return $replace ? strtr($text, $replace) : $text;
     }
@@ -661,8 +661,7 @@ EOF;
      */
     protected function buildHelpText(): string
     {
-        if ($this->isZhLocale()) {
-            return <<<'EOF'
+        $zh = <<<'EOF'
 生成模型文件，并在表存在时自动读取表结构生成 @property 注释。
 
 推荐用法：
@@ -680,9 +679,7 @@ EOF;
   - 输入 0：生成空模型
   - 输入 /关键字：过滤（输入 / 清除过滤）
 EOF;
-        }
-
-        return <<<'EOF'
+        $en = <<<'EOF'
 Generate a model file and (when the table exists) generate @property annotations from the table schema.
 
 Recommended:
@@ -700,6 +697,7 @@ Interactive table picker (only in interactive terminals when guessing fails):
   - 0: generate an empty model
   - /keyword: filter (use / to clear)
 EOF;
+        return Util::selectByLocale(['zh_CN' => $zh, 'en' => $en]);
     }
 
     /**

@@ -2,6 +2,8 @@
 
 namespace Webman\Console\Commands\Concerns;
 
+use Webman\Console\Util;
+
 trait MakeCommandHelpers
 {
     /**
@@ -91,29 +93,13 @@ trait MakeCommandHelpers
     }
 
     /**
-     * Get current locale for CLI messages. Default is zh_CN.
+     * Get current locale for CLI messages. Delegates to Util::getLocale().
      *
      * @return string
      */
     protected function getLocale(): string
     {
-        $locale = 'zh_CN';
-        if (function_exists('config')) {
-            $value = config('translation.locale', 'zh_CN');
-            $value = is_string($value) ? trim($value) : '';
-            if ($value !== '') {
-                $locale = $value;
-            }
-        }
-        return $locale;
-    }
-
-    /**
-     * @return bool
-     */
-    protected function isZhLocale(): bool
-    {
-        return str_starts_with(strtolower($this->getLocale()), 'zh');
+        return Util::getLocale();
     }
 
     /**
