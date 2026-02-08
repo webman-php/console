@@ -134,7 +134,7 @@ __HALT_COMPILER();
 
     protected function msg(string $key, array $replace = []): string
     {
-        return strtr(Util::selectLocaleMessages(Messages::getBuildMessages()[$key] ?? $key), $replace);
+        return strtr(Util::selectLocaleMessages(Messages::getBuildMessages())[$key] ?? $key, $replace);
     }
 
     /**

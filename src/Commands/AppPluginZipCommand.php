@@ -8,6 +8,8 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webman\Console\Commands\Concerns\AppPluginCommandHelpers;
+use Webman\Console\Messages;
+use Webman\Console\Util;
 use ZipArchive;
 use Exception;
 use RecursiveIteratorIterator;
@@ -29,7 +31,7 @@ class AppPluginZipCommand extends Command
 
     protected function buildHelpText(): string
     {
-        return Util::selectLocaleMessages(Messages::getAppPluginZipHelpText());
+        return Util::selectByLocale(Messages::getAppPluginZipHelpText());
     }
 
     /**

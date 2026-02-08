@@ -107,6 +107,6 @@ class FixDisbaleFunctionsCommand extends Command
 
     protected function msg(string $key, array $replace = []): string
     {
-        return strtr(Util::selectLocaleMessages(Messages::getFixDisableFunctionsMessages()[$key] ?? $key), $replace);
+        return strtr(Util::selectLocaleMessages(Messages::getFixDisableFunctionsMessages())[$key] ?? $key, $replace);
     }
 }

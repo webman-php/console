@@ -207,7 +207,7 @@ EOF;
      */
     protected function buildHelpText(): string
     {
-        return Util::selectLocaleMessages(Messages::getMakeMiddlewareHelpText());
+        return Util::selectByLocale(Messages::getMakeMiddlewareHelpText());
     }
 
 }

@@ -83,6 +83,6 @@ class PluginUninstallCommand extends Command
 
     protected function buildHelpText(): string
     {
-        return Util::selectLocaleMessages(\Webman\Console\Messages::getPluginUninstallHelpText());
+        return Util::selectByLocale(\Webman\Console\Messages::getPluginUninstallHelpText());
     }
 }

@@ -170,7 +170,10 @@ trait AppPluginCommandHelpers
      */
     protected function msg(string $key, array $replace = []): string
     {
-        return strtr(Util::selectLocaleMessages(Messages::getAppPluginMessages()[$key] ?? $key), $replace);
+        $localeToMessages = Messages::getAppPluginMessages();
+        $messages = Util::selectLocaleMessages($localeToMessages);
+        $text = $messages[$key] ?? $key;
+        return strtr($text, $replace);
     }
 
     /**

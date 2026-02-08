@@ -86,6 +86,6 @@ class PluginDisableCommand extends Command
 
     protected function buildHelpText(): string
     {
-        return Util::selectLocaleMessages(\Webman\Console\Messages::getPluginDisableHelpText());
+        return Util::selectByLocale(\Webman\Console\Messages::getPluginDisableHelpText());
     }
 }

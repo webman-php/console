@@ -53,7 +53,7 @@ class RouteListCommand extends Command
 
     protected function msg(string $key, array $replace = []): mixed
     {
-        $text = Util::selectLocaleMessages(Messages::getRouteListMessages()[$key] ?? $key);
+        $text = Util::selectLocaleMessages(Messages::getRouteListMessages())[$key] ?? $key;
         if (is_array($text)) {
             return $text;
         }

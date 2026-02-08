@@ -35,6 +35,6 @@ class InstallCommand extends Command
 
     protected function msg(string $key, array $replace = []): string
     {
-        return strtr(Util::selectLocaleMessages(Messages::getInstallMessages()[$key] ?? $key), $replace);
+        return strtr(Util::selectLocaleMessages(Messages::getInstallMessages())[$key] ?? $key, $replace);
     }
 }

@@ -606,7 +606,7 @@ EOF;
      */
     protected function buildHelpText(): string
     {
-        return Util::selectLocaleMessages(Messages::getMakeModelHelpText());
+        return Util::selectByLocale(Messages::getMakeModelHelpText());
     }
 
     /**

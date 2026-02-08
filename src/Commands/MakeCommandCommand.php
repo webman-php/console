@@ -197,7 +197,7 @@ EOF;
      */
     protected function buildHelpText(): string
     {
-        return Util::selectLocaleMessages(Messages::getMakeCommandHelpText());
+        return Util::selectByLocale(Messages::getMakeCommandHelpText());
     }
 
     /**
@@ -209,6 +209,6 @@ EOF;
      */
     protected function msg(string $key, array $replace = []): string
     {
-        return strtr(Util::selectLocaleMessages(Messages::getMakeCommandMessages()[$key] ?? $key), $replace);
+        return strtr(Util::selectLocaleMessages(Messages::getMakeCommandMessages())[$key] ?? $key, $replace);
     }
 }

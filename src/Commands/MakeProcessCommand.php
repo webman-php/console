@@ -1037,7 +1037,7 @@ PHP;
      */
     protected function buildHelpText(): string
     {
-        return Util::selectLocaleMessages(Messages::getMakeProcessHelpText());
+        return Util::selectByLocale(Messages::getMakeProcessHelpText());
     }
 
     protected function msg(string $key, array $replace = []): string

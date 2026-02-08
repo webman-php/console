@@ -7,6 +7,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webman\Console\Commands\Concerns\MakeCommandHelpers;
+use Webman\Console\Messages;
 use Webman\Console\Util;
 
 #[AsCommand('version', 'Show webman version')]
@@ -44,6 +45,6 @@ class VersionCommand extends Command
 
     protected function msg(string $key, array $replace = []): string
     {
-        return strtr(Util::selectLocaleMessages(Messages::getVersionMessages()[$key] ?? $key), $replace);
+        return strtr(Util::selectLocaleMessages(Messages::getVersionMessages())[$key] ?? $key, $replace);
     }
 }

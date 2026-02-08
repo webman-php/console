@@ -9,6 +9,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webman\Console\Commands\Concerns\AppPluginCommandHelpers;
+use Webman\Console\Messages;
+use Webman\Console\Util;
 
 #[AsCommand('app-plugin:update', 'Update App Plugin')]
 class AppPluginUpdateCommand extends Command
@@ -28,7 +30,7 @@ class AppPluginUpdateCommand extends Command
 
     protected function buildHelpText(): string
     {
-        return Util::selectLocaleMessages(Messages::getAppPluginUpdateHelpText());
+        return Util::selectByLocale(Messages::getAppPluginUpdateHelpText());
     }
 
     /**

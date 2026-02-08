@@ -239,6 +239,6 @@ EOT;
      */
     protected function buildHelpText(): string
     {
-        return Util::selectLocaleMessages(\Webman\Console\Messages::getPluginCreateHelpText());
+        return Util::selectByLocale(\Webman\Console\Messages::getPluginCreateHelpText());
     }
 }

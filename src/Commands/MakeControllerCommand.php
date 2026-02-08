@@ -214,7 +214,7 @@ EOF;
      */
     protected function buildHelpText(): string
     {
-        return Util::selectLocaleMessages(Messages::getMakeControllerHelpText());
+        return Util::selectByLocale(Messages::getMakeControllerHelpText());
     }
 
     /**
@@ -226,6 +226,6 @@ EOF;
      */
     protected function msg(string $key, array $replace = []): string
     {
-        return strtr(Util::selectLocaleMessages(Messages::getMakeControllerMessages()[$key] ?? $key), $replace);
+        return strtr(Util::selectLocaleMessages(Messages::getMakeControllerMessages())[$key] ?? $key, $replace);
     }
 }

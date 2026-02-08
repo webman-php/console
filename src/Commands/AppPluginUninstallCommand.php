@@ -10,6 +10,8 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Webman\Console\Commands\Concerns\AppPluginCommandHelpers;
+use Webman\Console\Messages;
+use Webman\Console\Util;
 
 #[AsCommand('app-plugin:uninstall', 'App Plugin Uninstall')]
 class AppPluginUninstallCommand extends Command
@@ -28,7 +30,7 @@ class AppPluginUninstallCommand extends Command
 
     protected function buildHelpText(): string
     {
-        return Util::selectLocaleMessages(Messages::getAppPluginUninstallHelpText());
+        return Util::selectByLocale(Messages::getAppPluginUninstallHelpText());
     }
 
     /**

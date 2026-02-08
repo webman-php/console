@@ -3,6 +3,7 @@
 namespace Webman\Console\Commands\Concerns;
 
 use Webman\Console\Commands\Concerns\MakeCommandHelpers;
+use Webman\Console\Messages;
 use Webman\Console\Util;
 
 trait PluginCommandHelpers
@@ -141,7 +142,7 @@ trait PluginCommandHelpers
      */
     protected function pluginMsg(string $key, array $replace = []): string
     {
-        return strtr(Util::selectLocaleMessages(Messages::getPluginMessages()[$key] ?? $key), $replace);
+        return strtr(Util::selectLocaleMessages(Messages::getPluginMessages())[$key] ?? $key, $replace);
     }
 }
 

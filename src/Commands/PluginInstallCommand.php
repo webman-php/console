@@ -83,6 +83,6 @@ class PluginInstallCommand extends Command
 
     protected function buildHelpText(): string
     {
-        return Util::selectLocaleMessages(\Webman\Console\Messages::getPluginInstallHelpText());
+        return Util::selectByLocale(\Webman\Console\Messages::getPluginInstallHelpText());
     }
 }

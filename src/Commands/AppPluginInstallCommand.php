@@ -8,6 +8,8 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webman\Console\Commands\Concerns\AppPluginCommandHelpers;
+use Webman\Console\Messages;
+use Webman\Console\Util;
 
 #[AsCommand('app-plugin:install', 'Install App Plugin')]
 class AppPluginInstallCommand extends Command
@@ -25,7 +27,7 @@ class AppPluginInstallCommand extends Command
 
     protected function buildHelpText(): string
     {
-        return Util::selectLocaleMessages(Messages::getAppPluginInstallHelpText());
+        return Util::selectByLocale(Messages::getAppPluginInstallHelpText());
     }
 
     /**

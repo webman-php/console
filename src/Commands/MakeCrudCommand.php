@@ -1131,11 +1131,11 @@ EOF;
 
     protected function msg(string $key, array $replace = []): string
     {
-        return strtr(Util::selectLocaleMessages(Messages::getMakeCrudMessages()[$key] ?? $key), $replace);
+        return strtr(Util::selectLocaleMessages(Messages::getMakeCrudMessages())[$key] ?? $key, $replace);
     }
 
     protected function buildHelpText(): string
     {
-        return Util::selectLocaleMessages(Messages::getMakeCrudHelpText());
+        return Util::selectByLocale(Messages::getMakeCrudHelpText());
     }
 }

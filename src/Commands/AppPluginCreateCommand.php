@@ -8,6 +8,8 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webman\Console\Commands\Concerns\AppPluginCommandHelpers;
+use Webman\Console\Messages;
+use Webman\Console\Util;
 
 #[AsCommand('app-plugin:create', 'Create App Plugin')]
 class AppPluginCreateCommand extends Command
@@ -25,7 +27,7 @@ class AppPluginCreateCommand extends Command
 
     protected function buildHelpText(): string
     {
-        return Util::selectLocaleMessages(Messages::getAppPluginCreateHelpText());
+        return Util::selectByLocale(Messages::getAppPluginCreateHelpText());
     }
 
     /**
