@@ -97,6 +97,19 @@ Usage:
   php webman plugin:enable foo/my-admin
   php webman plugin:enable --name foo/my-admin
 EOF;
-        return Util::selectByLocale(['zh_CN' => $zh, 'en' => $en]);
+        return Util::selectByLocale([
+            'zh_CN' => $zh, 'zh_TW' => $zh, 'en' => $en,
+            'ja' => "プラグインを有効化（config/plugin/<vendor>/<name>/app.php の enable を切り替え）。\n\n用法：\n  php webman plugin:enable foo/my-admin\n  php webman plugin:enable --name foo/my-admin",
+            'ko' => "플러그인 활성화 (config/plugin/<vendor>/<name>/app.php의 enable 변경).\n\n사용법:\n  php webman plugin:enable foo/my-admin\n  php webman plugin:enable --name foo/my-admin",
+            'fr' => "Activer un plugin (modifier enable dans config/plugin/<vendor>/<name>/app.php).\n\nUsage :\n  php webman plugin:enable foo/my-admin\n  php webman plugin:enable --name foo/my-admin",
+            'de' => "Plugin aktivieren (enable in config/plugin/<vendor>/<name>/app.php umschalten).\n\nVerwendung:\n  php webman plugin:enable foo/my-admin\n  php webman plugin:enable --name foo/my-admin",
+            'es' => "Activar un plugin (cambiar enable en config/plugin/<vendor>/<name>/app.php).\n\nUso:\n  php webman plugin:enable foo/my-admin\n  php webman plugin:enable --name foo/my-admin",
+            'pt_BR' => "Ativar um plugin (alterar enable em config/plugin/<vendor>/<name>/app.php).\n\nUso:\n  php webman plugin:enable foo/my-admin\n  php webman plugin:enable --name foo/my-admin",
+            'ru' => "Включить плагин (изменить enable в config/plugin/<vendor>/<name>/app.php).\n\nИспользование:\n  php webman plugin:enable foo/my-admin\n  php webman plugin:enable --name foo/my-admin",
+            'vi' => "Bật plugin (đổi enable trong config/plugin/<vendor>/<name>/app.php).\n\nCách dùng:\n  php webman plugin:enable foo/my-admin\n  php webman plugin:enable --name foo/my-admin",
+            'tr' => "Eklentiyi etkinleştir (config/plugin/<vendor>/<name>/app.php içinde enable değiştir).\n\nKullanım:\n  php webman plugin:enable foo/my-admin\n  php webman plugin:enable --name foo/my-admin",
+            'id' => "Aktifkan plugin (ubah enable di config/plugin/<vendor>/<name>/app.php).\n\nPenggunaan:\n  php webman plugin:enable foo/my-admin\n  php webman plugin:enable --name foo/my-admin",
+            'th' => "เปิดใช้งานปลั๊กอิน (เปลี่ยน enable ใน config/plugin/<vendor>/<name>/app.php)\n\nวิธีใช้:\n  php webman plugin:enable foo/my-admin\n  php webman plugin:enable --name foo/my-admin",
+        ]);
     }
 }

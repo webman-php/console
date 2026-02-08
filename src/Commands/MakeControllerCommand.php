@@ -233,49 +233,64 @@ EOF;
             'invalid_path' => '<error>Invalid path: {path}. `--path/-P` must be a relative path (to project root) and must not be an absolute path.</error>',
         ];
 
-        $map = Util::selectLocaleMessages(['zh_CN' => $zh, 'en' => $en]);
+        $messages = [
+            'zh_CN' => $zh, 'zh_TW' => [
+                'make_controller' => '<info>建立控制器</info> <comment>{name}</comment>',
+                'created' => '<info>已建立：</info> {path}',
+                'override_prompt' => "<question>檔案已存在：{path}</question>\n<question>是否覆蓋？[Y/n]（Enter=Y）</question>\n",
+                'invalid_plugin' => '<error>插件名稱無效：{plugin}。`--plugin/-p` 只能是 plugin/ 目錄下的目錄名，不能包含 / 或 \\。</error>',
+                'plugin_path_conflict' => "<error>`--plugin/-p` 與 `--path/-P` 同時指定且不一致。\n期望路徑：{expected}\n實際路徑：{actual}\n請二選一或保持一致。</error>",
+                'invalid_path' => '<error>路徑無效：{path}。`--path/-P` 必須是相對路徑（相對於專案根目錄），不能是絕對路徑。</error>',
+            ],
+            'en' => $en,
+            'ja' => [
+                'make_controller' => '<info>コントローラを作成</info> <comment>{name}</comment>',
+                'created' => '<info>作成しました：</info> {path}',
+                'override_prompt' => "<question>ファイルが既に存在します：{path}</question>\n<question>上書きしますか？[Y/n]（Enter=Y）</question>\n",
+                'invalid_plugin' => '<error>プラグイン名が無効です：{plugin}。`--plugin/-p` は plugin/ 以下のディレクトリ名で、/ または \\ を含めません。</error>',
+                'plugin_path_conflict' => "<error>`--plugin/-p` と `--path/-P` が両方指定されていますが一致しません。\n期待：{expected}\n実際：{actual}\nどちらか一方に揃えてください。</error>",
+                'invalid_path' => '<error>パスが無効です：{path}。`--path/-P` はプロジェクトルートからの相対パスで、絶対パスは不可です。</error>',
+            ],
+            'ko' => ['make_controller' => '<info>컨트롤러 만들기</info> <comment>{name}</comment>', 'created' => '<info>생성됨:</info> {path}', 'override_prompt' => "<question>파일이 이미 있습니다: {path}</question>\n<question>덮어쓸까요? [Y/n] (Enter=Y)</question>\n", 'invalid_plugin' => '<error>잘못된 플러그인 이름: {plugin}. `--plugin/-p`는 plugin/ 아래 디렉터리 이름이며 / 또는 \\를 포함할 수 없습니다.</error>', 'plugin_path_conflict' => "<error>`--plugin/-p`와 `--path/-P`가 모두 지정되었지만 일치하지 않습니다.\n예상: {expected}\n실제: {actual}\n하나만 사용하거나 동일하게 맞추세요.</error>", 'invalid_path' => '<error>잘못된 경로: {path}. `--path/-P`는 프로젝트 루트 기준 상대 경로여야 하며 절대 경로는 안 됩니다.</error>'],
+            'fr' => ['make_controller' => '<info>Créer un contrôleur</info> <comment>{name}</comment>', 'created' => '<info>Créé :</info> {path}', 'override_prompt' => "<question>Le fichier existe déjà : {path}</question>\n<question>Écraser ? [Y/n] (Entrée = Y)</question>\n", 'invalid_plugin' => '<error>Nom de plugin invalide : {plugin}. `--plugin/-p` doit être un nom de dossier sous plugin/, sans / ni \\.</error>', 'plugin_path_conflict' => "<error>`--plugin/-p` et `--path/-P` sont tous deux fournis mais incohérents.\nAttendu : {expected}\nRéel : {actual}\nN\'en fournissez qu\'un ou rendez-les identiques.</error>", 'invalid_path' => '<error>Chemin invalide : {path}. `--path/-P` doit être un chemin relatif (à la racine du projet), pas absolu.</error>'],
+            'de' => ['make_controller' => '<info>Controller erstellen</info> <comment>{name}</comment>', 'created' => '<info>Erstellt:</info> {path}', 'override_prompt' => "<question>Datei existiert bereits: {path}</question>\n<question>Überschreiben? [Y/n] (Eingabe = Y)</question>\n", 'invalid_plugin' => '<error>Ungültiger Plugin-Name: {plugin}. `--plugin/-p` muss ein Ordnername unter plugin/ sein, ohne / oder \\.</error>', 'plugin_path_conflict' => "<error>`--plugin/-p` und `--path/-P` sind beide angegeben, aber nicht konsistent.\nErwartet: {expected}\nTatsächlich: {actual}\nNur eines angeben oder angleichen.</error>", 'invalid_path' => '<error>Ungültiger Pfad: {path}. `--path/-P` muss ein relativer Pfad (zur Projektwurzel) sein, kein absoluter.</error>'],
+            'es' => ['make_controller' => '<info>Crear controlador</info> <comment>{name}</comment>', 'created' => '<info>Creado:</info> {path}', 'override_prompt' => "<question>El archivo ya existe: {path}</question>\n<question>¿Sobrescribir? [Y/n] (Enter = Y)</question>\n", 'invalid_plugin' => '<error>Nombre de plugin no válido: {plugin}. `--plugin/-p` debe ser un nombre de carpeta bajo plugin/, sin / ni \\.</error>', 'plugin_path_conflict' => "<error>Se dieron `--plugin/-p` y `--path/-P` pero no coinciden.\nEsperado: {expected}\nReal: {actual}\nProporcione solo uno o hágalos idénticos.</error>", 'invalid_path' => '<error>Ruta no válida: {path}. `--path/-P` debe ser una ruta relativa (a la raíz del proyecto), no absoluta.</error>'],
+            'pt_BR' => ['make_controller' => '<info>Criar controlador</info> <comment>{name}</comment>', 'created' => '<info>Criado:</info> {path}', 'override_prompt' => "<question>O arquivo já existe: {path}</question>\n<question>Sobrescrever? [Y/n] (Enter = Y)</question>\n", 'invalid_plugin' => '<error>Nome de plugin inválido: {plugin}. `--plugin/-p` deve ser um nome de pasta em plugin/, sem / ou \\.</error>', 'plugin_path_conflict' => "<error>`--plugin/-p` e `--path/-P` foram fornecidos mas são inconsistentes.\nEsperado: {expected}\nAtual: {actual}\nForneça apenas um ou deixe-os iguais.</error>", 'invalid_path' => '<error>Caminho inválido: {path}. `--path/-P` deve ser um caminho relativo (à raiz do projeto), não absoluto.</error>'],
+            'ru' => ['make_controller' => '<info>Создать контроллер</info> <comment>{name}</comment>', 'created' => '<info>Создано:</info> {path}', 'override_prompt' => "<question>Файл уже существует: {path}</question>\n<question>Перезаписать? [Y/n] (Enter = Y)</question>\n", 'invalid_plugin' => '<error>Недопустимое имя плагина: {plugin}. `--plugin/-p` должно быть именем каталога в plugin/, без / или \\.</error>', 'plugin_path_conflict' => "<error>Указаны и `--plugin/-p`, и `--path/-P`, но они не совпадают.\nОжидалось: {expected}\nФактически: {actual}\nУкажите что-то одно или сделайте их одинаковыми.</error>", 'invalid_path' => '<error>Недопустимый путь: {path}. `--path/-P` должен быть относительным путём (к корню проекта), не абсолютным.</error>'],
+            'vi' => ['make_controller' => '<info>Tạo controller</info> <comment>{name}</comment>', 'created' => '<info>Đã tạo:</info> {path}', 'override_prompt' => "<question>Tệp đã tồn tại: {path}</question>\n<question>Ghi đè? [Y/n] (Enter = Y)</question>\n", 'invalid_plugin' => '<error>Tên plugin không hợp lệ: {plugin}. `--plugin/-p` phải là tên thư mục trong plugin/, không chứa / hoặc \\.</error>', 'plugin_path_conflict' => "<error>`--plugin/-p` và `--path/-P` đều được chỉ định nhưng không khớp.\nMong đợi: {expected}\nThực tế: {actual}\nChỉ dùng một hoặc cho chúng giống nhau.</error>", 'invalid_path' => '<error>Đường dẫn không hợp lệ: {path}. `--path/-P` phải là đường dẫn tương đối (tới thư mục gốc dự án), không phải tuyệt đối.</error>'],
+            'tr' => ['make_controller' => '<info>Denetleyici oluştur</info> <comment>{name}</comment>', 'created' => '<info>Oluşturuldu:</info> {path}', 'override_prompt' => "<question>Dosya zaten mevcut: {path}</question>\n<question>Üzerine yazılsın mı? [Y/n] (Enter = Y)</question>\n", 'invalid_plugin' => '<error>Geçersiz eklenti adı: {plugin}. `--plugin/-p` plugin/ altında bir klasör adı olmalı, / veya \\ içermemeli.</error>', 'plugin_path_conflict' => "<error>`--plugin/-p` ve `--path/-P` birlikte verilmiş ancak uyuşmuyor.\nBeklenen: {expected}\nGerçek: {actual}\nYalnızca birini verin veya aynı yapın.</error>", 'invalid_path' => '<error>Geçersiz yol: {path}. `--path/-P` proje köküne göre göreli yol olmalı, mutlak yol olmamalı.</error>'],
+            'id' => ['make_controller' => '<info>Buat controller</info> <comment>{name}</comment>', 'created' => '<info>Dibuat:</info> {path}', 'override_prompt' => "<question>File sudah ada: {path}</question>\n<question>Timpa? [Y/n] (Enter = Y)</question>\n", 'invalid_plugin' => '<error>Nama plugin tidak valid: {plugin}. `--plugin/-p` harus nama folder di bawah plugin/, tidak boleh mengandung / atau \\.</error>', 'plugin_path_conflict' => "<error>`--plugin/-p` dan `--path/-P` keduanya diberikan tetapi tidak konsisten.\nHarapan: {expected}\nActual: {actual}\nBerikan hanya satu atau samakan.</error>", 'invalid_path' => '<error>Path tidak valid: {path}. `--path/-P` harus path relatif (ke akar proyek), bukan absolut.</error>'],
+            'th' => ['make_controller' => '<info>สร้างคอนโทรลเลอร์</info> <comment>{name}</comment>', 'created' => '<info>สร้างแล้ว：</info> {path}', 'override_prompt' => "<question>มีไฟล์อยู่แล้ว：{path}</question>\n<question>เขียนทับ？[Y/n]（Enter=Y）</question>\n", 'invalid_plugin' => '<error>ชื่อปลั๊กอินไม่ถูกต้อง：{plugin}。`--plugin/-p` ต้องเป็นชื่อโฟลเดอร์ภายใต้ plugin/ ห้ามมี / หรือ \\</error>', 'plugin_path_conflict' => "<error>ระบุทั้ง `--plugin/-p` และ `--path/-P` แต่ไม่ตรงกัน\nคาดว่า：{expected}\nจริง：{actual}\nใช้อย่างใดอย่างหนึ่งหรือให้ตรงกัน</error>", 'invalid_path' => '<error>เส้นทางไม่ถูกต้อง：{path}。`--path/-P` ต้องเป็นเส้นทางสัมพัทธ์（จากรากโปรเจกต์）ไม่ใช่แบบสัมบูรณ์</error>'],
+        ];
+        $map = Util::selectLocaleMessages($messages);
         $text = $map[$key] ?? $key;
         return $replace ? strtr($text, $replace) : $text;
     }
 
     /**
-     * Command help text (bilingual).
+     * Command help text (multilingual).
      *
      * @return string
      */
     protected function buildHelpText(): string
     {
-        $zh = <<<'EOF'
-生成控制器文件。
-
-推荐用法：
-  php webman make:controller User
-  php webman make:controller User -p admin
-  php webman make:controller User -P plugin/admin/app/controller
-  php webman make:controller Admin/User -f
-
-说明：
-  - 默认生成到 app/controller（大小写以现有目录为准）。
-  - 使用 -p/--plugin 时默认生成到 plugin/<plugin>/app/controller。
-  - 使用 -P/--path 时生成到指定相对目录（相对于项目根目录）。
-  - 文件已存在时默认会提示是否覆盖；使用 -f/--force 可直接覆盖。
-EOF;
-        $en = <<<'EOF'
-Generate a controller file.
-
-Recommended:
-  php webman make:controller User
-  php webman make:controller User -p admin
-  php webman make:controller User -P plugin/admin/app/controller
-  php webman make:controller Admin/User -f
-
-Notes:
-  - By default, it generates under app/controller (case depends on existing directory).
-  - With -p/--plugin, it generates under plugin/<plugin>/app/controller by default.
-  - With -P/--path, it generates under the specified relative directory (to project root).
-  - If the file already exists, it will ask before overriding; use -f/--force to override directly.
-EOF;
-        return Util::selectByLocale(['zh_CN' => $zh, 'en' => $en]);
+        $en = "Generate a controller file.\n\nRecommended:\n  php webman make:controller User\n  php webman make:controller User -p admin\n  php webman make:controller User -P plugin/admin/app/controller\n  php webman make:controller Admin/User -f\n\nNotes:\n  - By default, it generates under app/controller (case depends on existing directory).\n  - With -p/--plugin, it generates under plugin/<plugin>/app/controller by default.\n  - With -P/--path, it generates under the specified relative directory (to project root).\n  - If the file already exists, it will ask before overriding; use -f/--force to override directly.";
+        return Util::selectByLocale([
+            'zh_CN' => "生成控制器文件。\n\n推荐用法：\n  php webman make:controller User\n  php webman make:controller User -p admin\n  php webman make:controller User -P plugin/admin/app/controller\n  php webman make:controller Admin/User -f\n\n说明：\n  - 默认生成到 app/controller（大小写以现有目录为准）。\n  - 使用 -p/--plugin 时默认生成到 plugin/<plugin>/app/controller。\n  - 使用 -P/--path 时生成到指定相对目录（相对于项目根目录）。\n  - 文件已存在时默认会提示是否覆盖；使用 -f/--force 可直接覆盖。",
+            'zh_TW' => "建立控制器檔案。\n\n推薦用法：\n  php webman make:controller User\n  php webman make:controller User -p admin\n  php webman make:controller User -P plugin/admin/app/controller\n  php webman make:controller Admin/User -f\n\n說明：\n  - 預設生成到 app/controller（大小寫依現有目錄）。\n  - 使用 -p/--plugin 時預設生成到 plugin/<plugin>/app/controller。\n  - 使用 -P/--path 時生成到指定相對目錄（相對於專案根目錄）。\n  - 檔案已存在時會詢問是否覆蓋；使用 -f/--force 可直接覆蓋。",
+            'en' => $en,
+            'ja' => "コントローラファイルを生成。\n\n推奨：\n  php webman make:controller User\n  php webman make:controller User -p admin\n  php webman make:controller User -P plugin/admin/app/controller\n  php webman make:controller Admin/User -f\n\n説明：\n  - デフォルトは app/controller に生成（大文字小文字は既存ディレクトリに合わせる）。\n  - -p/--plugin の場合は plugin/<plugin>/app/controller に生成。\n  - -P/--path で相対ディレクトリを指定可能（プロジェクトルート基準）。\n  - ファイルが既にある場合は上書き確認；-f/--force で直接上書き。",
+            'ko' => "컨트롤러 파일 생성.\n\n권장:\n  php webman make:controller User\n  php webman make:controller User -p admin\n  php webman make:controller User -P plugin/admin/app/controller\n  php webman make:controller Admin/User -f\n\n참고:\n  - 기본 생성 위치 app/controller(기존 디렉터리 대소문자 따름).\n  - -p/--plugin 사용 시 plugin/<plugin>/app/controller에 생성.\n  - -P/--path로 프로젝트 루트 기준 상대 경로 지정 가능.\n  - 파일이 있으면 덮어쓸지 묻고, -f/--force로 직접 덮어쓰기.",
+            'fr' => "Générer un fichier contrôleur.\n\nRecommandé :\n  php webman make:controller User\n  php webman make:controller User -p admin\n  php webman make:controller User -P plugin/admin/app/controller\n  php webman make:controller Admin/User -f\n\nNotes :\n  - Par défaut, génération sous app/controller (casse selon le répertoire existant).\n  - Avec -p/--plugin, génération sous plugin/<plugin>/app/controller.\n  - Avec -P/--path, génération dans le répertoire relatif indiqué (par rapport à la racine).\n  - Si le fichier existe, demande avant d'écraser ; -f/--force pour écraser directement.",
+            'de' => "Controller-Datei erzeugen.\n\nEmpfohlen:\n  php webman make:controller User\n  php webman make:controller User -p admin\n  php webman make:controller User -P plugin/admin/app/controller\n  php webman make:controller Admin/User -f\n\nHinweise:\n  - Standard: Erzeugung unter app/controller (Groß-/Kleinschreibung nach vorhandenem Verzeichnis).\n  - Mit -p/--plugin: unter plugin/<plugin>/app/controller.\n  - Mit -P/--path: unter angegebenem relativem Pfad (zur Projektwurzel).\n  - Bei vorhandener Datei wird gefragt; -f/--force überschreibt direkt.",
+            'es' => "Generar un archivo de controlador.\n\nRecomendado:\n  php webman make:controller User\n  php webman make:controller User -p admin\n  php webman make:controller User -P plugin/admin/app/controller\n  php webman make:controller Admin/User -f\n\nNotas:\n  - Por defecto se genera en app/controller (mayúsculas según el directorio existente).\n  - Con -p/--plugin se genera en plugin/<plugin>/app/controller.\n  - Con -P/--path se genera en el directorio relativo indicado (respecto a la raíz).\n  - Si el archivo existe, pregunta antes de sobrescribir; -f/--force sobrescribe directamente.",
+            'pt_BR' => "Gerar um arquivo de controlador.\n\nRecomendado:\n  php webman make:controller User\n  php webman make:controller User -p admin\n  php webman make:controller User -P plugin/admin/app/controller\n  php webman make:controller Admin/User -f\n\nNotas:\n  - Por padrão gera em app/controller (maiúsculas conforme o diretório existente).\n  - Com -p/--plugin gera em plugin/<plugin>/app/controller.\n  - Com -P/--path gera no diretório relativo indicado (em relação à raiz do projeto).\n  - Se o arquivo existir, pergunta antes de sobrescrever; -f/--force sobrescreve diretamente.",
+            'ru' => "Создать файл контроллера.\n\nРекомендуется:\n  php webman make:controller User\n  php webman make:controller User -p admin\n  php webman make:controller User -P plugin/admin/app/controller\n  php webman make:controller Admin/User -f\n\nПримечания:\n  - По умолчанию создаётся в app/controller (регистр по существующей директории).\n  - С -p/--plugin создаётся в plugin/<plugin>/app/controller.\n  - С -P/--path создаётся в указанной относительной директории (от корня проекта).\n  - Если файл существует, запрашивается подтверждение перезаписи; -f/--force перезаписывает сразу.",
+            'vi' => "Tạo tệp controller.\n\nKhuyến nghị:\n  php webman make:controller User\n  php webman make:controller User -p admin\n  php webman make:controller User -P plugin/admin/app/controller\n  php webman make:controller Admin/User -f\n\nLưu ý:\n  - Mặc định tạo trong app/controller (chữ hoa/thường theo thư mục hiện có).\n  - Với -p/--plugin tạo trong plugin/<plugin>/app/controller.\n  - Với -P/--path tạo trong thư mục tương đối chỉ định (so với thư mục gốc dự án).\n  - Nếu tệp đã tồn tại sẽ hỏi trước khi ghi đè; -f/--force ghi đè trực tiếp.",
+            'tr' => "Controller dosyası oluştur.\n\nÖnerilen:\n  php webman make:controller User\n  php webman make:controller User -p admin\n  php webman make:controller User -P plugin/admin/app/controller\n  php webman make:controller Admin/User -f\n\nNotlar:\n  - Varsayılan olarak app/controller altında oluşturulur (büyük/küçük harf mevcut dizine göre).\n  - -p/--plugin ile plugin/<plugin>/app/controller altında oluşturulur.\n  - -P/--path ile belirtilen göreli dizinde oluşturulur (proje köküne göre).\n  - Dosya varsa üzerine yazmadan önce sorar; -f/--force doğrudan üzerine yazar.",
+            'id' => "Buat file controller.\n\nDirekomendasikan:\n  php webman make:controller User\n  php webman make:controller User -p admin\n  php webman make:controller User -P plugin/admin/app/controller\n  php webman make:controller Admin/User -f\n\nCatatan:\n  - Secara default dibuat di app/controller (huruf mengikuti direktori yang ada).\n  - Dengan -p/--plugin dibuat di plugin/<plugin>/app/controller.\n  - Dengan -P/--path dibuat di direktori relatif yang ditentukan (terhadap akar proyek).\n  - Jika file sudah ada akan ditanya sebelum menimpa; -f/--force menimpa langsung.",
+            'th' => "สร้างไฟล์คอนโทรลเลอร์\n\nแนะนำ:\n  php webman make:controller User\n  php webman make:controller User -p admin\n  php webman make:controller User -P plugin/admin/app/controller\n  php webman make:controller Admin/User -f\n\nหมายเหตุ:\n  - ค่าเริ่มต้นสร้างใต้ app/controller (ตัวพิมพ์ตามไดเรกทอรีที่มีอยู่)\n  - ใช้ -p/--plugin สร้างใต้ plugin/<plugin>/app/controller\n  - ใช้ -P/--path สร้างในไดเรกทอรีสัมพัทธ์ที่ระบุ (เทียบกับรากโปรเจกต์)\n  - ถ้ามีไฟล์อยู่แล้วจะถามก่อนเขียนทับ -f/--force เขียนทับโดยตรง",
+        ]);
     }
 
 }

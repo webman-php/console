@@ -133,15 +133,13 @@ trait PluginCommandHelpers
     }
 
     /**
-     * Bilingual CLI messages for plugin commands.
+     * Multilingual CLI message map for plugin commands. Fallback: exact -> lang prefix -> en -> zh_CN -> first.
      *
-     * @param string $key
-     * @param array $replace
-     * @return string
+     * @return array<string, array<string, string>>
      */
-    protected function pluginMsg(string $key, array $replace = []): string
+    protected function getPluginMessageMap(): array
     {
-        $zh = [
+        $zhCn = [
             'bad_name' => "<error>插件名无效：{name}\n要求：必须是 composer 包名，格式为 vendor/name（建议全小写），例如 foo/my-admin。</error>",
             'name_conflict' => "<error>参数冲突：位置参数与 --name 不一致：{arg} vs {opt}\n请只保留一个，或确保两者一致。</error>",
             'plugin_not_found' => "<error>插件不存在：{name}\n请先安装该插件（例如：composer require {name}），或确认目录存在：{path}</error>",
@@ -223,7 +221,146 @@ trait PluginCommandHelpers
             'script_failed' => "<error>Execution failed:</error> {error}",
         ];
 
-        $map = Util::selectLocaleMessages(['zh_CN' => $zh, 'en' => $en]);
+        $zhTw = [
+            'bad_name' => "<error>插件名稱無效：{name}\n要求：必須是 composer 套件名，格式為 vendor/name（建議全小寫），例如 foo/my-admin。</error>",
+            'name_conflict' => "<error>參數衝突：位置參數與 --name 不一致：{arg} vs {opt}\n請只保留一個，或確保兩者一致。</error>",
+            'plugin_not_found' => "<error>插件不存在：{name}\n請先安裝該插件（例如：composer require {name}），或確認目錄存在：{path}</error>",
+            'create_title' => "<info>建立插件</info> <comment>{name}</comment>",
+            'enable_title' => "<info>啟用插件</info> <comment>{name}</comment>",
+            'disable_title' => "<info>停用插件</info> <comment>{name}</comment>",
+            'export_title' => "<info>匯出插件</info> <comment>{name}</comment>",
+            'install_title' => "<info>執行安裝腳本</info> <comment>{name}</comment>",
+            'uninstall_title' => "<info>執行卸載腳本</info> <comment>{name}</comment>",
+            'missing_name' => "<error>缺少參數：請透過位置參數或 `--name` 指定插件套件名（例如 foo/my-admin）。</error>",
+            'dir_exists' => "<error>目錄已存在：</error> {path}",
+            'create_failed' => "<error>建立失敗：</error> {error}",
+            'step_psr4' => "<comment>步驟</comment> 新增 PSR-4 對應：<info>{key}</info> -> <info>{path}</info>",
+            'psr4_ok' => "<info>PSR-4 對應已寫入 composer.json</info>",
+            'psr4_failed' => "<error>寫入 composer.json 失敗：</error> {error}",
+            'step_config' => "<comment>步驟</comment> 產生設定目錄：{path}",
+            'step_vendor' => "<comment>步驟</comment> 產生插件程式目錄：{path}",
+            'created' => "<info>已建立：</info> {path}",
+            'dumpautoload_ok' => "<info>已執行：</info> composer dumpautoload",
+            'dumpautoload_failed' => "<comment>提示</comment> 自動執行失敗，請手動執行：<info>{cmd}</info>",
+            'dumpautoload_manual' => "<comment>提示</comment> 目前環境無法自動執行指令，請手動執行：<info>composer dumpautoload</info>",
+            'done' => "<info>完成</info> 插件 {name} 建立成功",
+            'config_file' => "<comment>設定檔</comment> {path}",
+            'config_missing' => "<comment>提示</comment> 設定檔不存在，略過：{path}",
+            'enable_key_missing' => "<comment>提示</comment> 設定項 `enable` 不存在，略過：{path}",
+            'already_enabled' => "<comment>提示</comment> 已是啟用狀態，無需修改",
+            'already_disabled' => "<comment>提示</comment> 已是停用狀態，無需修改",
+            'enabled_ok' => "<info>已啟用</info> {name}",
+            'disabled_ok' => "<info>已停用</info> {name}",
+            'updated_ok' => "<info>已更新</info> {path}",
+            'update_failed' => "<error>更新失敗：</error> {error}",
+            'export_install_created' => "<info>已產生：</info> {path}",
+            'export_copy' => "<info>複製</info> {src} <comment>→</comment> {dest}",
+            'export_skip_missing' => "<comment>略過</comment> 路徑不存在：{path}",
+            'export_saved' => "<info>已匯出</info> {name} <comment>→</comment> {dest}",
+            'script_missing' => "<comment>提示</comment> 未找到安裝/卸載腳本（Install::WEBMAN_PLUGIN 或方法不存在）。如剛修改過 composer.json，請先執行：<info>composer dumpautoload</info>",
+            'script_ok' => "<info>執行完成</info>",
+            'script_failed' => "<error>執行失敗：</error> {error}",
+        ];
+
+        $ja = [
+            'bad_name' => "<error>無効なプラグイン名：{name}\ncomposer パッケージ名（vendor/name、小推奨）が必要です。例：foo/my-admin。</error>",
+            'name_conflict' => "<error>引数の衝突：位置引数と --name が一致しません：{arg} vs {opt}\nどちらか一方に統一してください。</error>",
+            'plugin_not_found' => "<error>プラグインが見つかりません：{name}\n先にインストール（例：composer require {name}）するか、ディレクトリ {path} の存在を確認してください。</error>",
+            'create_title' => "<info>プラグインを作成</info> <comment>{name}</comment>",
+            'enable_title' => "<info>プラグインを有効化</info> <comment>{name}</comment>",
+            'disable_title' => "<info>プラグインを無効化</info> <comment>{name}</comment>",
+            'export_title' => "<info>プラグインをエクスポート</info> <comment>{name}</comment>",
+            'install_title' => "<info>インストールスクリプトを実行</info> <comment>{name}</comment>",
+            'uninstall_title' => "<info>アンインストールスクリプトを実行</info> <comment>{name}</comment>",
+            'missing_name' => "<error>引数がありません。位置引数または `--name` でパッケージ名（例：foo/my-admin）を指定してください。</error>",
+            'dir_exists' => "<error>ディレクトリが既に存在します：</error> {path}",
+            'create_failed' => "<error>作成に失敗しました：</error> {error}",
+            'step_psr4' => "<comment>手順</comment> PSR-4 マッピングを追加：<info>{key}</info> -> <info>{path}</info>",
+            'psr4_ok' => "<info>composer.json に PSR-4 マッピングを反映しました</info>",
+            'psr4_failed' => "<error>composer.json の更新に失敗しました：</error> {error}",
+            'step_config' => "<comment>手順</comment> 設定ディレクトリを作成：{path}",
+            'step_vendor' => "<comment>手順</comment> プラグインソースディレクトリを作成：{path}",
+            'created' => "<info>作成しました：</info> {path}",
+            'dumpautoload_ok' => "<info>実行しました：</info> composer dumpautoload",
+            'dumpautoload_failed' => "<comment>注意</comment> 自動実行に失敗しました。手動で実行してください：<info>{cmd}</info>",
+            'dumpautoload_manual' => "<comment>注意</comment> この環境ではコマンドを自動実行できません。手動で <info>composer dumpautoload</info> を実行してください。",
+            'done' => "<info>完了</info> プラグイン {name} の作成に成功しました",
+            'config_file' => "<comment>設定ファイル</comment> {path}",
+            'config_missing' => "<comment>注意</comment> 設定ファイルが見つかりません、スキップ：{path}",
+            'enable_key_missing' => "<comment>注意</comment> 設定キー `enable` が見つかりません、スキップ：{path}",
+            'already_enabled' => "<comment>注意</comment> 既に有効です。変更不要です。",
+            'already_disabled' => "<comment>注意</comment> 既に無効です。変更不要です。",
+            'enabled_ok' => "<info>有効にしました</info> {name}",
+            'disabled_ok' => "<info>無効にしました</info> {name}",
+            'updated_ok' => "<info>更新しました</info> {path}",
+            'update_failed' => "<error>更新に失敗しました：</error> {error}",
+            'export_install_created' => "<info>生成しました：</info> {path}",
+            'export_copy' => "<info>コピー</info> {src} <comment>→</comment> {dest}",
+            'export_skip_missing' => "<comment>スキップ</comment> パスが見つかりません：{path}",
+            'export_saved' => "<info>エクスポートしました</info> {name} <comment>→</comment> {dest}",
+            'script_missing' => "<comment>注意</comment> インストール/アンインストールスクリプトが見つかりません（Install::WEBMAN_PLUGIN またはメソッドがありません）。composer.json を変更した場合は <info>composer dumpautoload</info> を実行してください。",
+            'script_ok' => "<info>完了</info>",
+            'script_failed' => "<error>実行に失敗しました：</error> {error}",
+        ];
+
+        $ko = [
+            'bad_name' => "<error>잘못된 플러그인 이름: {name}\ncomposer 패키지 이름(vendor/name, 소문자 권장)이어야 합니다. 예: foo/my-admin.</error>",
+            'name_conflict' => "<error>인자 충돌: 위치 인자와 --name이 일치하지 않습니다: {arg} vs {opt}\n하나만 사용하거나 동일하게 맞추세요.</error>",
+            'plugin_not_found' => "<error>플러그인을 찾을 수 없습니다: {name}\n먼저 설치하세요(예: composer require {name}) 또는 디렉터리 존재 여부 확인: {path}</error>",
+            'create_title' => "<info>플러그인 생성</info> <comment>{name}</comment>",
+            'enable_title' => "<info>플러그인 활성화</info> <comment>{name}</comment>",
+            'disable_title' => "<info>플러그인 비활성화</info> <comment>{name}</comment>",
+            'export_title' => "<info>플러그인 내보내기</info> <comment>{name}</comment>",
+            'install_title' => "<info>설치 스크립트 실행</info> <comment>{name}</comment>",
+            'uninstall_title' => "<info>제거 스크립트 실행</info> <comment>{name}</comment>",
+            'missing_name' => "<error>인자가 없습니다. 위치 인자 또는 `--name`으로 패키지 이름(예: foo/my-admin)을 지정하세요.</error>",
+            'dir_exists' => "<error>디렉터리가 이미 있습니다:</error> {path}",
+            'create_failed' => "<error>생성 실패:</error> {error}",
+            'step_psr4' => "<comment>단계</comment> PSR-4 매핑 추가: <info>{key}</info> -> <info>{path}</info>",
+            'psr4_ok' => "<info>composer.json에 PSR-4 매핑이 반영되었습니다</info>",
+            'psr4_failed' => "<error>composer.json 업데이트 실패:</error> {error}",
+            'step_config' => "<comment>단계</comment> 설정 디렉터리 생성: {path}",
+            'step_vendor' => "<comment>단계</comment> 플러그인 소스 디렉터리 생성: {path}",
+            'created' => "<info>생성됨:</info> {path}",
+            'dumpautoload_ok' => "<info>실행됨:</info> composer dumpautoload",
+            'dumpautoload_failed' => "<comment>참고</comment> 자동 실행에 실패했습니다. 수동으로 실행하세요: <info>{cmd}</info>",
+            'dumpautoload_manual' => "<comment>참고</comment> 이 환경에서는 명령을 자동 실행할 수 없습니다. 수동으로 <info>composer dumpautoload</info>를 실행하세요.",
+            'done' => "<info>완료</info> 플러그인 {name}이(가) 성공적으로 생성되었습니다",
+            'config_file' => "<comment>설정 파일</comment> {path}",
+            'config_missing' => "<comment>참고</comment> 설정 파일을 찾을 수 없어 건너뜁니다: {path}",
+            'enable_key_missing' => "<comment>참고</comment> 설정 키 `enable`을 찾을 수 없어 건너뜁니다: {path}",
+            'already_enabled' => "<comment>참고</comment> 이미 활성화되어 있습니다. 변경할 필요 없습니다.",
+            'already_disabled' => "<comment>참고</comment> 이미 비활성화되어 있습니다. 변경할 필요 없습니다.",
+            'enabled_ok' => "<info>활성화됨</info> {name}",
+            'disabled_ok' => "<info>비활성화됨</info> {name}",
+            'updated_ok' => "<info>업데이트됨</info> {path}",
+            'update_failed' => "<error>업데이트 실패:</error> {error}",
+            'export_install_created' => "<info>생성됨:</info> {path}",
+            'export_copy' => "<info>복사</info> {src} <comment>→</comment> {dest}",
+            'export_skip_missing' => "<comment>건너뜀</comment> 경로를 찾을 수 없습니다: {path}",
+            'export_saved' => "<info>내보냄</info> {name} <comment>→</comment> {dest}",
+            'script_missing' => "<comment>참고</comment> 설치/제거 스크립트를 찾을 수 없습니다(Install::WEBMAN_PLUGIN 또는 메서드 없음). composer.json을 수정했다면 <info>composer dumpautoload</info>를 실행하세요.",
+            'script_ok' => "<info>완료</info>",
+            'script_failed' => "<error>실행 실패:</error> {error}",
+        ];
+
+        $restLocales = ['fr' => $en, 'de' => $en, 'es' => $en, 'pt_BR' => $en, 'ru' => $en, 'vi' => $en, 'tr' => $en, 'id' => $en, 'th' => $en];
+        return array_merge(
+            ['zh_CN' => $zhCn, 'zh_TW' => $zhTw, 'en' => $en, 'ja' => $ja, 'ko' => $ko],
+            $restLocales
+        );
+    }
+
+    /**
+     * CLI messages for plugin commands. Locale selected by getLocale() / Util fallback.
+     *
+     * @param string $key
+     * @param array $replace
+     * @return string
+     */
+    protected function pluginMsg(string $key, array $replace = []): string
+    {
+        $map = Util::selectLocaleMessages($this->getPluginMessageMap());
         $text = $map[$key] ?? $key;
         return $replace ? strtr($text, $replace) : $text;
     }

@@ -408,9 +408,22 @@ class MakeCrudCommand extends Command
 
     protected function getNameLabel(string $type): string
     {
+        $enLabels = ['model' => 'Model name', 'controller' => 'Controller name', 'validator' => 'Validator name'];
         $labels = Util::selectLocaleMessages([
             'zh_CN' => ['model' => '模型名', 'controller' => '控制器名', 'validator' => '验证器名'],
-            'en' => ['model' => 'Model name', 'controller' => 'Controller name', 'validator' => 'Validator name'],
+            'zh_TW' => ['model' => '模型名', 'controller' => '控制器名', 'validator' => '驗證器名'],
+            'en' => $enLabels,
+            'ja' => ['model' => 'モデル名', 'controller' => 'コントローラ名', 'validator' => 'バリデータ名'],
+            'ko' => ['model' => '모델 이름', 'controller' => '컨트롤러 이름', 'validator' => '검증기 이름'],
+            'fr' => ['model' => 'Nom du modèle', 'controller' => 'Nom du contrôleur', 'validator' => 'Nom du validateur'],
+            'de' => ['model' => 'Modellname', 'controller' => 'Controller-Name', 'validator' => 'Validator-Name'],
+            'es' => ['model' => 'Nombre del modelo', 'controller' => 'Nombre del controlador', 'validator' => 'Nombre del validador'],
+            'pt_BR' => ['model' => 'Nome do modelo', 'controller' => 'Nome do controlador', 'validator' => 'Nome do validador'],
+            'ru' => ['model' => 'Имя модели', 'controller' => 'Имя контроллера', 'validator' => 'Имя валидатора'],
+            'vi' => ['model' => 'Tên model', 'controller' => 'Tên controller', 'validator' => 'Tên validator'],
+            'tr' => ['model' => 'Model adı', 'controller' => 'Controller adı', 'validator' => 'Doğrulayıcı adı'],
+            'id' => ['model' => 'Nama model', 'controller' => 'Nama controller', 'validator' => 'Nama validator'],
+            'th' => ['model' => 'ชื่อโมเดล', 'controller' => 'ชื่อคอนโทรลเลอร์', 'validator' => 'ชื่อตัวตรวจสอบ'],
         ]);
         return $labels[$type] ?? $type;
     }
@@ -478,9 +491,22 @@ class MakeCrudCommand extends Command
 
     protected function getTypeLabel(string $type): string
     {
+        $enTypeLabels = ['model' => 'Model', 'controller' => 'Controller', 'validation' => 'Validator'];
         $labels = Util::selectLocaleMessages([
             'zh_CN' => ['model' => '模型', 'controller' => '控制器', 'validation' => '验证器'],
-            'en' => ['model' => 'Model', 'controller' => 'Controller', 'validation' => 'Validator'],
+            'zh_TW' => ['model' => '模型', 'controller' => '控制器', 'validation' => '驗證器'],
+            'en' => $enTypeLabels,
+            'ja' => ['model' => 'モデル', 'controller' => 'コントローラ', 'validation' => 'バリデータ'],
+            'ko' => ['model' => '모델', 'controller' => '컨트롤러', 'validation' => '검증기'],
+            'fr' => ['model' => 'Modèle', 'controller' => 'Contrôleur', 'validation' => 'Validateur'],
+            'de' => ['model' => 'Modell', 'controller' => 'Controller', 'validation' => 'Validator'],
+            'es' => ['model' => 'Modelo', 'controller' => 'Controlador', 'validation' => 'Validador'],
+            'pt_BR' => ['model' => 'Modelo', 'controller' => 'Controlador', 'validation' => 'Validador'],
+            'ru' => ['model' => 'Модель', 'controller' => 'Контроллер', 'validation' => 'Валидатор'],
+            'vi' => ['model' => 'Model', 'controller' => 'Controller', 'validation' => 'Validator'],
+            'tr' => ['model' => 'Model', 'controller' => 'Controller', 'validation' => 'Doğrulayıcı'],
+            'id' => ['model' => 'Model', 'controller' => 'Controller', 'validation' => 'Validator'],
+            'th' => ['model' => 'โมเดล', 'controller' => 'คอนโทรลเลอร์', 'validation' => 'ตัวตรวจสอบ'],
         ]);
         return $labels[$type] ?? $type;
     }
@@ -489,7 +515,15 @@ class MakeCrudCommand extends Command
     {
         $helper = $this->getHelper('question');
         $question = new ConfirmationQuestion(
-            Util::selectByLocale(['zh_CN' => '是否添加验证器？[Y/n] (回车=Y): ', 'en' => 'Add validator? [Y/n] (Enter = Y): ']),
+            Util::selectByLocale([
+                'zh_CN' => '是否添加验证器？[Y/n] (回车=Y): ', 'zh_TW' => '是否加入驗證器？[Y/n] (Enter=Y): ',
+                'en' => 'Add validator? [Y/n] (Enter = Y): ', 'ja' => 'バリデータを追加しますか？[Y/n] (Enter=Y): ',
+                'ko' => '검증기를 추가할까요? [Y/n] (Enter=Y): ', 'fr' => 'Ajouter un validateur ? [Y/n] (Entrée = Y) : ',
+                'de' => 'Validator hinzufügen? [Y/n] (Eingabe = Y): ', 'es' => '¿Añadir validador? [Y/n] (Enter = Y): ',
+                'pt_BR' => 'Adicionar validador? [Y/n] (Enter = Y): ', 'ru' => 'Добавить валидатор? [Y/n] (Enter = Y): ',
+                'vi' => 'Thêm trình xác thực? [Y/n] (Enter = Y): ', 'tr' => 'Doğrulayıcı eklenesin mi? [Y/n] (Enter = Y): ',
+                'id' => 'Tambahkan validator? [Y/n] (Enter = Y): ', 'th' => 'เพิ่มตัวตรวจสอบ？[Y/n] (Enter=Y): ',
+            ]),
             true
         );
         return (bool)$helper->ask($input, $output, $question);
@@ -1190,33 +1224,33 @@ EOF;
             'reference_only' => '<comment>Note: Generated code is for reference only. Please adapt it to your business needs.</comment>',
         ];
 
-        $map = Util::selectLocaleMessages(['zh_CN' => $zh, 'en' => $en]);
+        $map = Util::selectLocaleMessages([
+            'zh_CN' => $zh, 'zh_TW' => $zh, 'en' => $en, 'ja' => $en, 'ko' => $en, 'fr' => $en,
+            'de' => $en, 'es' => $en, 'pt_BR' => $en, 'ru' => $en, 'vi' => $en, 'tr' => $en,
+            'id' => $en, 'th' => $en,
+        ]);
         $text = $map[$key] ?? $key;
         return $replace ? strtr($text, $replace) : $text;
     }
 
     protected function buildHelpText(): string
     {
-        $zh = <<<'EOF'
-生成 CRUD（模型、控制器、验证器）。
-
-示例：
-  php webman make:crud
-  php webman make:crud --table=users
-  php webman make:crud --table=users --plugin=admin
-  php webman make:crud --table=users --no-validator
-  php webman make:crud --table=users --no-interaction
-EOF;
-        $en = <<<'EOF'
-Generate CRUD (Model, Controller, Validator).
-
-Examples:
-  php webman make:crud
-  php webman make:crud --table=users
-  php webman make:crud --table=users --plugin=admin
-  php webman make:crud --table=users --no-validator
-  php webman make:crud --table=users --no-interaction
-EOF;
-        return Util::selectByLocale(['zh_CN' => $zh, 'en' => $en]);
+        $en = "Generate CRUD (Model, Controller, Validator).\n\nExamples:\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction";
+        return Util::selectByLocale([
+            'zh_CN' => "生成 CRUD（模型、控制器、验证器）。\n\n示例：\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
+            'zh_TW' => "建立 CRUD（模型、控制器、驗證器）。\n\n範例：\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
+            'en' => $en,
+            'ja' => "CRUD（モデル、コントローラ、バリデータ）を生成。\n\n例：\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
+            'ko' => "CRUD(모델, 컨트롤러, 검증기) 생성.\n\n예:\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
+            'fr' => "Générer CRUD (Modèle, Contrôleur, Validateur).\n\nExemples :\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
+            'de' => "CRUD erzeugen (Modell, Controller, Validator).\n\nBeispiele:\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
+            'es' => "Generar CRUD (Modelo, Controlador, Validador).\n\nEjemplos:\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
+            'pt_BR' => "Gerar CRUD (Modelo, Controlador, Validador).\n\nExemplos:\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
+            'ru' => "Создать CRUD (Модель, Контроллер, Валидатор).\n\nПримеры:\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
+            'vi' => "Tạo CRUD (Model, Controller, Validator).\n\nVí dụ:\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
+            'tr' => "CRUD oluştur (Model, Controller, Validator).\n\nÖrnekler:\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
+            'id' => "Buat CRUD (Model, Controller, Validator).\n\nContoh:\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
+            'th' => "สร้าง CRUD (โมเดล, คอนโทรลเลอร์, ตัวตรวจสอบ)\n\nตัวอย่าง:\n  php webman make:crud\n  php webman make:crud --table=users\n  php webman make:crud --table=users --plugin=admin\n  php webman make:crud --table=users --no-validator\n  php webman make:crud --table=users --no-interaction",
+        ]);
     }
 }

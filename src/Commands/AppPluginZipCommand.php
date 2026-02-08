@@ -83,14 +83,30 @@ class AppPluginZipCommand extends Command
         $zip = new ZipArchive();
 
         if ($zip->open($zipFilePath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== TRUE) {
-            $msg = Util::selectByLocale(['zh_CN' => "无法创建 zip 文件：{$zipFilePath}", 'en' => "Unable to create zip file: {$zipFilePath}"]);
+            $msg = Util::selectByLocale([
+                'zh_CN' => "无法创建 zip 文件：{$zipFilePath}", 'zh_TW' => "無法建立 zip 檔案：{$zipFilePath}",
+                'en' => "Unable to create zip file: {$zipFilePath}", 'ja' => "zip ファイルを作成できません：{$zipFilePath}",
+                'ko' => "zip 파일을 생성할 수 없습니다：{$zipFilePath}", 'fr' => "Impossible de créer le fichier zip : {$zipFilePath}",
+                'de' => "Zip-Datei kann nicht erstellt werden: {$zipFilePath}", 'es' => "No se puede crear el archivo zip: {$zipFilePath}",
+                'pt_BR' => "Não foi possível criar o arquivo zip: {$zipFilePath}", 'ru' => "Не удалось создать zip-файл: {$zipFilePath}",
+                'vi' => "Không thể tạo tệp zip: {$zipFilePath}", 'tr' => "Zip dosyası oluşturulamıyor: {$zipFilePath}",
+                'id' => "Tidak dapat membuat file zip: {$zipFilePath}", 'th' => "สร้างไฟล์ zip ไม่ได้：{$zipFilePath}",
+            ]);
             throw new Exception($msg);
         }
 
         $rawSourceDir = $sourceDir;
         $sourceDir = realpath($sourceDir);
         if ($sourceDir === false) {
-            $msg = Util::selectByLocale(['zh_CN' => "源目录不存在：{$rawSourceDir}", 'en' => "Source directory not exists: {$rawSourceDir}"]);
+            $msg = Util::selectByLocale([
+                'zh_CN' => "源目录不存在：{$rawSourceDir}", 'zh_TW' => "來源目錄不存在：{$rawSourceDir}",
+                'en' => "Source directory does not exist: {$rawSourceDir}", 'ja' => "ソースディレクトリが存在しません：{$rawSourceDir}",
+                'ko' => "소스 디렉터리가 없습니다：{$rawSourceDir}", 'fr' => "Le répertoire source n'existe pas : {$rawSourceDir}",
+                'de' => "Quellverzeichnis existiert nicht: {$rawSourceDir}", 'es' => "El directorio origen no existe: {$rawSourceDir}",
+                'pt_BR' => "O diretório de origem não existe: {$rawSourceDir}", 'ru' => "Исходный каталог не существует: {$rawSourceDir}",
+                'vi' => "Thư mục nguồn không tồn tại: {$rawSourceDir}", 'tr' => "Kaynak dizin mevcut değil: {$rawSourceDir}",
+                'id' => "Direktori sumber tidak ada: {$rawSourceDir}", 'th' => "ไม่มีไดเรกทอรีต้นทาง：{$rawSourceDir}",
+            ]);
             throw new Exception($msg);
         }
 
