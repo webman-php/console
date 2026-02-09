@@ -52,6 +52,9 @@ class MakeCommandCommand extends Command
             $output->writeln($this->msg('invalid_plugin', ['{plugin}' => $plugin]));
             return Command::FAILURE;
         }
+        if ($plugin && !$this->assertPluginExists($plugin, $output)) {
+            return Command::FAILURE;
+        }
 
         // make:command 不支持子目录（不允许 / 或 \）
         $command = str_replace(['\\', '/'], '', $command);

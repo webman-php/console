@@ -55,6 +55,9 @@ class MakeBootstrapCommand extends Command
             $output->writeln($this->msg('invalid_plugin', ['{plugin}' => $plugin]));
             return Command::FAILURE;
         }
+        if ($plugin && !$this->assertPluginExists($plugin, $output)) {
+            return Command::FAILURE;
+        }
 
         $name = str_replace('\\', '/', $name);
 

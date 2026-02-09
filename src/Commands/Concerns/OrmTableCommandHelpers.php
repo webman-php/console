@@ -15,6 +15,99 @@ trait OrmTableCommandHelpers
     protected const ORM_THINKORM = 'tp';
 
     /**
+     * Normalize a connection name into the final key used by Db drivers:
+     * - Main project: "mysql"
+     * - Plugin: "plugin.<plugin>.<conn>"
+     *
+     * If $pluginForDb is null, connection name will be returned as-is.
+     *
+     * @param string|null $pluginForDb plugin name that has DB config; null means "use main project"
+     * @param string|null $connectionOption user provided value like "mysql" or "plugin.admin.mysql"
+     * @return string|null
+     */
+    protected function normalizeConnectionNameForDb(?string $pluginForDb, ?string $connectionOption): ?string
+    {
+        $pluginForDb = $this->normalizeOptionValue($pluginForDb);
+        $connectionOption = $this->normalizeOptionValue($connectionOption);
+        if (!$connectionOption) {
+            return null;
+        }
+
+        if (!$pluginForDb) {
+            return $connectionOption;
+        }
+
+        if (str_starts_with($connectionOption, 'plugin.')) {
+            return $connectionOption;
+        }
+
+        return "plugin.$pluginForDb.$connectionOption";
+    }
+
+    /**
+     * Resolve a connection name that is safe to pass into Db::connection()/think Db::connect().
+     * Always returns a non-empty string (falls back to main project default).
+     *
+     * Rules:
+     * - If $plugin is provided and plugin has DB config, prefer plugin config:
+     *   - If $databaseOption is provided => "plugin.<plugin>.<databaseOption>" (unless already "plugin.*")
+     *   - Else => "plugin.<plugin>.<plugin_default>"
+     * - Otherwise, fall back to main project:
+     *   - If $databaseOption is provided => $databaseOption
+     *   - Else => main default connection name
+     */
+    protected function resolveConnectionNameOrDefault(string $ormType, ?string $plugin, ?string $databaseOption): string
+    {
+        $plugin = $this->normalizeOptionValue($plugin);
+        $databaseOption = $this->normalizeOptionValue($databaseOption);
+
+        $pluginForDb = ($plugin && $this->pluginHasDbConfig($ormType, $plugin)) ? $plugin : null;
+
+        if ($pluginForDb) {
+            if ($databaseOption) {
+                return (string)$this->normalizeConnectionNameForDb($pluginForDb, $databaseOption);
+            }
+            $resolved = $this->resolveConnectionByPlugin($ormType, $pluginForDb, null);
+            if ($resolved) {
+                return $resolved;
+            }
+        }
+
+        // Main project fallback
+        if ($databaseOption) {
+            return $databaseOption;
+        }
+
+        if ($ormType === self::ORM_THINKORM) {
+            $is_thinkorm_v2 = class_exists(\support\think\Db::class);
+            $configName = $is_thinkorm_v2 ? 'think-orm' : 'thinkorm';
+            return (string)(config("$configName.default") ?: 'mysql');
+        }
+
+        return (string)(config('database.default') ?: 'mysql');
+    }
+
+    /**
+     * Resolve a connection name using current rules, but keep it nullable:
+     * - If $connection is provided, use it
+     * - Otherwise resolve from ($plugin, $databaseOption) and defaults
+     *
+     * @param string $ormType
+     * @param string|null $connection
+     * @param string|null $plugin
+     * @param string|null $databaseOption
+     * @return string
+     */
+    protected function resolveConnectionName(string $ormType, ?string $connection, ?string $plugin = null, ?string $databaseOption = null): string
+    {
+        $connection = $this->normalizeOptionValue($connection);
+        if ($connection) {
+            return $connection;
+        }
+        return $this->resolveConnectionNameOrDefault($ormType, $plugin, $databaseOption);
+    }
+
+    /**
      * Resolve orm type.
      *
      * @param string|null $ormOption
@@ -70,32 +163,38 @@ trait OrmTableCommandHelpers
             return null;
         }
 
-        if ($ormType === self::ORM_THINKORM) {
-            $is_thinkorm_v2 = class_exists(\support\think\Db::class);
-            $configName = $is_thinkorm_v2 ? 'think-orm' : 'thinkorm';
-            $pluginDefault = $this->normalizeOptionValue(config("plugin.$plugin.$configName.default"));
-            if ($pluginDefault) {
-                return str_starts_with($pluginDefault, 'plugin.') ? $pluginDefault : "plugin.$plugin.$pluginDefault";
-            }
-            $pluginConnections = config("plugin.$plugin.$configName.connections", []);
-            if (is_array($pluginConnections) && $pluginConnections) {
-                $first = array_key_first($pluginConnections);
-                return $first ? "plugin.$plugin.$first" : null;
-            }
+        // If plugin has no DB config or connections is empty, fall back to main project config.
+        if (!$this->pluginHasDbConfig($ormType, $plugin)) {
             return null;
         }
 
-        // Laravel ORM (webman/database)
-        $pluginDefault = $this->normalizeOptionValue(config("plugin.$plugin.database.default"));
-        if ($pluginDefault) {
-            return str_starts_with($pluginDefault, 'plugin.') ? $pluginDefault : "plugin.$plugin.$pluginDefault";
+        if ($ormType === self::ORM_THINKORM) {
+            $is_thinkorm_v2 = class_exists(\support\think\Db::class);
+            $configName = $is_thinkorm_v2 ? 'think-orm' : 'thinkorm';
+            $default = $this->normalizeOptionValue(config("plugin.$plugin.$configName.default"));
+            if (!$default) {
+                $connections = config("plugin.$plugin.$configName.connections", []);
+                if (is_array($connections) && $connections) {
+                    $default = (string)array_key_first($connections);
+                }
+            }
+            if (!$default) {
+                return null;
+            }
+            return str_starts_with($default, 'plugin.') ? $default : "plugin.$plugin.$default";
         }
-        $pluginConnections = config("plugin.$plugin.database.connections", []);
-        if (is_array($pluginConnections) && $pluginConnections) {
-            $first = array_key_first($pluginConnections);
-            return $first ? "plugin.$plugin.$first" : null;
+
+        $default = $this->normalizeOptionValue(config("plugin.$plugin.database.default"));
+        if (!$default) {
+            $connections = config("plugin.$plugin.database.connections", []);
+            if (is_array($connections) && $connections) {
+                $default = (string)array_key_first($connections);
+            }
         }
-        return null;
+        if (!$default) {
+            return null;
+        }
+        return str_starts_with($default, 'plugin.') ? $default : "plugin.$plugin.$default";
     }
 
     /**
@@ -120,19 +219,22 @@ trait OrmTableCommandHelpers
             $thinkConfigName = $is_thinkorm_v2 ? 'think-orm' : 'thinkorm';
         }
 
-        // Case A: plugin + explicit connection => MUST use plugin connection config.
-        if ($plugin && $connectionOption) {
-            if (str_starts_with($connectionOption, 'plugin.')) {
-                if (!str_starts_with($connectionOption, "plugin.$plugin.")) {
+        // If plugin has no DB config, fall back to main project DB config (but still keep plugin for path).
+        $pluginForDb = ($plugin && $this->pluginHasDbConfig($ormType, $plugin)) ? $plugin : null;
+
+        // Case A: plugin(with DB config) + explicit connection => use plugin connection config.
+        if ($pluginForDb && $connectionOption) {
+            $final = $this->normalizeConnectionNameForDb($pluginForDb, $connectionOption);
+            // Prefer displaying user's original input in messages, unless user explicitly typed "plugin.*".
+            $displayConnection = str_starts_with($connectionOption, 'plugin.') ? (string)$final : $connectionOption;
+            if (str_starts_with((string)$final, 'plugin.')) {
+                if (!str_starts_with((string)$final, "plugin.$pluginForDb.")) {
                     $output->writeln($this->msg('connection_plugin_mismatch', [
-                        '{plugin}' => $plugin,
-                        '{connection}' => $connectionOption,
+                        '{plugin}' => $pluginForDb,
+                        '{connection}' => (string)$final,
                     ]));
                     return [false, null];
                 }
-                $final = $connectionOption;
-            } else {
-                $final = "plugin.$plugin.$connectionOption";
             }
 
             $exists = $isThink
@@ -141,7 +243,22 @@ trait OrmTableCommandHelpers
 
             if (!$exists) {
                 $output->writeln($this->msg('connection_not_found_plugin', [
-                    '{plugin}' => $plugin,
+                    '{plugin}' => $pluginForDb,
+                    '{connection}' => $displayConnection,
+                ]));
+                return [false, null];
+            }
+            return [true, $final];
+        }
+
+        // Case A2: plugin(without DB config) + explicit connection => treat as main project connection.
+        if ($plugin && !$pluginForDb && $connectionOption) {
+            $final = $this->normalizeConnectionNameForDb(null, $connectionOption);
+            $exists = $isThink
+                ? (bool)$this->getThinkOrmConnectionConfig((string)$thinkConfigName, $final)
+                : (bool)$this->getLaravelConnectionConfig($final);
+            if (!$exists) {
+                $output->writeln($this->msg('connection_not_found', [
                     '{connection}' => $final,
                 ]));
                 return [false, null];
@@ -151,7 +268,7 @@ trait OrmTableCommandHelpers
 
         // Case B: no plugin + explicit connection => validate it exists.
         if (!$plugin && $connectionOption) {
-            $final = $connectionOption;
+            $final = $this->normalizeConnectionNameForDb(null, $connectionOption);
             $exists = $isThink
                 ? (bool)$this->getThinkOrmConnectionConfig((string)$thinkConfigName, $final)
                 : (bool)$this->getLaravelConnectionConfig($final);
@@ -165,14 +282,14 @@ trait OrmTableCommandHelpers
         }
 
         // Case C: no explicit connection => prefer plugin default (if plugin has DB config), else null.
-        $final = $this->resolveConnectionByPlugin($ormType, $plugin, null);
-        if ($plugin && $final) {
+        $final = $this->resolveConnectionByPlugin($ormType, $pluginForDb, null);
+        if ($pluginForDb && $final) {
             $exists = $isThink
                 ? (bool)$this->getThinkOrmConnectionConfig((string)$thinkConfigName, $final)
                 : (bool)$this->getLaravelConnectionConfig($final);
             if (!$exists) {
                 $output->writeln($this->msg('plugin_default_connection_invalid', [
-                    '{plugin}' => $plugin,
+                    '{plugin}' => $pluginForDb,
                     '{connection}' => $final,
                 ]));
                 return [false, null];
@@ -189,12 +306,31 @@ trait OrmTableCommandHelpers
      */
     protected function getLaravelConnectionConfig(string $connectionName): array
     {
-        $all = config('database.connections', []);
-        if (!is_array($all)) {
+        $connectionName = trim($connectionName);
+        if ($connectionName === '') {
             return [];
         }
-        $cfg = $all[$connectionName] ?? null;
-        return is_array($cfg) ? $cfg : [];
+
+        $all = config('database.connections', []);
+        if (is_array($all)) {
+            $cfg = $all[$connectionName] ?? null;
+            if (is_array($cfg)) {
+                return $cfg;
+            }
+        }
+
+        // Fallback: direct plugin config reading.
+        if (str_starts_with($connectionName, 'plugin.')) {
+            $parts = explode('.', $connectionName, 3);
+            $plugin = $parts[1] ?? '';
+            $conn = $parts[2] ?? '';
+            if ($plugin !== '' && $conn !== '') {
+                $cfg = config("plugin.$plugin.database.connections.$conn");
+                return is_array($cfg) ? $cfg : [];
+            }
+        }
+
+        return [];
     }
 
     /**
@@ -206,12 +342,80 @@ trait OrmTableCommandHelpers
      */
     protected function getThinkOrmConnectionConfig(string $configName, string $connectionName): array
     {
-        $connections = config("$configName.connections", []);
-        if (!is_array($connections)) {
+        $configName = trim($configName);
+        $connectionName = trim($connectionName);
+        if ($configName === '' || $connectionName === '') {
             return [];
         }
-        $cfg = $connections[$connectionName] ?? null;
-        return is_array($cfg) ? $cfg : [];
+
+        $connections = config("$configName.connections", []);
+        if (is_array($connections)) {
+            $cfg = $connections[$connectionName] ?? null;
+            if (is_array($cfg)) {
+                return $cfg;
+            }
+        }
+
+        // Fallback: direct plugin config reading.
+        if (str_starts_with($connectionName, 'plugin.')) {
+            $parts = explode('.', $connectionName, 3);
+            $plugin = $parts[1] ?? '';
+            $conn = $parts[2] ?? '';
+            if ($plugin !== '' && $conn !== '') {
+                $cfg = config("plugin.$plugin.$configName.connections.$conn");
+                return is_array($cfg) ? $cfg : [];
+            }
+        }
+
+        return [];
+    }
+
+    /**
+     * Whether plugin has a usable DB config. If not, callers should fall back to main project config.
+     */
+    protected function pluginHasDbConfig(string $ormType, string $plugin): bool
+    {
+        $plugin = $this->normalizeOptionValue($plugin);
+        if (!$plugin) {
+            return false;
+        }
+
+        if ($ormType === self::ORM_THINKORM) {
+            $is_thinkorm_v2 = class_exists(\support\think\Db::class);
+            $configName = $is_thinkorm_v2 ? 'think-orm' : 'thinkorm';
+            $connections = config("plugin.$plugin.$configName.connections");
+            return is_array($connections) && $connections !== [];
+        }
+
+        $connections = config("plugin.$plugin.database.connections");
+        return is_array($connections) && $connections !== [];
+    }
+
+    /**
+     * Suggest a model class name from a table name:
+     * - Strip table prefix (from connection config) if present
+     * - Convert to StudlyCase
+     * - Singularize
+     *
+     * @param string $table
+     * @param string $ormType
+     * @param string|null $connection
+     * @return string e.g. "UserProfile"
+     */
+    protected function suggestModelNameFromTable(
+        string $table,
+        string $ormType,
+        ?string $connection,
+        ?string $plugin = null,
+        ?string $databaseOption = null
+    ): string
+    {
+        $table = ltrim(trim($table), '=');
+        $prefix = $this->getConnectionPrefix($ormType, $connection, $plugin, $databaseOption);
+        $tableNoPrefix = $this->stripPrefix($table, $prefix);
+        $inflector = InflectorFactory::create()->build();
+        $singular = $inflector->singularize($tableNoPrefix);
+        return Util::nameToClass($singular);
     }
 
     /**
@@ -229,9 +433,17 @@ trait OrmTableCommandHelpers
      * @param string $class
      * @return string|null
      */
-    protected function promptForTableIfNeeded(InputInterface $input, OutputInterface $output, string $ormType, ?string $connection, string $class): ?string
+    protected function promptForTableIfNeeded(
+        InputInterface $input,
+        OutputInterface $output,
+        string $ormType,
+        ?string $connection,
+        string $class,
+        ?string $plugin = null,
+        ?string $databaseOption = null
+    ): ?string
     {
-        return $this->promptForTableInternal($input, $output, $ormType, $connection, $class, true);
+        return $this->promptForTableInternal($input, $output, $ormType, $connection, $class, true, $plugin, $databaseOption);
     }
 
     /**
@@ -244,9 +456,17 @@ trait OrmTableCommandHelpers
      * @param string $class
      * @return string|null
      */
-    protected function promptForTable(InputInterface $input, OutputInterface $output, string $ormType, ?string $connection, string $class = 'Model'): ?string
+    protected function promptForTable(
+        InputInterface $input,
+        OutputInterface $output,
+        string $ormType,
+        ?string $connection,
+        string $class = 'Model',
+        ?string $plugin = null,
+        ?string $databaseOption = null
+    ): ?string
     {
-        return $this->promptForTableInternal($input, $output, $ormType, $connection, $class, false);
+        return $this->promptForTableInternal($input, $output, $ormType, $connection, $class, false, $plugin, $databaseOption);
     }
 
     /**
@@ -264,7 +484,9 @@ trait OrmTableCommandHelpers
         string $ormType,
         ?string $connection,
         string $class,
-        bool $skipIfConventionMatch
+        bool $skipIfConventionMatch,
+        ?string $plugin = null,
+        ?string $databaseOption = null
     ): ?string {
         if (!$this->isTerminalInteractive($input)) {
             return null;
@@ -273,7 +495,7 @@ trait OrmTableCommandHelpers
         if ($skipIfConventionMatch) {
             // If table can be guessed by convention, don't interrupt.
             try {
-                if ($this->canGuessTableByConvention($ormType, $connection, $class)) {
+                if ($this->canGuessTableByConvention($ormType, $connection, $class, $plugin, $databaseOption)) {
                     return null;
                 }
             } catch (\Throwable $e) {
@@ -284,7 +506,7 @@ trait OrmTableCommandHelpers
         }
 
         try {
-            $tables = $this->listTables($ormType, $connection);
+            $tables = $this->listTables($ormType, $connection, $plugin, $databaseOption);
         } catch (\Throwable $e) {
             $output->writeln($this->msg('table_list_failed'));
             return null;
@@ -294,7 +516,7 @@ trait OrmTableCommandHelpers
             return null;
         }
 
-        $prefix = $this->getConnectionPrefix($ormType, $connection);
+        $prefix = $this->getConnectionPrefix($ormType, $connection, $plugin, $databaseOption);
         $orderedAll = $this->rankCandidateTables($tables, $prefix, $class);
 
         $batchSize = 20;
@@ -446,16 +668,24 @@ trait OrmTableCommandHelpers
      * @param string $class
      * @return bool
      */
-    protected function canGuessTableByConvention(string $ormType, ?string $connection, string $class): bool
+    protected function canGuessTableByConvention(
+        string $ormType,
+        ?string $connection,
+        string $class,
+        ?string $plugin = null,
+        ?string $databaseOption = null
+    ): bool
     {
         $inflector = InflectorFactory::create()->build();
         $tableBase = Util::classToName($class);
         $tablePlural = $inflector->pluralize($inflector->tableize($class));
 
         if ($ormType === self::ORM_THINKORM) {
-            return $this->thinkOrmTableExists($connection, $tablePlural) || $this->thinkOrmTableExists($connection, $tableBase);
+            return $this->thinkOrmTableExists($connection, $tablePlural, $plugin, $databaseOption)
+                || $this->thinkOrmTableExists($connection, $tableBase, $plugin, $databaseOption);
         }
-        return $this->laravelTableExists($connection, $tablePlural) || $this->laravelTableExists($connection, $tableBase);
+        return $this->laravelTableExists($connection, $tablePlural, $plugin, $databaseOption)
+            || $this->laravelTableExists($connection, $tableBase, $plugin, $databaseOption);
     }
 
     /**
@@ -465,20 +695,20 @@ trait OrmTableCommandHelpers
      * @param string|null $connection
      * @return array
      */
-    protected function listTables(string $ormType, ?string $connection): array
+    protected function listTables(string $ormType, ?string $connection, ?string $plugin = null, ?string $databaseOption = null): array
     {
         return $ormType === self::ORM_THINKORM
-            ? $this->listThinkOrmTables($connection)
-            : $this->listLaravelTables($connection);
+            ? $this->listThinkOrmTables($connection, $plugin, $databaseOption)
+            : $this->listLaravelTables($connection, $plugin, $databaseOption);
     }
 
     /**
      * @param string|null $connection
      * @return array
      */
-    protected function listLaravelTables(?string $connection): array
+    protected function listLaravelTables(?string $connection, ?string $plugin = null, ?string $databaseOption = null): array
     {
-        $connection = $connection ?: config('database.default');
+        $connection = $this->resolveConnectionName(self::ORM_LARAVEL, $connection, $plugin, $databaseOption);
         $conn = $this->getLaravelConnectionConfig((string)$connection);
         $driver = (string)($conn['driver'] ?? 'mysql');
         $con = Db::connection($connection);
@@ -504,11 +734,11 @@ trait OrmTableCommandHelpers
      * @param string|null $connection
      * @return array
      */
-    protected function listThinkOrmTables(?string $connection): array
+    protected function listThinkOrmTables(?string $connection, ?string $plugin = null, ?string $databaseOption = null): array
     {
+        $connection = $this->resolveConnectionName(self::ORM_THINKORM, $connection, $plugin, $databaseOption);
         $is_thinkorm_v2 = class_exists(\support\think\Db::class);
         $config_name = $is_thinkorm_v2 ? 'think-orm' : 'thinkorm';
-        $connection = $connection ?: (config("$config_name.default") ?: 'mysql');
         $conn = $this->getThinkOrmConnectionConfig($config_name, (string)$connection);
         $driver = (string)($conn['type'] ?? 'mysql');
 
@@ -590,16 +820,19 @@ trait OrmTableCommandHelpers
      * @param string|null $connection
      * @return string
      */
-    protected function getConnectionPrefix(string $ormType, ?string $connection): string
+    protected function getConnectionPrefix(string $ormType, ?string $connection, ?string $plugin = null, ?string $databaseOption = null): string
     {
+        $connection = $this->normalizeOptionValue($connection);
+        if (!$connection) {
+            $connection = $this->resolveConnectionNameOrDefault($ormType, $plugin, $databaseOption);
+        }
+
         if ($ormType === self::ORM_THINKORM) {
             $is_thinkorm_v2 = class_exists(\support\think\Db::class);
             $config_name = $is_thinkorm_v2 ? 'think-orm' : 'thinkorm';
-            $connection = $connection ?: (config("$config_name.default") ?: 'mysql');
             $conn = $this->getThinkOrmConnectionConfig($config_name, (string)$connection);
             return (string)($conn['prefix'] ?? '');
         }
-        $connection = $connection ?: config('database.default');
         $conn = $this->getLaravelConnectionConfig((string)$connection);
         return (string)($conn['prefix'] ?? '');
     }
@@ -609,9 +842,14 @@ trait OrmTableCommandHelpers
      * @param string $tableNoPrefix
      * @return bool
      */
-    protected function laravelTableExists(?string $connection, string $tableNoPrefix): bool
+    protected function laravelTableExists(
+        ?string $connection,
+        string $tableNoPrefix,
+        ?string $plugin = null,
+        ?string $databaseOption = null
+    ): bool
     {
-        $connection = $connection ?: config('database.default');
+        $connection = $this->resolveConnectionName(self::ORM_LARAVEL, $connection, $plugin, $databaseOption);
         $conn = $this->getLaravelConnectionConfig((string)$connection);
         $driver = (string)($conn['driver'] ?? 'mysql');
         $prefix = (string)($conn['prefix'] ?? '');
@@ -630,11 +868,16 @@ trait OrmTableCommandHelpers
      * @param string $tableNoPrefix
      * @return bool
      */
-    protected function thinkOrmTableExists(?string $connection, string $tableNoPrefix): bool
+    protected function thinkOrmTableExists(
+        ?string $connection,
+        string $tableNoPrefix,
+        ?string $plugin = null,
+        ?string $databaseOption = null
+    ): bool
     {
+        $connection = $this->resolveConnectionName(self::ORM_THINKORM, $connection, $plugin, $databaseOption);
         $is_thinkorm_v2 = class_exists(\support\think\Db::class);
         $config_name = $is_thinkorm_v2 ? 'think-orm' : 'thinkorm';
-        $connection = $connection ?: (config("$config_name.default") ?: 'mysql');
         $conn = $this->getThinkOrmConnectionConfig($config_name, (string)$connection);
         $driver = (string)($conn['type'] ?? 'mysql');
         $prefix = (string)($conn['prefix'] ?? '');

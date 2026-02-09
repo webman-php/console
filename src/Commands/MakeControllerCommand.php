@@ -52,6 +52,9 @@ class MakeControllerCommand extends Command
             $output->writeln($this->msg('invalid_plugin', ['{plugin}' => $plugin]));
             return Command::FAILURE;
         }
+        if ($plugin && !$this->assertPluginExists($plugin, $output)) {
+            return Command::FAILURE;
+        }
 
         // When "-p/--plugin" is provided, controller suffix should come from the plugin config,
         // not from the main project config.

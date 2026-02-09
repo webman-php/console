@@ -65,6 +65,9 @@ class MakeProcessCommand extends Command
             $output->writeln($this->msg('invalid_plugin', ['{plugin}' => $plugin]));
             return Command::FAILURE;
         }
+        if ($plugin && !$this->assertPluginExists($plugin, $output)) {
+            return Command::FAILURE;
+        }
 
         $target = $this->resolveTarget($name, $plugin, $path, $output);
         if ($target === null) {

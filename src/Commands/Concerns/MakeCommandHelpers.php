@@ -7,6 +7,115 @@ use Webman\Console\Util;
 trait MakeCommandHelpers
 {
     /**
+     * Check whether a plugin exists by config value.
+     *
+     * The existence rule is: config("plugin.<name>") is not empty.
+     *
+     * @param string $plugin
+     * @return bool
+     */
+    protected function pluginExists(string $plugin): bool
+    {
+        $plugin = trim($plugin);
+        if ($plugin === '') {
+            return false;
+        }
+        $cfg = config("plugin.$plugin");
+        if ($cfg === null) {
+            return false;
+        }
+        if (is_array($cfg)) {
+            return $cfg !== [];
+        }
+        if (is_string($cfg)) {
+            return trim($cfg) !== '';
+        }
+        return (bool)$cfg;
+    }
+
+    /**
+     * Extract plugin name from a relative path like "plugin/<name>/...".
+     *
+     * @param string|null $path
+     * @return string|null
+     */
+    protected function extractPluginNameFromRelativePath(?string $path): ?string
+    {
+        $path = $this->normalizeOptionValue($path);
+        if (!$path) {
+            return null;
+        }
+        $path = $this->normalizeRelativePath($path);
+        if (preg_match('#^plugin/([^/]+)/#i', $path, $m)) {
+            $name = trim((string)($m[1] ?? ''));
+            return $name !== '' ? $name : null;
+        }
+        return null;
+    }
+
+    /**
+     * Validate plugin existence and output error message when missing.
+     *
+     * @param string|null $plugin
+     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @return bool
+     */
+    protected function assertPluginExists(?string $plugin, \Symfony\Component\Console\Output\OutputInterface $output): bool
+    {
+        $plugin = $this->normalizeOptionValue($plugin);
+        if (!$plugin) {
+            return true;
+        }
+        if ($this->pluginExists($plugin)) {
+            return true;
+        }
+        $output->writeln($this->renderPluginNotExistsMessage($plugin));
+        return false;
+    }
+
+    /**
+     * @param string $plugin
+     * @return string
+     */
+    protected function renderPluginNotExistsMessage(string $plugin): string
+    {
+        $plugin = trim($plugin);
+        $line1 = Util::selectByLocale([
+            'zh_CN' => "<error>插件不存在：</error> <comment>{plugin}</comment>",
+            'zh_TW' => "<error>外掛不存在：</error> <comment>{plugin}</comment>",
+            'en' => "<error>Plugin does not exist:</error> <comment>{plugin}</comment>",
+            'ja' => "<error>プラグインが存在しません:</error> <comment>{plugin}</comment>",
+            'ko' => "<error>플러그인이 존재하지 않습니다:</error> <comment>{plugin}</comment>",
+            'fr' => "<error>Le plugin n'existe pas :</error> <comment>{plugin}</comment>",
+            'de' => "<error>Plugin existiert nicht:</error> <comment>{plugin}</comment>",
+            'es' => "<error>El plugin no existe:</error> <comment>{plugin}</comment>",
+            'pt_BR' => "<error>O plugin não existe:</error> <comment>{plugin}</comment>",
+            'ru' => "<error>Плагин не существует:</error> <comment>{plugin}</comment>",
+            'vi' => "<error>Plugin không tồn tại:</error> <comment>{plugin}</comment>",
+            'tr' => "<error>Eklenti mevcut değil:</error> <comment>{plugin}</comment>",
+            'id' => "<error>Plugin tidak ada:</error> <comment>{plugin}</comment>",
+            'th' => "<error>ไม่พบปลั๊กอิน:</error> <comment>{plugin}</comment>",
+        ]);
+        $line2 = Util::selectByLocale([
+            'zh_CN' => '请检查插件名是否输入正确，或确认插件已正确安装/启用。',
+            'zh_TW' => '請檢查外掛名稱是否輸入正確，或確認外掛已正確安裝/啟用。',
+            'en' => 'Please check the plugin name, or make sure the plugin is installed/enabled.',
+            'ja' => 'プラグイン名を確認するか、プラグインがインストール/有効化されていることを確認してください。',
+            'ko' => '플러그인 이름을 확인하거나, 플러그인이 설치/활성화되었는지 확인하세요.',
+            'fr' => "Vérifiez le nom du plugin ou assurez-vous qu'il est installé/activé.",
+            'de' => 'Bitte prüfen Sie den Plugin-Namen oder ob das Plugin installiert/aktiviert ist.',
+            'es' => 'Compruebe el nombre del plugin o asegúrese de que esté instalado/habilitado.',
+            'pt_BR' => 'Verifique o nome do plugin ou se o plugin está instalado/ativado.',
+            'ru' => 'Проверьте имя плагина или убедитесь, что плагин установлен/включён.',
+            'vi' => 'Hãy kiểm tra tên plugin hoặc đảm bảo plugin đã được cài đặt/bật.',
+            'tr' => 'Eklenti adını kontrol edin veya eklentinin kurulu/etkin olduğundan emin olun.',
+            'id' => 'Periksa nama plugin atau pastikan plugin sudah terpasang/diaktifkan.',
+            'th' => 'โปรดตรวจสอบชื่อปลั๊กอิน หรือยืนยันว่าปลั๊กอินถูกติดตั้ง/เปิดใช้งานแล้ว',
+        ]);
+        return strtr($line1, ['{plugin}' => $plugin]) . "\n" . $line2;
+    }
+
+    /**
      * Symfony short options on some environments may return value like "=foo" for "-p=foo".
      * Normalize to "foo".
      *
@@ -126,6 +235,12 @@ trait MakeCommandHelpers
         $pathNorm = $path ? $this->normalizeRelativePath($path) : null;
         if ($pathNorm !== null && $this->isAbsolutePath($pathNorm)) {
             $output->writeln($msg('invalid_path', ['{path}' => (string)$path]));
+            return null;
+        }
+
+        // Validate plugin existence (from --plugin/-p or inferred from --path/-P).
+        $pluginToCheck = $this->normalizeOptionValue($plugin) ?: $this->extractPluginNameFromRelativePath($pathNorm);
+        if ($pluginToCheck && !$this->assertPluginExists($pluginToCheck, $output)) {
             return null;
         }
 

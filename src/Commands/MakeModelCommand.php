@@ -11,6 +11,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Symfony\Component\Console\Question\Question;
 use Webman\Console\Util;
 use Webman\Console\Commands\Concerns\MakeCommandHelpers;
 use Webman\Console\Commands\Concerns\OrmTableCommandHelpers;
@@ -36,7 +37,7 @@ class MakeModelCommand extends Command
          * - 表名不符合约定时建议显式使用 `--table/-t`。
          * - 交互式选表仅在支持输入的终端下启用：回车=更多，0=空模型，/关键字=过滤。
          */
-        $this->addArgument('name', InputArgument::REQUIRED, 'Model name');
+        $this->addArgument('name', InputArgument::OPTIONAL, 'Model name (optional in interactive mode)');
         $this->addOption('plugin', 'p', InputOption::VALUE_REQUIRED, 'Plugin name under plugin/. e.g. admin');
         $this->addOption('path', 'P', InputOption::VALUE_REQUIRED, 'Target directory (relative to base path). e.g. plugin/admin/app/model');
         $this->addOption('table', 't', InputOption::VALUE_REQUIRED, 'Specify table name. e.g. wa_users');
@@ -50,6 +51,7 @@ class MakeModelCommand extends Command
         $this->setHelp($this->buildHelpText());
 
         // Display examples in synopsis (shown in --help).
+        $this->addUsage('');
         $this->addUsage('User');
         $this->addUsage('User -p admin');
         $this->addUsage('User -P plugin/admin/app/model');
@@ -65,11 +67,12 @@ class MakeModelCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $name = Util::nameToClass($input->getArgument('name'));
+        $nameArg = $this->normalizeOptionValue($input->getArgument('name'));
         $plugin = $this->normalizeOptionValue($input->getOption('plugin'));
-        $path = $this->normalizeOptionValue($input->getOption('path'));
+        $pathOption = $this->normalizeOptionValue($input->getOption('path'));
         $orm = $this->normalizeOptionValue($input->getOption('orm'));
-        $connection = $this->normalizeOptionValue($input->getOption('database'));
+        $databaseOption = $this->normalizeOptionValue($input->getOption('database'));
+        $connection = $databaseOption;
         $table = $this->normalizeOptionValue($input->getOption('table'));
         $force = (bool)$input->getOption('force');
 
@@ -77,43 +80,10 @@ class MakeModelCommand extends Command
             $output->writeln($this->msg('invalid_plugin', ['{plugin}' => $plugin]));
             return Command::FAILURE;
         }
-
-        if ($plugin || $path) {
-            $resolved = $this->resolveModelTargetByPluginOrPath($name, $plugin, $path, $output);
-            if ($resolved === null) {
-                return Command::FAILURE;
-            }
-            [$name, $namespace, $file] = $resolved;
-        } else {
-            // Original behavior for app models (backward compatible)
-            if (!($pos = strrpos($name, '/'))) {
-                $name = ucfirst($name);
-                $model_str = Util::guessPath(app_path(), 'model') ?: 'model';
-                $file = app_path() . DIRECTORY_SEPARATOR .  $model_str . DIRECTORY_SEPARATOR . "$name.php";
-                $namespace = $model_str === 'Model' ? 'App\Model' : 'app\model';
-            } else {
-                $name_str = substr($name, 0, $pos);
-                if ($real_name_str = Util::guessPath(app_path(), $name_str)) {
-                    $name_str = $real_name_str;
-                } else if ($real_section_name = Util::guessPath(app_path(), strstr($name_str, '/', true))) {
-                    $upper = strtolower($real_section_name[0]) !== $real_section_name[0];
-                } else if ($real_base_controller = Util::guessPath(app_path(), 'controller')) {
-                    $upper = strtolower($real_base_controller[0]) !== $real_base_controller[0];
-                }
-                $upper = $upper ?? strtolower($name_str[0]) !== $name_str[0];
-                if ($upper && !$real_name_str) {
-                    $name_str = preg_replace_callback('/\/([a-z])/', function ($matches) {
-                        return '/' . strtoupper($matches[1]);
-                    }, ucfirst($name_str));
-                }
-                $path_for_file = "$name_str/" . ($upper ? 'Model' : 'model');
-                $name = ucfirst(substr($name, $pos + 1));
-                $file = app_path() . DIRECTORY_SEPARATOR . $path_for_file . DIRECTORY_SEPARATOR . "$name.php";
-                $namespace = str_replace('/', '\\', ($upper ? 'App/' : 'app/') . $path_for_file);
-            }
+        if ($plugin && !$this->assertPluginExists($plugin, $output)) {
+            return Command::FAILURE;
         }
 
-        $output->writeln($this->msg('make_model', ['{name}' => $name]));
         $type = $this->resolveOrm($orm);
         // Resolve & validate DB connection:
         // - When --plugin/-p is provided and --database/-d is provided, use the plugin's connection config.
@@ -124,6 +94,91 @@ class MakeModelCommand extends Command
         if (!$ok) {
             return Command::FAILURE;
         }
+
+        // New interactive flow: when no model name is provided, go table -> name -> path.
+        if (!$nameArg) {
+            if (!$this->isTerminalInteractive($input)) {
+                $output->writeln($this->msg('name_required_non_interactive'));
+                return Command::FAILURE;
+            }
+
+            if (!$table) {
+                $table = $this->promptForTable($input, $output, $type, $connection, 'Model', $plugin, $databaseOption) ?: null;
+            }
+
+            $nameDefault = $table ? $this->suggestModelNameFromTable($table, $type, $connection, $plugin, $databaseOption) : 'Model';
+            $nameInput = $this->promptForModelNameWithDefault($input, $output, $nameDefault);
+            if (!$nameInput) {
+                $output->writeln($this->msg('invalid_name'));
+                return Command::FAILURE;
+            }
+            $nameNormalized = $this->normalizeClassLikeName($nameInput);
+
+            $defaultPath = $plugin ? $this->getPluginModelRelativePath($plugin) : $this->getAppModelRelativePath();
+            $pathFinal = $pathOption;
+            if (!$pathFinal) {
+                $pathFinal = $this->promptForModelPathWithDefault($input, $output, $defaultPath);
+            }
+            $pathFinal = $this->normalizeRelativePath($pathFinal ?: $defaultPath);
+
+            // Resolve namespace/file by --plugin/--path rules:
+            // - If --path is explicitly provided, keep the strict plugin/path conflict check.
+            // - If --path is not provided, allow user to override the default path even when --plugin is set.
+            if ($plugin && $pathOption) {
+                $resolved = $this->resolveModelTargetByPluginOrPath($nameNormalized, $plugin, $pathOption, $output);
+            } else if ($plugin && !$pathOption) {
+                $expected = $this->getPluginModelRelativePath($plugin);
+                $resolved = $this->pathsEqual($expected, $pathFinal)
+                    ? $this->resolveModelTargetByPluginOrPath($nameNormalized, $plugin, null, $output)
+                    : $this->resolveModelTargetByPluginOrPath($nameNormalized, null, $pathFinal, $output);
+            } else {
+                $resolved = $this->resolveModelTargetByPluginOrPath($nameNormalized, null, $pathFinal, $output);
+            }
+
+            if ($resolved === null) {
+                return Command::FAILURE;
+            }
+            [$name, $namespace, $file] = $resolved;
+        } else {
+            // Backward compatible behavior when model name is explicitly provided.
+            $name = Util::nameToClass($nameArg);
+            if ($plugin || $pathOption) {
+                $resolved = $this->resolveModelTargetByPluginOrPath($name, $plugin, $pathOption, $output);
+                if ($resolved === null) {
+                    return Command::FAILURE;
+                }
+                [$name, $namespace, $file] = $resolved;
+            } else {
+                // Original behavior for app models (backward compatible)
+                if (!($pos = strrpos($name, '/'))) {
+                    $name = ucfirst($name);
+                    $model_str = Util::guessPath(app_path(), 'model') ?: 'model';
+                    $file = app_path() . DIRECTORY_SEPARATOR .  $model_str . DIRECTORY_SEPARATOR . "$name.php";
+                    $namespace = $model_str === 'Model' ? 'App\Model' : 'app\model';
+                } else {
+                    $name_str = substr($name, 0, $pos);
+                    if ($real_name_str = Util::guessPath(app_path(), $name_str)) {
+                        $name_str = $real_name_str;
+                    } else if ($real_section_name = Util::guessPath(app_path(), strstr($name_str, '/', true))) {
+                        $upper = strtolower($real_section_name[0]) !== $real_section_name[0];
+                    } else if ($real_base_controller = Util::guessPath(app_path(), 'controller')) {
+                        $upper = strtolower($real_base_controller[0]) !== $real_base_controller[0];
+                    }
+                    $upper = $upper ?? strtolower($name_str[0]) !== $name_str[0];
+                    if ($upper && !$real_name_str) {
+                        $name_str = preg_replace_callback('/\/([a-z])/', function ($matches) {
+                            return '/' . strtoupper($matches[1]);
+                        }, ucfirst($name_str));
+                    }
+                    $path_for_file = "$name_str/" . ($upper ? 'Model' : 'model');
+                    $name = ucfirst(substr($name, $pos + 1));
+                    $file = app_path() . DIRECTORY_SEPARATOR . $path_for_file . DIRECTORY_SEPARATOR . "$name.php";
+                    $namespace = str_replace('/', '\\', ($upper ? 'App/' : 'app/') . $path_for_file);
+                }
+            }
+        }
+
+        $output->writeln($this->msg('make_model', ['{name}' => $name]));
 
         if (is_file($file) && !$force) {
             $helper = $this->getHelper('question');
@@ -136,8 +191,10 @@ class MakeModelCommand extends Command
             }
         }
 
-        if (!$table) {
-            $table = $this->promptForTableIfNeeded($input, $output, $type, $connection, $name) ?: null;
+        // When model name is provided, keep the original "prompt only if convention guessing fails" behavior.
+        // When model name is not provided, table has already been prompted (or explicitly set by --table).
+        if ($nameArg && !$table) {
+            $table = $this->promptForTableIfNeeded($input, $output, $type, $connection, $name, $plugin, $databaseOption) ?: null;
         }
 
         if ($type === self::ORM_THINKORM) {
@@ -148,6 +205,61 @@ class MakeModelCommand extends Command
 
         $output->writeln($this->msg('created', ['{path}' => $this->toRelativePath($file)]));
         return self::SUCCESS;
+    }
+
+    /**
+     * Prompt for model name with a default value.
+     */
+    protected function promptForModelNameWithDefault(InputInterface $input, OutputInterface $output, string $default): string
+    {
+        $default = $this->normalizeClassLikeName($default ?: 'Model');
+        $helper = $this->getHelper('question');
+        $question = new Question($this->msg('enter_model_name_prompt', ['{default}' => $default]), $default);
+        $answer = $helper->ask($input, $output, $question);
+        $answer = is_string($answer) ? trim($answer) : '';
+        $answer = $answer !== '' ? $answer : $default;
+        return $this->normalizeClassLikeName($answer);
+    }
+
+    /**
+     * Prompt for model path with a default value.
+     */
+    protected function promptForModelPathWithDefault(InputInterface $input, OutputInterface $output, string $default): string
+    {
+        $default = $this->normalizeRelativePath($default ?: 'app/model');
+        $helper = $this->getHelper('question');
+        $question = new Question($this->msg('enter_model_path_prompt', ['{default}' => $default]), $default);
+        $answer = $helper->ask($input, $output, $question);
+        $answer = is_string($answer) ? trim($answer) : '';
+        $answer = $answer !== '' ? $answer : $default;
+        return $this->normalizeRelativePath($answer ?: $default);
+    }
+
+    /**
+     * Normalize "class-like" names with optional sub paths, e.g.:
+     * - "admin/user_profile" => "Admin/UserProfile"
+     * - "Admin\\User" => "Admin/User"
+     */
+    protected function normalizeClassLikeName(string $name): string
+    {
+        $name = trim($name);
+        if ($name === '') {
+            return '';
+        }
+        $name = str_replace('\\', '/', $name);
+        $name = trim($name, '/');
+        $segments = array_values(array_filter(explode('/', $name), static fn(string $s): bool => $s !== ''));
+        $segments = array_map(static fn(string $seg): string => Util::nameToClass($seg), $segments);
+        return implode('/', $segments);
+    }
+
+    /**
+     * Default app model relative path. Prefer existing "Model/model" directory.
+     */
+    protected function getAppModelRelativePath(): string
+    {
+        $modelDir = Util::guessPath(app_path(), 'model') ?: 'model';
+        return $this->normalizeRelativePath("app/$modelDir");
     }
 
     /**
@@ -534,6 +646,12 @@ EOF;
         $pathNorm = $path ? $this->normalizeRelativePath($path) : null;
         if ($pathNorm !== null && $this->isAbsolutePath($pathNorm)) {
             $output->writeln($this->msg('invalid_path', ['{path}' => $path]));
+            return null;
+        }
+
+        // Validate plugin existence (from --plugin/-p or inferred from --path/-P).
+        $pluginToCheck = $this->normalizeOptionValue($plugin) ?: $this->extractPluginNameFromRelativePath($pathNorm);
+        if ($pluginToCheck && !$this->assertPluginExists($pluginToCheck, $output)) {
             return null;
         }
 

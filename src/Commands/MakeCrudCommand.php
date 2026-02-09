@@ -2,7 +2,6 @@
 
 namespace Webman\Console\Commands;
 
-use Doctrine\Inflector\InflectorFactory;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -79,6 +78,9 @@ class MakeCrudCommand extends Command
             return Command::FAILURE;
         }
         $plugin = $pluginOpt ?: $pluginByPath;
+        if ($plugin && !$this->assertPluginExists($plugin, $output)) {
+            return Command::FAILURE;
+        }
 
         $validationEnabled = $this->isValidationEnabled();
         if ($validatorPath && !$validationEnabled && !$noValidator) {
@@ -97,14 +99,14 @@ class MakeCrudCommand extends Command
                 $output->writeln($this->msg('table_required'));
                 return Command::FAILURE;
             }
-            $table = $this->promptForTable($input, $output, $ormType, $connection, 'Model');
+            $table = $this->promptForTable($input, $output, $ormType, $connection, 'Model', $plugin, $database);
             if (!$table) {
                 $output->writeln($this->msg('table_required'));
                 return Command::FAILURE;
             }
         }
 
-        $modelNameDefault = $this->generateModelNameFromTable($table);
+        $modelNameDefault = $this->suggestModelNameFromTable($table, $ormType, $connection, $plugin, $database);
         $modelName = $this->resolveName($input, $output, $noInteraction, $modelOpt, $modelNameDefault, 'model');
         if (!$modelName) {
             $output->writeln($this->msg('invalid_name', ['{type}' => 'model']));
@@ -132,6 +134,9 @@ class MakeCrudCommand extends Command
         $pluginByModelPath = $this->inferPluginFromPath($modelPath);
         if (!$plugin && $pluginByModelPath) {
             $plugin = $pluginByModelPath;
+            if (!$this->assertPluginExists($plugin, $output)) {
+                return Command::FAILURE;
+            }
         }
 
         // Step 2: resolve controller name (depends on model name + suffix rules)
@@ -163,6 +168,9 @@ class MakeCrudCommand extends Command
         $pluginByControllerPath = $this->inferPluginFromPath($controllerPath);
         if (!$plugin && $pluginByControllerPath) {
             $plugin = $pluginByControllerPath;
+            if (!$this->assertPluginExists($plugin, $output)) {
+                return Command::FAILURE;
+            }
         }
         $pluginOpt = $this->resolvePluginMismatchIfNeeded($input, $output, $noInteraction, $pluginOpt, $pluginByControllerPath);
         if ($pluginOpt === false) {
@@ -291,14 +299,6 @@ class MakeCrudCommand extends Command
             }
         }
         return false;
-    }
-
-    protected function generateModelNameFromTable(string $table): string
-    {
-        $inflector = InflectorFactory::create()->build();
-        $table = ltrim(trim($table), '=');
-        $singular = $inflector->singularize($table);
-        return Util::nameToClass($singular);
     }
 
     protected function getDefaultPath(string $type, ?string $plugin): string
