@@ -7,7 +7,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Helper\Table;
-use Webman\Console\Commands\Concerns\MakeCommandHelpers;
+use Webman\Console\Commands\Concerns\BaseCommandHelpers;
 use Webman\Console\Util;
 use Webman\Console\Messages;
 use Webman\Route;
@@ -15,7 +15,7 @@ use Webman\Route;
 #[AsCommand('route:list', 'Route list')]
 class RouteListCommand extends Command
 {
-    use MakeCommandHelpers;
+    use BaseCommandHelpers;
 
     protected function configure(): void
     {
@@ -48,15 +48,12 @@ class RouteListCommand extends Command
         $table->setHeaders($headers);
         $table->setRows($rows);
         $table->render();
-        return self::SUCCESS;
+        return Command::SUCCESS;
     }
 
     protected function msg(string $key, array $replace = []): mixed
     {
-        $text = Util::selectLocaleMessages(Messages::getRouteListMessages())[$key] ?? $key;
-        if (is_array($text)) {
-            return $text;
-        }
-        return strtr($text, $replace);
+        $messages = Util::selectLocaleMessages(Messages::getRouteListMessages());
+        return $this->getLocalizedMessage($messages, $key, $replace);
     }
 }

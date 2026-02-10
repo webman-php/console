@@ -46,11 +46,11 @@ class PluginExportCommand extends Command
         $nameRaw = $nameOpt ?: $nameArg;
         if (!$nameRaw) {
             $output->writeln($this->pluginMsg('missing_name'));
-            return Command::INVALID;
+            return Command::FAILURE;
         }
         if (!$this->isValidComposerPackageName($nameRaw)) {
             $output->writeln($this->pluginMsg('bad_name', ['{name}' => (string)$nameRaw]));
-            return Command::INVALID;
+            return Command::FAILURE;
         }
 
         $output->writeln($this->pluginMsg('export_title', ['{name}' => $nameRaw]));

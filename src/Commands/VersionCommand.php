@@ -6,14 +6,14 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Webman\Console\Commands\Concerns\MakeCommandHelpers;
+use Webman\Console\Commands\Concerns\BaseCommandHelpers;
 use Webman\Console\Messages;
 use Webman\Console\Util;
 
 #[AsCommand('version', 'Show webman version')]
 class VersionCommand extends Command
 {
-    use MakeCommandHelpers;
+    use BaseCommandHelpers;
 
     protected function configure(): void
     {
@@ -37,14 +37,15 @@ class VersionCommand extends Command
         $webman_framework_version = is_string($webman_framework_version) ? trim($webman_framework_version) : '';
         if ($webman_framework_version === '') {
             $output->writeln($this->msg('not_found'));
-            return self::FAILURE;
+            return Command::FAILURE;
         }
         $output->writeln($this->msg('version', ['{version}' => $webman_framework_version]));
-        return self::SUCCESS;
+        return Command::SUCCESS;
     }
 
     protected function msg(string $key, array $replace = []): string
     {
-        return strtr(Util::selectLocaleMessages(Messages::getVersionMessages())[$key] ?? $key, $replace);
+        $messages = Util::selectLocaleMessages(Messages::getVersionMessages());
+        return $this->getLocalizedMessage($messages, $key, $replace);
     }
 }
