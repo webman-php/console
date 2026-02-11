@@ -40,11 +40,21 @@ class Util
         if ($lang !== '' && isset($localeToMessages[$lang])) {
             return $localeToMessages[$lang];
         }
-        if (isset($localeToMessages['en'])) {
-            return $localeToMessages['en'];
+        // Use configured fallback locales if available, otherwise default to ['en'].
+        $fallbacks = ['en'];
+        if (function_exists('config')) {
+            $cfg = config('translation.fallback_locale', $fallbacks);
+            if (is_string($cfg)) {
+                $cfg = [$cfg];
+            }
+            if (is_array($cfg) && !empty($cfg)) {
+                $fallbacks = $cfg;
+            }
         }
-        if (isset($localeToMessages['zh_CN'])) {
-            return $localeToMessages['zh_CN'];
+        foreach ($fallbacks as $fb) {
+            if (isset($localeToMessages[$fb])) {
+                return $localeToMessages[$fb];
+            }
         }
         $first = reset($localeToMessages);
         return is_array($first) ? $first : [];
@@ -66,11 +76,21 @@ class Util
         if ($lang !== '' && isset($localeToValue[$lang])) {
             return $localeToValue[$lang];
         }
-        if (isset($localeToValue['en'])) {
-            return $localeToValue['en'];
+        // Use configured fallback locales if available, otherwise default to ['en'].
+        $fallbacks = ['en'];
+        if (function_exists('config')) {
+            $cfg = config('translation.fallback_locale', $fallbacks);
+            if (is_string($cfg)) {
+                $cfg = [$cfg];
+            }
+            if (is_array($cfg) && !empty($cfg)) {
+                $fallbacks = $cfg;
+            }
         }
-        if (isset($localeToValue['zh_CN'])) {
-            return $localeToValue['zh_CN'];
+        foreach ($fallbacks as $fb) {
+            if (isset($localeToValue[$fb])) {
+                return $localeToValue[$fb];
+            }
         }
         $first = reset($localeToValue);
         return is_string($first) ? $first : '';
@@ -92,11 +112,21 @@ class Util
         if ($lang !== '' && isset($localeToArray[$lang])) {
             return $localeToArray[$lang];
         }
-        if (isset($localeToArray['en'])) {
-            return $localeToArray['en'];
+        // Use configured fallback locales if available, otherwise default to ['en'].
+        $fallbacks = ['en'];
+        if (function_exists('config')) {
+            $cfg = config('translation.fallback_locale', $fallbacks);
+            if (is_string($cfg)) {
+                $cfg = [$cfg];
+            }
+            if (is_array($cfg) && !empty($cfg)) {
+                $fallbacks = $cfg;
+            }
         }
-        if (isset($localeToArray['zh_CN'])) {
-            return $localeToArray['zh_CN'];
+        foreach ($fallbacks as $fb) {
+            if (isset($localeToArray[$fb])) {
+                return $localeToArray[$fb];
+            }
         }
         $first = reset($localeToArray);
         return is_array($first) ? $first : [];

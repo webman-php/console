@@ -142,6 +142,15 @@ class MakeModelCommand extends Command
         } else {
             // Backward compatible behavior when model name is explicitly provided.
             $name = Util::nameToClass($nameArg);
+            // Table selection before path selection.
+            if ($nameArg && !$table) {
+                $table = $this->promptForTableIfNeeded($input, $output, $type, $connection, $name, $plugin, $databaseOption) ?: null;
+            }
+            // When path is not provided and interactive: prompt for path after table.
+            if (!$pathOption && $input->isInteractive()) {
+                $pathDefault = $plugin ? $this->getPluginModelRelativePath($plugin) : $this->getAppModelRelativePath();
+                $pathOption = $this->promptForModelPathWithDefault($input, $output, $pathDefault);
+            }
             if ($plugin || $pathOption) {
                 $resolved = $this->resolveModelTargetByPluginOrPath($name, $plugin, $pathOption, $output);
                 if ($resolved === null) {
@@ -189,12 +198,6 @@ class MakeModelCommand extends Command
             if (!$helper->ask($input, $output, $question)) {
                 return Command::SUCCESS;
             }
-        }
-
-        // When model name is provided, keep the original "prompt only if convention guessing fails" behavior.
-        // When model name is not provided, table has already been prompted (or explicitly set by --table).
-        if ($nameArg && !$table) {
-            $table = $this->promptForTableIfNeeded($input, $output, $type, $connection, $name, $plugin, $databaseOption) ?: null;
         }
 
         if ($type === self::ORM_THINKORM) {

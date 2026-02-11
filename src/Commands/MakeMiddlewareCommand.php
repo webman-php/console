@@ -9,6 +9,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Symfony\Component\Console\Question\Question;
 use Webman\Console\Util;
 use Webman\Console\Messages;
 use Webman\Console\Commands\Concerns\MakeCommandHelpers;
@@ -58,6 +59,11 @@ class MakeMiddlewareCommand extends Command
 
         $name = str_replace('\\', '/', $name);
 
+        if (!$path && $input->isInteractive()) {
+            $pathDefault = $plugin ? $this->getPluginMiddlewareRelativePath($plugin) : $this->getAppMiddlewareRelativePath();
+            $path = $this->promptForPathWithDefault($input, $output, 'middleware', $pathDefault);
+        }
+
         if ($plugin || $path) {
             $resolved = $this->resolveTargetByPluginOrPath(
                 $name,
@@ -94,12 +100,8 @@ class MakeMiddlewareCommand extends Command
         $configFile = $plugin
             ? base_path('plugin' . DIRECTORY_SEPARATOR . $plugin . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'middleware.php')
             : (config_path() . '/middleware.php');
-        $changed = $this->addClassToMiddlewareConfig($configFile, $middlewareClass);
-        if ($changed) {
-            $output->writeln($this->msg('configured', ['{class}' => $middlewareClass, '{file}' => $this->toRelativePath($configFile)]));
-        } else {
-            $output->writeln($this->msg('configured_exists', ['{class}' => $middlewareClass, '{file}' => $this->toRelativePath($configFile)]));
-        }
+        $this->addClassToMiddlewareConfig($configFile, $middlewareClass);
+        $output->writeln($this->msg('configured', ['{class}' => $middlewareClass, '{file}' => $this->toRelativePath($configFile)]));
 
         return self::SUCCESS;
     }
@@ -143,6 +145,18 @@ class MakeMiddlewareCommand extends Command
     }
 
     /**
+     * Default app middleware relative path.
+     */
+    protected function getAppMiddlewareRelativePath(): string
+    {
+        $middlewareStr = Util::guessPath(app_path(), 'middleware');
+        if (!$middlewareStr) {
+            $middlewareStr = Util::guessPath(app_path(), 'controller') === 'Controller' ? 'Middleware' : 'middleware';
+        }
+        return $this->normalizeRelativePath("app/{$middlewareStr}");
+    }
+
+    /**
      * @param string $plugin
      * @return string relative path
      */
@@ -157,6 +171,23 @@ class MakeMiddlewareCommand extends Command
         return $this->normalizeRelativePath("plugin/{$plugin}/app/{$middlewareDir}");
     }
 
+    /**
+     * Prompt for path (question style, input on new line). Reuses enter_path_prompt from make:crud.
+     */
+    protected function promptForPathWithDefault(InputInterface $input, OutputInterface $output, string $labelKey, string $defaultPath): string
+    {
+        $defaultPath = $this->normalizeRelativePath($defaultPath);
+        $label = Util::selectLocaleMessages(Messages::getTypeLabels())[$labelKey] ?? $labelKey;
+        $promptText = Util::selectLocaleMessages(Messages::getMakeCrudMessages())['enter_path_prompt']
+            ?? 'Enter {label} path (Enter for default: {default}): ';
+        $promptText = strtr($promptText, ['{label}' => $label, '{default}' => $defaultPath]);
+        $promptText = '<question>' . trim($promptText) . "</question>\n";
+        $helper = $this->getHelper('question');
+        $question = new Question($promptText, $defaultPath);
+        $path = $helper->ask($input, $output, $question);
+        $path = is_string($path) ? $path : $defaultPath;
+        return $this->normalizeRelativePath($path ?: $defaultPath);
+    }
 
     /**
      * @param $name

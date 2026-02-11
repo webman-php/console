@@ -1148,26 +1148,30 @@ class Messages
     public static function getTypeLabels(): array
     {
         $enTypeLabels = [
-            'model' => 'Model name',
-            'controller' => 'Controller name',
-            'validation' => 'Validator',
-            'validator' => 'Validator name',
+            'model' => 'model name',
+            'controller' => 'controller name',
+            'validation' => 'validator',
+            'validator' => 'validator name',
+            'bootstrap' => 'bootstrap',
+            'command' => 'command',
+            'middleware' => 'middleware',
+            'process' => 'process',
         ];
         return [
-            'zh_CN' => ['model' => '模型名', 'controller' => '控制器名', 'validation' => '验证器', 'validator' => '验证器名'],
-            'zh_TW' => ['model' => '模型名', 'controller' => '控制器名', 'validation' => '驗證器', 'validator' => '驗證器名'],
+            'zh_CN' => ['model' => '模型名', 'controller' => '控制器名', 'validation' => '验证器', 'validator' => '验证器名', 'bootstrap' => '启动项', 'command' => '命令', 'middleware' => '中间件', 'process' => '进程'],
+            'zh_TW' => ['model' => '模型名', 'controller' => '控制器名', 'validation' => '驗證器', 'validator' => '驗證器名', 'bootstrap' => '啟動項', 'command' => '命令', 'middleware' => '中間件', 'process' => '進程'],
             'en' => $enTypeLabels,
-            'ja' => ['model' => 'モデル名', 'controller' => 'コントローラ名', 'validation' => 'バリデータ', 'validator' => 'バリデータ名'],
-            'ko' => ['model' => '모델 이름', 'controller' => '컨트롤러 이름', 'validation' => '검증기', 'validator' => '검증기 이름'],
-            'fr' => ['model' => 'Nom du modèle', 'controller' => 'Nom du contrôleur', 'validation' => 'Validateur', 'validator' => 'Nom du validateur'],
-            'de' => ['model' => 'Modellname', 'controller' => 'Controller-Name', 'validation' => 'Validator', 'validator' => 'Validator-Name'],
-            'es' => ['model' => 'Nombre del modelo', 'controller' => 'Nombre del controlador', 'validation' => 'Validador', 'validator' => 'Nombre del validador'],
-            'pt_BR' => ['model' => 'Nome do modelo', 'controller' => 'Nome do controlador', 'validation' => 'Validador', 'validator' => 'Nome do validador'],
-            'ru' => ['model' => 'Имя модели', 'controller' => 'Имя контроллера', 'validation' => 'Валидатор', 'validator' => 'Имя валидатора'],
-            'vi' => ['model' => 'Tên model', 'controller' => 'Tên controller', 'validation' => 'Validator', 'validator' => 'Tên validator'],
-            'tr' => ['model' => 'Model adı', 'controller' => 'Controller adı', 'validation' => 'Doğrulayıcı', 'validator' => 'Doğrulayıcı adı'],
-            'id' => ['model' => 'Nama model', 'controller' => 'Nama controller', 'validation' => 'Validator', 'validator' => 'Nama validator'],
-            'th' => ['model' => 'ชื่อโมเดล', 'controller' => 'ชื่อคอนโทรลเลอร์', 'validation' => 'ตัวตรวจสอบ', 'validator' => 'ชื่อตัวตรวจสอบ'],
+            'ja' => ['model' => 'モデル名', 'controller' => 'コントローラ名', 'validation' => 'バリデータ', 'validator' => 'バリデータ名', 'bootstrap' => 'ブートストラップ', 'command' => 'コマンド', 'middleware' => 'ミドルウェア', 'process' => 'プロセス'],
+            'ko' => ['model' => '모델 이름', 'controller' => '컨트롤러 이름', 'validation' => '검증기', 'validator' => '검증기 이름', 'bootstrap' => '부트스트랩', 'command' => '명령', 'middleware' => '미들웨어', 'process' => '프로세스'],
+            'fr' => ['model' => 'nom du modèle', 'controller' => 'nom du contrôleur', 'validation' => 'validateur', 'validator' => 'nom du validateur', 'bootstrap' => 'bootstrap', 'command' => 'commande', 'middleware' => 'middleware', 'process' => 'processus'],
+            'de' => ['model' => 'Modellname', 'controller' => 'Controller-Name', 'validation' => 'Validator', 'validator' => 'Validator-Name', 'bootstrap' => 'Bootstrap', 'command' => 'Befehl', 'middleware' => 'Middleware', 'process' => 'Prozess'],
+            'es' => ['model' => 'nombre del modelo', 'controller' => 'nombre del controlador', 'validation' => 'validador', 'validator' => 'nombre del validador', 'bootstrap' => 'bootstrap', 'command' => 'comando', 'middleware' => 'middleware', 'process' => 'proceso'],
+            'pt_BR' => ['model' => 'nome do modelo', 'controller' => 'nome do controlador', 'validation' => 'validador', 'validator' => 'nome do validador', 'bootstrap' => 'bootstrap', 'command' => 'comando', 'middleware' => 'middleware', 'process' => 'processo'],
+            'ru' => ['model' => 'имя модели', 'controller' => 'имя контроллера', 'validation' => 'валидатор', 'validator' => 'имя валидатора', 'bootstrap' => 'бутстрап', 'command' => 'команда', 'middleware' => 'middleware', 'process' => 'процесс'],
+            'vi' => ['model' => 'tên model', 'controller' => 'tên controller', 'validation' => 'validator', 'validator' => 'tên validator', 'bootstrap' => 'bootstrap', 'command' => 'lệnh', 'middleware' => 'middleware', 'process' => 'quy trình'],
+            'tr' => ['model' => 'model adı', 'controller' => 'denetleyici adı', 'validation' => 'doğrulayıcı', 'validator' => 'doğrulayıcı adı', 'bootstrap' => 'bootstrap', 'command' => 'komut', 'middleware' => 'middleware', 'process' => 'süreç'],
+            'id' => ['model' => 'nama model', 'controller' => 'nama controller', 'validation' => 'validator', 'validator' => 'nama validator', 'bootstrap' => 'bootstrap', 'command' => 'perintah', 'middleware' => 'middleware', 'process' => 'proses'],
+            'th' => ['model' => 'ชื่อโมเดล', 'controller' => 'ชื่อคอนโทรลเลอร์', 'validation' => 'ตัวตรวจสอบ', 'validator' => 'ชื่อตัวตรวจสอบ', 'bootstrap' => 'Bootstrap', 'command' => 'คำสั่ง', 'middleware' => 'Middleware', 'process' => 'กระบวนการ'],
         ];
     }
 
@@ -1798,7 +1802,7 @@ EOF;
         $zh = [
             'make_middleware' => '<info>创建中间件</info> <comment>{name}</comment>',
             'created' => '<info>已创建：</info> <comment>{path}</comment>',
-            'configured' => '<info>已配置：</info> {class} -> {file}',
+            'configured' => '<info>已配置：</info> <comment>{class}</comment> -> <comment>{file}</comment>',
             'configured_exists' => '<comment>[Info]</comment> 配置已存在，跳过：{class} -> {file}',
             'override_prompt' => "<question>文件已存在：</question> <comment>{path}</comment>\n<question>是否覆盖？[Y/n]（回车=Y）</question>\n",
             'invalid_plugin' => '<error>插件名无效：</error> <comment>{plugin}</comment> <error>。`--plugin/-p` 只能是 plugin/ 目录下的目录名，不能包含 / 或 \\。</error>',
@@ -1809,7 +1813,7 @@ EOF;
         $en = [
             'make_middleware' => '<info>Make middleware</info> <comment>{name}</comment>',
             'created' => '<info>Created:</info> <comment>{path}</comment>',
-            'configured' => '<info>Configured:</info> {class} -> {file}',
+            'configured' => '<info>Configured:</info> <comment>{class}</comment> -> <comment>{file}</comment>',
             'configured_exists' => '<comment>[Info]</comment> Already configured, skipped: {class} -> {file}',
             'override_prompt' => "<question>File already exists: </question> <comment>{path}</comment>\n<question>Override? [Y/n] (Enter = Y)</question>\n",
             'invalid_plugin' => '<error>Invalid plugin name: {plugin}. `--plugin/-p` must be a directory name under plugin/ and must not contain / or \\.</error>',
@@ -1822,7 +1826,7 @@ EOF;
             'zh_TW' => [
                 'make_middleware' => '<info>建立中間件</info> <comment>{name}</comment>',
                 'created' => '<info>已建立：</info> <comment>{path}</comment>',
-                'configured' => '<info>已設定：</info> {class} -> {file}',
+                'configured' => '<info>已設定：</info> <comment>{class}</comment> -> <comment>{file}</comment>',
                 'configured_exists' => '<comment>[Info]</comment> 設定已存在，略過：{class} -> {file}',
                 'override_prompt' => "<question>檔案已存在：{path}</question>\n<question>是否覆蓋？[Y/n]（Enter=Y）</question>\n",
                 'invalid_plugin' => '<error>插件名稱無效：</error> <comment>{plugin}</comment> <error>。`--plugin/-p` 只能是 plugin/ 目錄下的目錄名，不能包含 / 或 \\。</error>',
@@ -1833,23 +1837,23 @@ EOF;
             'ja' => [
                 'make_middleware' => '<info>ミドルウェアを作成</info> <comment>{name}</comment>',
                 'created' => '<info>作成しました：</info> <comment>{path}</comment>',
-                'configured' => '<info>設定しました：</info> {class} -> {file}',
+                'configured' => '<info>設定しました：</info> <comment>{class}</comment> -> <comment>{file}</comment>',
                 'configured_exists' => '<comment>[Info]</comment> 既に設定済み、スキップ：{class} -> {file}',
                 'override_prompt' => "<question>ファイルが既に存在します：{path}</question>\n<question>上書きしますか？[Y/n]（Enter=Y）</question>\n",
                 'invalid_plugin' => '<error>プラグイン名が無効です：</error> <comment>{plugin}</comment> <error>。`--plugin/-p` は plugin/ 以下のディレクトリ名で、/ または \\ を含めません。</error>',
                 'plugin_path_conflict' => "<error>`--plugin/-p` と `--path/-P` が両方指定されていますが一致しません。\n期待：{expected}\n実際：{actual}\nどちらか一方に揃えてください。</error>",
                 'invalid_path' => '<error>パスが無効です：</error> <comment>{path}</comment> <error>。`--path/-P` はプロジェクトルートからの相対パスで、絶対パスは不可です。</error>',
             ],
-            'ko' => ['make_middleware' => '<info>미들웨어 만들기</info> <comment>{name}</comment>', 'created' => '<info>생성됨:</info> <comment>{path}</comment>', 'configured' => '<info>설정됨:</info> {class} -> {file}', 'configured_exists' => '<comment>[Info]</comment> 이미 설정됨, 건너뜀: {class} -> {file}', 'override_prompt' => "<question>파일이 이미 있습니다: {path}</question>\n<question>덮어쓸까요? [Y/n] (Enter=Y)</question>\n", 'invalid_plugin' => '<error>잘못된 플러그인 이름: {plugin}. `--plugin/-p`는 plugin/ 아래 디렉터리 이름이며 / 또는 \\를 포함할 수 없습니다.</error>', 'plugin_path_conflict' => "<error>`--plugin/-p`와 `--path/-P`가 모두 지정되었지만 일치하지 않습니다.\n예상: {expected}\n실제: {actual}\n하나만 사용하거나 동일하게 맞추세요.</error>", 'invalid_path' => '<error>잘못된 경로: </error> <comment>{path}</comment> <error>. `--path/-P`는 프로젝트 루트 기준 상대 경로여야 하며 절대 경로는 안 됩니다.</error>'],
-            'fr' => ['make_middleware' => '<info>Créer un middleware</info> <comment>{name}</comment>', 'created' => '<info>Créé :</info> <comment>{path}</comment>', 'configured' => '<info>Configuré :</info> {class} -> {file}', 'configured_exists' => '<comment>[Info]</comment> Déjà configuré, ignoré : {class} -> {file}', 'override_prompt' => "<question>Le fichier existe déjà : {path}</question>\n<question>Écraser ? [Y/n] (Entrée = Y)</question>\n", 'invalid_plugin' => '<error>Nom de plugin invalide : {plugin}. `--plugin/-p` doit être un nom de dossier sous plugin/, sans / ni \\.</error>', 'plugin_path_conflict' => "<error>`--plugin/-p` et `--path/-P` sont tous deux fournis mais incohérents.\nAttendu : {expected}\nRéel : {actual}\nN\'en fournissez qu\'un ou rendez-les identiques.</error>", 'invalid_path' => '<error>Chemin invalide : </error> <comment>{path}</comment> <error>. `--path/-P` doit être un chemin relatif (à la racine du projet), pas absolu.</error>'],
-            'de' => ['make_middleware' => '<info>Middleware erstellen</info> <comment>{name}</comment>', 'created' => '<info>Erstellt:</info> <comment>{path}</comment>', 'configured' => '<info>Konfiguriert:</info> {class} -> {file}', 'configured_exists' => '<comment>[Info]</comment> Bereits konfiguriert, übersprungen: {class} -> {file}', 'override_prompt' => "<question>Datei existiert bereits: {path}</question>\n<question>Überschreiben? [Y/n] (Eingabe = Y)</question>\n", 'invalid_plugin' => '<error>Ungültiger Plugin-Name: {plugin}. `--plugin/-p` muss ein Ordnername unter plugin/ sein, ohne / oder \\.</error>', 'plugin_path_conflict' => "<error>`--plugin/-p` und `--path/-P` sind beide angegeben, aber nicht konsistent.\nErwartet: {expected}\nTatsächlich: {actual}\nNur eines angeben oder angleichen.</error>", 'invalid_path' => '<error>Ungültiger Pfad: </error> <comment>{path}</comment> <error>. `--path/-P` muss ein relativer Pfad (zur Projektwurzel) sein, kein absoluter.</error>'],
-            'es' => ['make_middleware' => '<info>Crear middleware</info> <comment>{name}</comment>', 'created' => '<info>Creado:</info> <comment>{path}</comment>', 'configured' => '<info>Configurado:</info> {class} -> {file}', 'configured_exists' => '<comment>[Info]</comment> Ya configurado, omitido: {class} -> {file}', 'override_prompt' => "<question>El archivo ya existe: {path}</question>\n<question>¿Sobrescribir? [Y/n] (Enter = Y)</question>\n", 'invalid_plugin' => '<error>Nombre de plugin no válido: {plugin}. `--plugin/-p` debe ser un nombre de carpeta bajo plugin/, sin / ni \\.</error>', 'plugin_path_conflict' => "<error>Se han especificado `--plugin/-p` y `--path/-P` pero no coinciden.\nEsperado: {expected}\nReal: {actual}\nProporcione solo uno o hágalos idénticos.</error>", 'invalid_path' => '<error>Ruta no válida: </error> <comment>{path}</comment> <error>. `--path/-P` debe ser una ruta relativa (a la raíz del proyecto), no absoluta.</error>'],
-            'pt_BR' => ['make_middleware' => '<info>Criar middleware</info> <comment>{name}</comment>', 'created' => '<info>Criado:</info> <comment>{path}</comment>', 'configured' => '<info>Configurado:</info> {class} -> {file}', 'configured_exists' => '<comment>[Info]</comment> Já configurado, ignorado: {class} -> {file}', 'override_prompt' => "<question>O arquivo já existe: {path}</question>\n<question>Sobrescrever? [Y/n] (Enter = Y)</question>\n", 'invalid_plugin' => '<error>Nome de plugin inválido: {plugin}. `--plugin/-p` deve ser um nome de pasta em plugin/, sem / ou \\.</error>', 'plugin_path_conflict' => "<error>`--plugin/-p` e `--path/-P` foram fornecidos mas são inconsistentes.\nEsperado: {expected}\nAtual: {actual}\nForneça apenas um ou deixe-os iguais.</error>", 'invalid_path' => '<error>Caminho inválido: </error> <comment>{path}</comment> <error>. `--path/-P` deve ser um caminho relativo (à raiz do projeto), não absoluto.</error>'],
-            'ru' => ['make_middleware' => '<info>Создать middleware</info> <comment>{name}</comment>', 'created' => '<info>Создано:</info> <comment>{path}</comment>', 'configured' => '<info>Настроено:</info> {class} -> {file}', 'configured_exists' => '<comment>[Info]</comment> Уже настроено, пропущено: {class} -> {file}', 'override_prompt' => "<question>Файл уже существует: {path}</question>\n<question>Перезаписать? [Y/n] (Enter = Y)</question>\n", 'invalid_plugin' => '<error>Недопустимое имя плагина: {plugin}. `--plugin/-p` должно быть именем каталога в plugin/, без / или \\.</error>', 'plugin_path_conflict' => "<error>Указаны и `--plugin/-p`, и `--path/-P`, но они не совпадают.\nОжидалось: {expected}\nФактически: {actual}\nУкажите только одну из опций или сделайте их одинаковыми.</error>", 'invalid_path' => '<error>Недопустимый путь: </error> <comment>{path}</comment> <error>. `--path/-P` должен быть относительным путём (к корню проекта), не абсолютным.</error>'],
-            'vi' => ['make_middleware' => '<info>Tạo middleware</info> <comment>{name}</comment>', 'created' => '<info>Đã tạo:</info> <comment>{path}</comment>', 'configured' => '<info>Đã cấu hình:</info> {class} -> {file}', 'configured_exists' => '<comment>[Info]</comment> Đã cấu hình, bỏ qua: {class} -> {file}', 'override_prompt' => "<question>Tệp đã tồn tại: {path}</question>\n<question>Ghi đè? [Y/n] (Enter = Y)</question>\n", 'invalid_plugin' => '<error>Tên plugin không hợp lệ: {plugin}. `--plugin/-p` phải là tên thư mục trong plugin/, không chứa / hoặc \\.</error>', 'plugin_path_conflict' => "<error>`--plugin/-p` và `--path/-P` đều được chỉ định nhưng không khớp.\nMong đợi: {expected}\nThực tế: {actual}\nChỉ dùng một trong hai hoặc làm cho chúng trùng nhau.</error>", 'invalid_path' => '<error>Đường dẫn không hợp lệ: </error> <comment>{path}</comment> <error>. `--path/-P` phải là đường dẫn tương đối (tới thư mục gốc dự án), không phải tuyệt đối.</error>'],
-            'tr' => ['make_middleware' => '<info>Middleware oluştur</info> <comment>{name}</comment>', 'created' => '<info>Oluşturuldu:</info> <comment>{path}</comment>', 'configured' => '<info>Yapılandırıldı:</info> {class} -> {file}', 'configured_exists' => '<comment>[Info]</comment> Zaten yapılandırılmış, atlandı: {class} -> {file}', 'override_prompt' => "<question>Dosya zaten mevcut: {path}</question>\n<question>Üzerine yazılsın mı? [Y/n] (Enter = Y)</question>\n", 'invalid_plugin' => '<error>Geçersiz eklenti adı: {plugin}. `--plugin/-p` plugin/ altında bir klasör adı olmalı, / veya \\ içermemeli.</error>', 'plugin_path_conflict' => "<error>`--plugin/-p` ve `--path/-P` birlikte verilmiş ancak uyuşmuyor.\nBeklenen: {expected}\nGerçek: {actual}\nYalnızca birini verin veya aynı yapın.</error>", 'invalid_path' => '<error>Geçersiz yol: </error> <comment>{path}</comment> <error>. `--path/-P` proje köküne göre göreli yol olmalı, mutlak yol olmamalı.</error>'],
-            'id' => ['make_middleware' => '<info>Buat middleware</info> <comment>{name}</comment>', 'created' => '<info>Dibuat:</info> <comment>{path}</comment>', 'configured' => '<info>Dikonfigurasi:</info> {class} -> {file}', 'configured_exists' => '<comment>[Info]</comment> Sudah dikonfigurasi, dilewati: {class} -> {file}', 'override_prompt' => "<question>File sudah ada: {path}</question>\n<question>Timpa? [Y/n] (Enter = Y)</question>\n", 'invalid_plugin' => '<error>Nama plugin tidak valid: {plugin}. `--plugin/-p` harus nama folder di bawah plugin/, tidak boleh mengandung / atau \\.</error>', 'plugin_path_conflict' => "<error>`--plugin/-p` dan `--path/-P` keduanya diberikan tetapi tidak konsisten.\nSeharusnya: {expected}\nSebenarnya: {actual}\nBerikan hanya satu atau samakan.</error>", 'invalid_path' => '<error>Path tidak valid: </error> <comment>{path}</comment> <error>. `--path/-P` harus path relatif (ke akar proyek), bukan absolut.</error>'],
-            'th' => ['make_middleware' => '<info>สร้างมิดเดิลแวร์</info> <comment>{name}</comment>', 'created' => '<info>สร้างแล้ว:</info> <comment>{path}</comment>', 'configured' => '<info>ตั้งค่าแล้ว:</info> {class} -> {file}', 'configured_exists' => '<comment>[Info]</comment> ตั้งค่าแล้ว, ข้าม: {class} -> {file}', 'override_prompt' => "<question>มีไฟล์อยู่แล้ว: {path}</question>\n<question>เขียนทับ? [Y/n] (Enter=Y)</question>\n", 'invalid_plugin' => '<error>ชื่อปลั๊กอินไม่ถูกต้อง: {plugin}. `--plugin/-p` ต้องเป็นชื่อโฟลเดอร์ภายใต้ plugin/ ห้ามมี / หรือ \\.</error>', 'plugin_path_conflict' => "<error>ระบุทั้ง `--plugin/-p` และ `--path/-P` แต่ไม่ตรงกัน.\nคาดว่า: {expected}\nจริง: {actual}\nใช้อย่างใดอย่างหนึ่งหรือให้ตรงกัน.</error>", 'invalid_path' => '<error>เส้นทางไม่ถูกต้อง: </error> <comment>{path}</comment> <error>. `--path/-P` ต้องเป็นเส้นทางสัมพัทธ์ (จากรากโปรเจกต์) ไม่ใช่แบบสัมบูรณ์.</error>'],
+            'ko' => ['make_middleware' => '<info>미들웨어 만들기</info> <comment>{name}</comment>', 'created' => '<info>생성됨:</info> <comment>{path}</comment>', 'configured' => '<info>설정됨:</info> <comment>{class}</comment> -> <comment>{file}</comment>', 'configured_exists' => '<comment>[Info]</comment> 이미 설정됨, 건너뜀: {class} -> {file}', 'override_prompt' => "<question>파일이 이미 있습니다: {path}</question>\n<question>덮어쓸까요? [Y/n] (Enter=Y)</question>\n", 'invalid_plugin' => '<error>잘못된 플러그인 이름: {plugin}. `--plugin/-p`는 plugin/ 아래 디렉터리 이름이며 / 또는 \\를 포함할 수 없습니다.</error>', 'plugin_path_conflict' => "<error>`--plugin/-p`와 `--path/-P`가 모두 지정되었지만 일치하지 않습니다.\n예상: {expected}\n실제: {actual}\n하나만 사용하거나 동일하게 맞추세요.</error>", 'invalid_path' => '<error>잘못된 경로: </error> <comment>{path}</comment> <error>. `--path/-P`는 프로젝트 루트 기준 상대 경로여야 하며 절대 경로는 안 됩니다.</error>'],
+            'fr' => ['make_middleware' => '<info>Créer un middleware</info> <comment>{name}</comment>', 'created' => '<info>Créé :</info> <comment>{path}</comment>', 'configured' => '<info>Configuré :</info> <comment>{class}</comment> -> <comment>{file}</comment>', 'configured_exists' => '<comment>[Info]</comment> Déjà configuré, ignoré : {class} -> {file}', 'override_prompt' => "<question>Le fichier existe déjà : {path}</question>\n<question>Écraser ? [Y/n] (Entrée = Y)</question>\n", 'invalid_plugin' => '<error>Nom de plugin invalide : {plugin}. `--plugin/-p` doit être un nom de dossier sous plugin/, sans / ni \\.</error>', 'plugin_path_conflict' => "<error>`--plugin/-p` et `--path/-P` sont tous deux fournis mais incohérents.\nAttendu : {expected}\nRéel : {actual}\nN\'en fournissez qu\'un ou rendez-les identiques.</error>", 'invalid_path' => '<error>Chemin invalide : </error> <comment>{path}</comment> <error>. `--path/-P` doit être un chemin relatif (à la racine du projet), pas absolu.</error>'],
+            'de' => ['make_middleware' => '<info>Middleware erstellen</info> <comment>{name}</comment>', 'created' => '<info>Erstellt:</info> <comment>{path}</comment>', 'configured' => '<info>Konfiguriert:</info> <comment>{class}</comment> -> <comment>{file}</comment>', 'configured_exists' => '<comment>[Info]</comment> Bereits konfiguriert, übersprungen: {class} -> {file}', 'override_prompt' => "<question>Datei existiert bereits: {path}</question>\n<question>Überschreiben? [Y/n] (Eingabe = Y)</question>\n", 'invalid_plugin' => '<error>Ungültiger Plugin-Name: {plugin}. `--plugin/-p` muss ein Ordnername unter plugin/ sein, ohne / oder \\.</error>', 'plugin_path_conflict' => "<error>`--plugin/-p` und `--path/-P` sind beide angegeben, aber nicht konsistent.\nErwartet: {expected}\nTatsächlich: {actual}\nNur eines angeben oder angleichen.</error>", 'invalid_path' => '<error>Ungültiger Pfad: </error> <comment>{path}</comment> <error>. `--path/-P` muss ein relativer Pfad (zur Projektwurzel) sein, kein absoluter.</error>'],
+            'es' => ['make_middleware' => '<info>Crear middleware</info> <comment>{name}</comment>', 'created' => '<info>Creado:</info> <comment>{path}</comment>', 'configured' => '<info>Configurado:</info> <comment>{class}</comment> -> <comment>{file}</comment>', 'configured_exists' => '<comment>[Info]</comment> Ya configurado, omitido: {class} -> {file}', 'override_prompt' => "<question>El archivo ya existe: {path}</question>\n<question>¿Sobrescribir? [Y/n] (Enter = Y)</question>\n", 'invalid_plugin' => '<error>Nombre de plugin no válido: {plugin}. `--plugin/-p` debe ser un nombre de carpeta bajo plugin/, sin / ni \\.</error>', 'plugin_path_conflict' => "<error>Se han especificado `--plugin/-p` y `--path/-P` pero no coinciden.\nEsperado: {expected}\nReal: {actual}\nProporcione solo uno o hágalos idénticos.</error>", 'invalid_path' => '<error>Ruta no válida: </error> <comment>{path}</comment> <error>. `--path/-P` debe ser una ruta relativa (a la raíz del proyecto), no absoluta.</error>'],
+            'pt_BR' => ['make_middleware' => '<info>Criar middleware</info> <comment>{name}</comment>', 'created' => '<info>Criado:</info> <comment>{path}</comment>', 'configured' => '<info>Configurado:</info> <comment>{class}</comment> -> <comment>{file}</comment>', 'configured_exists' => '<comment>[Info]</comment> Já configurado, ignorado: {class} -> {file}', 'override_prompt' => "<question>O arquivo já existe: {path}</question>\n<question>Sobrescrever? [Y/n] (Enter = Y)</question>\n", 'invalid_plugin' => '<error>Nome de plugin inválido: {plugin}. `--plugin/-p` deve ser um nome de pasta em plugin/, sem / ou \\.</error>', 'plugin_path_conflict' => "<error>`--plugin/-p` e `--path/-P` foram fornecidos mas são inconsistentes.\nEsperado: {expected}\nAtual: {actual}\nForneça apenas um ou deixe-os iguais.</error>", 'invalid_path' => '<error>Caminho inválido: </error> <comment>{path}</comment> <error>. `--path/-P` deve ser um caminho relativo (à raiz do projeto), não absoluto.</error>'],
+            'ru' => ['make_middleware' => '<info>Создать middleware</info> <comment>{name}</comment>', 'created' => '<info>Создано:</info> <comment>{path}</comment>', 'configured' => '<info>Настроено:</info> <comment>{class}</comment> -> <comment>{file}</comment>', 'configured_exists' => '<comment>[Info]</comment> Уже настроено, пропущено: {class} -> {file}', 'override_prompt' => "<question>Файл уже существует: {path}</question>\n<question>Перезаписать? [Y/n] (Enter = Y)</question>\n", 'invalid_plugin' => '<error>Недопустимое имя плагина: {plugin}. `--plugin/-p` должно быть именем каталога в plugin/, без / или \\.</error>', 'plugin_path_conflict' => "<error>Указаны и `--plugin/-p`, и `--path/-P`, но они не совпадают.\nОжидалось: {expected}\nФактически: {actual}\nУкажите только одну из опций или сделайте их одинаковыми.</error>", 'invalid_path' => '<error>Недопустимый путь: </error> <comment>{path}</comment> <error>. `--path/-P` должен быть относительным путём (к корню проекта), не абсолютным.</error>'],
+            'vi' => ['make_middleware' => '<info>Tạo middleware</info> <comment>{name}</comment>', 'created' => '<info>Đã tạo:</info> <comment>{path}</comment>', 'configured' => '<info>Đã cấu hình:</info> <comment>{class}</comment> -> <comment>{file}</comment>', 'configured_exists' => '<comment>[Info]</comment> Đã cấu hình, bỏ qua: {class} -> {file}', 'override_prompt' => "<question>Tệp đã tồn tại: {path}</question>\n<question>Ghi đè? [Y/n] (Enter = Y)</question>\n", 'invalid_plugin' => '<error>Tên plugin không hợp lệ: {plugin}. `--plugin/-p` phải là tên thư mục trong plugin/, không chứa / hoặc \\.</error>', 'plugin_path_conflict' => "<error>`--plugin/-p` và `--path/-P` đều được chỉ định nhưng không khớp.\nMong đợi: {expected}\nThực tế: {actual}\nChỉ dùng một trong hai hoặc làm cho chúng trùng nhau.</error>", 'invalid_path' => '<error>Đường dẫn không hợp lệ: </error> <comment>{path}</comment> <error>. `--path/-P` phải là đường dẫn tương đối (tới thư mục gốc dự án), không phải tuyệt đối.</error>'],
+            'tr' => ['make_middleware' => '<info>Middleware oluştur</info> <comment>{name}</comment>', 'created' => '<info>Oluşturuldu:</info> <comment>{path}</comment>', 'configured' => '<info>Yapılandırıldı:</info> <comment>{class}</comment> -> <comment>{file}</comment>', 'configured_exists' => '<comment>[Info]</comment> Zaten yapılandırılmış, atlandı: {class} -> {file}', 'override_prompt' => "<question>Dosya zaten mevcut: {path}</question>\n<question>Üzerine yazılsın mı? [Y/n] (Enter = Y)</question>\n", 'invalid_plugin' => '<error>Geçersiz eklenti adı: {plugin}. `--plugin/-p` plugin/ altında bir klasör adı olmalı, / veya \\ içermemeli.</error>', 'plugin_path_conflict' => "<error>`--plugin/-p` ve `--path/-P` birlikte verilmiş ancak uyuşmuyor.\nBeklenen: {expected}\nGerçek: {actual}\nYalnızca birini verin veya aynı yapın.</error>", 'invalid_path' => '<error>Geçersiz yol: </error> <comment>{path}</comment> <error>. `--path/-P` proje köküne göre göreli yol olmalı, mutlak yol olmamalı.</error>'],
+            'id' => ['make_middleware' => '<info>Buat middleware</info> <comment>{name}</comment>', 'created' => '<info>Dibuat:</info> <comment>{path}</comment>', 'configured' => '<info>Dikonfigurasi:</info> <comment>{class}</comment> -> <comment>{file}</comment>', 'configured_exists' => '<comment>[Info]</comment> Sudah dikonfigurasi, dilewati: {class} -> {file}', 'override_prompt' => "<question>File sudah ada: {path}</question>\n<question>Timpa? [Y/n] (Enter = Y)</question>\n", 'invalid_plugin' => '<error>Nama plugin tidak valid: {plugin}. `--plugin/-p` harus nama folder di bawah plugin/, tidak boleh mengandung / atau \\.</error>', 'plugin_path_conflict' => "<error>`--plugin/-p` dan `--path/-P` keduanya diberikan tetapi tidak konsisten.\nSeharusnya: {expected}\nSebenarnya: {actual}\nBerikan hanya satu atau samakan.</error>", 'invalid_path' => '<error>Path tidak valid: </error> <comment>{path}</comment> <error>. `--path/-P` harus path relatif (ke akar proyek), bukan absolut.</error>'],
+            'th' => ['make_middleware' => '<info>สร้างมิดเดิลแวร์</info> <comment>{name}</comment>', 'created' => '<info>สร้างแล้ว:</info> <comment>{path}</comment>', 'configured' => '<info>ตั้งค่าแล้ว:</info> <comment>{class}</comment> -> <comment>{file}</comment>', 'configured_exists' => '<comment>[Info]</comment> ตั้งค่าแล้ว, ข้าม: {class} -> {file}', 'override_prompt' => "<question>มีไฟล์อยู่แล้ว: {path}</question>\n<question>เขียนทับ? [Y/n] (Enter=Y)</question>\n", 'invalid_plugin' => '<error>ชื่อปลั๊กอินไม่ถูกต้อง: {plugin}. `--plugin/-p` ต้องเป็นชื่อโฟลเดอร์ภายใต้ plugin/ ห้ามมี / หรือ \\.</error>', 'plugin_path_conflict' => "<error>ระบุทั้ง `--plugin/-p` และ `--path/-P` แต่ไม่ตรงกัน.\nคาดว่า: {expected}\nจริง: {actual}\nใช้อย่างใดอย่างหนึ่งหรือให้ตรงกัน.</error>", 'invalid_path' => '<error>เส้นทางไม่ถูกต้อง: </error> <comment>{path}</comment> <error>. `--path/-P` ต้องเป็นเส้นทางสัมพัทธ์ (จากรากโปรเจกต์) ไม่ใช่แบบสัมบูรณ์.</error>'],
         ];
     }
 
@@ -2033,7 +2037,7 @@ EOF;
             'zh_CN' => [
                 'make_bootstrap' => '<info>创建启动项</info> <comment>{name}</comment>',
                 'created' => '<info>已创建：</info> <comment>{path}</comment>',
-                'enabled' => '<info>已启用：</info> {class}',
+                'enabled' => '<info>已启用：</info> <comment>{class}</comment>',
                 'enabled_exists' => '<comment>[Info]</comment> 已存在，无需重复写入：{class}',
                 'override_prompt' => "<question>文件已存在：</question> <comment>{path}</comment>\n<question>是否覆盖？[Y/n]（回车=Y）</question>\n",
                 'invalid_plugin' => '<error>插件名无效：</error> <comment>{plugin}</comment> <error>。`--plugin/-p` 只能是 plugin/ 目录下的目录名，不能包含 / 或 \\。</error>',
@@ -2048,7 +2052,7 @@ EOF;
             'zh_TW' => [
                 'make_bootstrap' => '<info>建立啟動項</info> <comment>{name}</comment>',
                 'created' => '<info>已建立：</info> <comment>{path}</comment>',
-                'enabled' => '<info>已啟用：</info> {class}',
+                'enabled' => '<info>已啟用：</info> <comment>{class}</comment>',
                 'enabled_exists' => '<comment>[Info]</comment> 已存在，無需重複寫入：{class}',
                 'override_prompt' => "<question>檔案已存在：{path}</question>\n<question>是否覆蓋？[Y/n]（Enter=Y）</question>\n",
                 'invalid_plugin' => '<error>插件名稱無效：</error> <comment>{plugin}</comment> <error>。`--plugin/-p` 只能是 plugin/ 目錄下的目錄名，不能包含 / 或 \\。</error>',
@@ -2063,7 +2067,7 @@ EOF;
             'en' => [
                 'make_bootstrap' => '<info>Make bootstrap</info> <comment>{name}</comment>',
                 'created' => '<info>Created:</info> <comment>{path}</comment>',
-                'enabled' => '<info>Enabled:</info> {class}',
+                'enabled' => '<info>Enabled:</info> <comment>{class}</comment>',
                 'enabled_exists' => '<comment>[Info]</comment> Already exists, skipped: {class}',
                 'override_prompt' => "<question>File already exists: </question> <comment>{path}</comment>\n<question>Override? [Y/n] (Enter = Y)</question>\n",
                 'invalid_plugin' => '<error>Invalid plugin name: {plugin}. `--plugin/-p` must be a directory name under plugin/ and must not contain / or \\.</error>',
@@ -2078,7 +2082,7 @@ EOF;
             'ja' => [
                 'make_bootstrap' => '<info>Bootstrap を作成</info> <comment>{name}</comment>',
                 'created' => '<info>作成しました：</info> <comment>{path}</comment>',
-                'enabled' => '<info>有効にしました：</info> {class}',
+                'enabled' => '<info>有効にしました：</info> <comment>{class}</comment>',
                 'enabled_exists' => '<comment>[Info]</comment> 既に存在します、スキップ：{class}',
                 'override_prompt' => "<question>ファイルが既に存在します：{path}</question>\n<question>上書きしますか？[Y/n]（Enter=Y）</question>\n",
                 'invalid_plugin' => '<error>プラグイン名が無効です：</error> <comment>{plugin}</comment> <error>。`--plugin/-p` は plugin/ 以下のディレクトリ名で、/ または \\ を含めません。</error>',
@@ -2093,7 +2097,7 @@ EOF;
             'ko' => [
                 'make_bootstrap' => '<info>Bootstrap 생성</info> <comment>{name}</comment>',
                 'created' => '<info>생성됨:</info> <comment>{path}</comment>',
-                'enabled' => '<info>활성화됨:</info> {class}',
+                'enabled' => '<info>활성화됨:</info> <comment>{class}</comment>',
                 'enabled_exists' => '<comment>[Info]</comment> 이미 있음, 건너뜀: {class}',
                 'override_prompt' => "<question>파일이 이미 있습니다: {path}</question>\n<question>덮어쓸까요? [Y/n] (Enter=Y)</question>\n",
                 'invalid_plugin' => '<error>잘못된 플러그인 이름: {plugin}. `--plugin/-p`는 plugin/ 아래 디렉터리 이름이며 / 또는 \\를 포함할 수 없습니다.</error>',
@@ -2108,7 +2112,7 @@ EOF;
             'fr' => [
                 'make_bootstrap' => '<info>Créer un Bootstrap</info> <comment>{name}</comment>',
                 'created' => '<info>Créé :</info> <comment>{path}</comment>',
-                'enabled' => '<info>Activé :</info> {class}',
+                'enabled' => '<info>Activé :</info> <comment>{class}</comment>',
                 'enabled_exists' => '<comment>[Info]</comment> Déjà présent, ignoré : {class}',
                 'override_prompt' => "<question>Le fichier existe déjà : {path}</question>\n<question>Écraser ? [Y/n] (Entrée = Y)</question>\n",
                 'invalid_plugin' => '<error>Nom de plugin invalide : {plugin}. `--plugin/-p` doit être un nom de dossier sous plugin/, sans / ni \\.</error>',
@@ -2123,7 +2127,7 @@ EOF;
             'de' => [
                 'make_bootstrap' => '<info>Bootstrap erstellen</info> <comment>{name}</comment>',
                 'created' => '<info>Erstellt:</info> <comment>{path}</comment>',
-                'enabled' => '<info>Aktiviert:</info> {class}',
+                'enabled' => '<info>Aktiviert:</info> <comment>{class}</comment>',
                 'enabled_exists' => '<comment>[Info]</comment> Bereits vorhanden, übersprungen: {class}',
                 'override_prompt' => "<question>Datei existiert bereits: {path}</question>\n<question>Überschreiben? [Y/n] (Eingabe = Y)</question>\n",
                 'invalid_plugin' => '<error>Ungültiger Plugin-Name: {plugin}. `--plugin/-p` muss ein Ordnername unter plugin/ sein, ohne / oder \\.</error>',
@@ -2138,7 +2142,7 @@ EOF;
             'es' => [
                 'make_bootstrap' => '<info>Crear Bootstrap</info> <comment>{name}</comment>',
                 'created' => '<info>Creado:</info> <comment>{path}</comment>',
-                'enabled' => '<info>Habilitado:</info> {class}',
+                'enabled' => '<info>Habilitado:</info> <comment>{class}</comment>',
                 'enabled_exists' => '<comment>[Info]</comment> Ya existe, omitido: {class}',
                 'override_prompt' => "<question>El archivo ya existe: {path}</question>\n<question>¿Sobrescribir? [Y/n] (Enter = Y)</question>\n",
                 'invalid_plugin' => '<error>Nombre de plugin no válido: {plugin}. `--plugin/-p` debe ser un nombre de carpeta bajo plugin/, sin / ni \\.</error>',
@@ -2153,7 +2157,7 @@ EOF;
             'pt_BR' => [
                 'make_bootstrap' => '<info>Criar Bootstrap</info> <comment>{name}</comment>',
                 'created' => '<info>Criado:</info> <comment>{path}</comment>',
-                'enabled' => '<info>Habilitado:</info> {class}',
+                'enabled' => '<info>Habilitado:</info> <comment>{class}</comment>',
                 'enabled_exists' => '<comment>[Info]</comment> Já existe, ignorado: {class}',
                 'override_prompt' => "<question>O arquivo já existe: {path}</question>\n<question>Sobrescrever? [Y/n] (Enter = Y)</question>\n",
                 'invalid_plugin' => '<error>Nome de plugin inválido: {plugin}. `--plugin/-p` deve ser um nome de pasta em plugin/, sem / ou \\.</error>',
@@ -2168,7 +2172,7 @@ EOF;
             'ru' => [
                 'make_bootstrap' => '<info>Создать Bootstrap</info> <comment>{name}</comment>',
                 'created' => '<info>Создано:</info> <comment>{path}</comment>',
-                'enabled' => '<info>Включено:</info> {class}',
+                'enabled' => '<info>Включено:</info> <comment>{class}</comment>',
                 'enabled_exists' => '<comment>[Info]</comment> Уже есть, пропущено: {class}',
                 'override_prompt' => "<question>Файл уже существует: {path}</question>\n<question>Перезаписать? [Y/n] (Enter = Y)</question>\n",
                 'invalid_plugin' => '<error>Недопустимое имя плагина: {plugin}. `--plugin/-p` должно быть именем каталога в plugin/, без / или \\.</error>',
@@ -2183,7 +2187,7 @@ EOF;
             'vi' => [
                 'make_bootstrap' => '<info>Tạo Bootstrap</info> <comment>{name}</comment>',
                 'created' => '<info>Đã tạo:</info> <comment>{path}</comment>',
-                'enabled' => '<info>Đã bật:</info> {class}',
+                'enabled' => '<info>Đã bật:</info> <comment>{class}</comment>',
                 'enabled_exists' => '<comment>[Info]</comment> Đã tồn tại, bỏ qua: {class}',
                 'override_prompt' => "<question>Tệp đã tồn tại: {path}</question>\n<question>Ghi đè? [Y/n] (Enter = Y)</question>\n",
                 'invalid_plugin' => '<error>Tên plugin không hợp lệ: {plugin}. `--plugin/-p` phải là tên thư mục trong plugin/, không chứa / hoặc \\.</error>',
@@ -2198,7 +2202,7 @@ EOF;
             'tr' => [
                 'make_bootstrap' => '<info>Bootstrap oluştur</info> <comment>{name}</comment>',
                 'created' => '<info>Oluşturuldu:</info> <comment>{path}</comment>',
-                'enabled' => '<info>Etkinleştirildi:</info> {class}',
+                'enabled' => '<info>Etkinleştirildi:</info> <comment>{class}</comment>',
                 'enabled_exists' => '<comment>[Info]</comment> Zaten mevcut, atlandı: {class}',
                 'override_prompt' => "<question>Dosya zaten mevcut: {path}</question>\n<question>Üzerine yazılsın mı? [Y/n] (Enter = Y)</question>\n",
                 'invalid_plugin' => '<error>Geçersiz eklenti adı: {plugin}. `--plugin/-p` plugin/ altında bir klasör adı olmalı, / veya \\ içermemeli.</error>',
@@ -2213,7 +2217,7 @@ EOF;
             'id' => [
                 'make_bootstrap' => '<info>Buat Bootstrap</info> <comment>{name}</comment>',
                 'created' => '<info>Dibuat:</info> <comment>{path}</comment>',
-                'enabled' => '<info>Diaktifkan:</info> {class}',
+                'enabled' => '<info>Diaktifkan:</info> <comment>{class}</comment>',
                 'enabled_exists' => '<comment>[Info]</comment> Sudah ada, dilewati: {class}',
                 'override_prompt' => "<question>File sudah ada: {path}</question>\n<question>Timpa? [Y/n] (Enter = Y)</question>\n",
                 'invalid_plugin' => '<error>Nama plugin tidak valid: {plugin}. `--plugin/-p` harus nama folder di bawah plugin/, tidak boleh mengandung / atau \\.</error>',
@@ -2228,7 +2232,7 @@ EOF;
             'th' => [
                 'make_bootstrap' => '<info>สร้าง Bootstrap</info> <comment>{name}</comment>',
                 'created' => '<info>สร้างแล้ว:</info> <comment>{path}</comment>',
-                'enabled' => '<info>เปิดใช้งานแล้ว:</info> {class}',
+                'enabled' => '<info>เปิดใช้งานแล้ว:</info> <comment>{class}</comment>',
                 'enabled_exists' => '<comment>[Info]</comment> มีอยู่แล้ว ข้าม: {class}',
                 'override_prompt' => "<question>มีไฟล์อยู่แล้ว: {path}</question>\n<question>เขียนทับ? [Y/n] (Enter=Y)</question>\n",
                 'invalid_plugin' => '<error>ชื่อปลั๊กอินไม่ถูกต้อง: {plugin}. `--plugin/-p` ต้องเป็นชื่อโฟลเดอร์ภายใต้ plugin/ ห้ามมี / หรือ \\</error>',

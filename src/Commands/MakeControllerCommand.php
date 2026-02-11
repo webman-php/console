@@ -9,6 +9,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Symfony\Component\Console\Question\Question;
 use Webman\Console\Util;
 use Webman\Console\Commands\Concerns\MakeCommandHelpers;
 use Webman\Console\Messages;
@@ -65,6 +66,14 @@ class MakeControllerCommand extends Command
         }
         $name = str_replace('\\', '/', $name);
         $name = $this->applySuffixToLastSegment($name, $suffix);
+
+        // When path is not provided: in interactive mode prompt for path (same UX as make:crud).
+        if (!$path && $input->isInteractive()) {
+            $pathDefault = $plugin
+                ? $this->getPluginControllerRelativePath($plugin)
+                : 'app/' . (Util::guessPath(app_path(), 'controller') ?: 'controller');
+            $path = $this->promptForControllerPath($input, $output, $pathDefault);
+        }
 
         if ($plugin || $path) {
             $resolved = $this->resolveTargetByPluginOrPath(
@@ -208,6 +217,29 @@ EOF;
         $appDir = base_path('plugin' . DIRECTORY_SEPARATOR . $plugin . DIRECTORY_SEPARATOR . 'app');
         $controllerDir = Util::guessPath($appDir, 'controller') ?: 'controller';
         return $this->normalizeRelativePath("plugin/{$plugin}/app/{$controllerDir}");
+    }
+
+    /**
+     * Prompt for controller path (interactive). Reuses enter_path_prompt from make:crud messages.
+     *
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @param string $defaultPath
+     * @return string
+     */
+    protected function promptForControllerPath(InputInterface $input, OutputInterface $output, string $defaultPath): string
+    {
+        $defaultPath = $this->normalizeRelativePath($defaultPath);
+        $label = Util::selectLocaleMessages(Messages::getTypeLabels())['controller'] ?? 'Controller';
+        $promptText = Util::selectLocaleMessages(Messages::getMakeCrudMessages())['enter_path_prompt']
+            ?? 'Enter {label} path (Enter for default: {default}): ';
+        $promptText = strtr($promptText, ['{label}' => $label, '{default}' => $defaultPath]);
+        $promptText = '<question>' . trim($promptText) . "</question>\n";
+        $helper = $this->getHelper('question');
+        $question = new Question($promptText, $defaultPath);
+        $path = $helper->ask($input, $output, $question);
+        $path = is_string($path) ? $path : $defaultPath;
+        return $this->normalizeRelativePath($path ?: $defaultPath);
     }
 
     /**

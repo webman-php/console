@@ -69,6 +69,11 @@ class MakeProcessCommand extends Command
             return Command::FAILURE;
         }
 
+        if (!$path && $input->isInteractive()) {
+            $pathDefault = $plugin ? $this->getPluginProcessRelativePath($plugin) : $this->getAppProcessRelativePath();
+            $path = $this->promptForPathWithDefault($input, $output, 'process', $pathDefault);
+        }
+
         $target = $this->resolveTarget($name, $plugin, $path, $output);
         if ($target === null) {
             return Command::FAILURE;
@@ -194,6 +199,20 @@ class MakeProcessCommand extends Command
     }
 
     /**
+     * Default app process relative path.
+     *
+     * @return string
+     */
+    private function getAppProcessRelativePath(): string
+    {
+        $processStr = Util::guessPath(app_path(), 'process');
+        if (!$processStr) {
+            $processStr = Util::guessPath(app_path(), 'controller') === 'Controller' ? 'Process' : 'process';
+        }
+        return $this->normalizeRelativePath("app/{$processStr}");
+    }
+
+    /**
      * Resolve process namespace/file path under app/ (backward compatible).
      *
      * @param string $name
@@ -244,6 +263,30 @@ class MakeProcessCommand extends Command
             $processDir = Util::guessPath($appDir, 'controller') === 'Controller' ? 'Process' : 'process';
         }
         return $this->normalizeRelativePath("plugin/{$plugin}/app/{$processDir}");
+    }
+
+    /**
+     * Prompt for path (question style, input on new line). Reuses enter_path_prompt from make:crud.
+     *
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @param string $labelKey
+     * @param string $defaultPath
+     * @return string
+     */
+    private function promptForPathWithDefault(InputInterface $input, OutputInterface $output, string $labelKey, string $defaultPath): string
+    {
+        $defaultPath = $this->normalizeRelativePath($defaultPath);
+        $label = Util::selectLocaleMessages(Messages::getTypeLabels())[$labelKey] ?? $labelKey;
+        $promptText = Util::selectLocaleMessages(Messages::getMakeCrudMessages())['enter_path_prompt']
+            ?? 'Enter {label} path (Enter for default: {default}): ';
+        $promptText = strtr($promptText, ['{label}' => $label, '{default}' => $defaultPath]);
+        $promptText = '<question>' . trim($promptText) . "</question>\n";
+        $helper = $this->getHelper('question');
+        $question = new Question($promptText, $defaultPath);
+        $path = $helper->ask($input, $output, $question);
+        $path = is_string($path) ? $path : $defaultPath;
+        return $this->normalizeRelativePath($path ?: $defaultPath);
     }
 
     /**

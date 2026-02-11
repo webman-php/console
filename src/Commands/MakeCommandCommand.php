@@ -9,6 +9,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Symfony\Component\Console\Question\Question;
 use Webman\Console\Util;
 use Webman\Console\Messages;
 use Webman\Console\Commands\Concerns\MakeCommandHelpers;
@@ -64,6 +65,11 @@ class MakeCommandCommand extends Command
         }
 
         $class = $this->commandToClassName($command);
+
+        if (!$path && $input->isInteractive()) {
+            $pathDefault = $plugin ? $this->getPluginCommandRelativePath($plugin) : $this->getAppCommandRelativePath();
+            $path = $this->promptForPathWithDefault($input, $output, 'command', $pathDefault);
+        }
 
         if ($plugin || $path) {
             $resolved = $this->resolveTargetByPluginOrPath(
@@ -138,6 +144,18 @@ class MakeCommandCommand extends Command
     }
 
     /**
+     * Default app command relative path.
+     */
+    protected function getAppCommandRelativePath(): string
+    {
+        $commandStr = Util::guessPath(app_path(), 'command');
+        if (!$commandStr) {
+            $commandStr = Util::guessPath(app_path(), 'controller') === 'Controller' ? 'Command' : 'command';
+        }
+        return $this->normalizeRelativePath("app/{$commandStr}");
+    }
+
+    /**
      * @param string $plugin
      * @return string relative path
      */
@@ -150,6 +168,24 @@ class MakeCommandCommand extends Command
             $commandDir = Util::guessPath($appDir, 'controller') === 'Controller' ? 'Command' : 'command';
         }
         return $this->normalizeRelativePath("plugin/{$plugin}/app/{$commandDir}");
+    }
+
+    /**
+     * Prompt for path (question style, input on new line). Reuses enter_path_prompt from make:crud.
+     */
+    protected function promptForPathWithDefault(InputInterface $input, OutputInterface $output, string $labelKey, string $defaultPath): string
+    {
+        $defaultPath = $this->normalizeRelativePath($defaultPath);
+        $label = Util::selectLocaleMessages(Messages::getTypeLabels())[$labelKey] ?? $labelKey;
+        $promptText = Util::selectLocaleMessages(Messages::getMakeCrudMessages())['enter_path_prompt']
+            ?? 'Enter {label} path (Enter for default: {default}): ';
+        $promptText = strtr($promptText, ['{label}' => $label, '{default}' => $defaultPath]);
+        $promptText = '<question>' . trim($promptText) . "</question>\n";
+        $helper = $this->getHelper('question');
+        $question = new Question($promptText, $defaultPath);
+        $path = $helper->ask($input, $output, $question);
+        $path = is_string($path) ? $path : $defaultPath;
+        return $this->normalizeRelativePath($path ?: $defaultPath);
     }
 
     /**

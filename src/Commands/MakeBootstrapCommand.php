@@ -9,6 +9,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Symfony\Component\Console\Question\Question;
 use Webman\Console\Util;
 use Webman\Console\Messages;
 use Webman\Console\Commands\Concerns\MakeCommandHelpers;
@@ -61,6 +62,11 @@ class MakeBootstrapCommand extends Command
 
         $name = str_replace('\\', '/', $name);
 
+        if (!$path && $input->isInteractive()) {
+            $pathDefault = $plugin ? $this->getPluginBootstrapRelativePath($plugin) : $this->getAppBootstrapRelativePath();
+            $path = $this->promptForPathWithDefault($input, $output, 'bootstrap', $pathDefault);
+        }
+
         if ($plugin || $path) {
             $resolved = $this->resolveTargetByPluginOrPath(
                 $name,
@@ -99,12 +105,8 @@ class MakeBootstrapCommand extends Command
                 ? base_path('plugin' . DIRECTORY_SEPARATOR . $plugin . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'bootstrap.php')
                 : (config_path() . '/bootstrap.php');
 
-            $changed = $this->addClassToFlatClassListConfig($configFile, $bootstrapClass);
-            if ($changed) {
-                $output->writeln($this->msg('enabled', ['{class}' => $bootstrapClass]));
-            } else {
-                $output->writeln($this->msg('enabled_exists', ['{class}' => $bootstrapClass]));
-            }
+            $this->addClassToFlatClassListConfig($configFile, $bootstrapClass);
+            $output->writeln($this->msg('enabled', ['{class}' => $bootstrapClass]));
         }
 
         return self::SUCCESS;
@@ -149,6 +151,18 @@ class MakeBootstrapCommand extends Command
     }
 
     /**
+     * Default app bootstrap relative path.
+     */
+    protected function getAppBootstrapRelativePath(): string
+    {
+        $bootstrapStr = Util::guessPath(app_path(), 'bootstrap');
+        if (!$bootstrapStr) {
+            $bootstrapStr = Util::guessPath(app_path(), 'controller') === 'Controller' ? 'Bootstrap' : 'bootstrap';
+        }
+        return $this->normalizeRelativePath("app/{$bootstrapStr}");
+    }
+
+    /**
      * @param string $plugin
      * @return string relative path
      */
@@ -161,6 +175,24 @@ class MakeBootstrapCommand extends Command
             $bootstrapDir = Util::guessPath($appDir, 'controller') === 'Controller' ? 'Bootstrap' : 'bootstrap';
         }
         return $this->normalizeRelativePath("plugin/{$plugin}/app/{$bootstrapDir}");
+    }
+
+    /**
+     * Prompt for path (question style, input on new line). Reuses enter_path_prompt from make:crud.
+     */
+    protected function promptForPathWithDefault(InputInterface $input, OutputInterface $output, string $labelKey, string $defaultPath): string
+    {
+        $defaultPath = $this->normalizeRelativePath($defaultPath);
+        $label = Util::selectLocaleMessages(Messages::getTypeLabels())[$labelKey] ?? $labelKey;
+        $promptText = Util::selectLocaleMessages(Messages::getMakeCrudMessages())['enter_path_prompt']
+            ?? 'Enter {label} path (Enter for default: {default}): ';
+        $promptText = strtr($promptText, ['{label}' => $label, '{default}' => $defaultPath]);
+        $promptText = '<question>' . trim($promptText) . "</question>\n";
+        $helper = $this->getHelper('question');
+        $question = new Question($promptText, $defaultPath);
+        $path = $helper->ask($input, $output, $question);
+        $path = is_string($path) ? $path : $defaultPath;
+        return $this->normalizeRelativePath($path ?: $defaultPath);
     }
 
     /**
