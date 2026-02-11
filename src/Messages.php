@@ -1147,22 +1147,27 @@ class Messages
 
     public static function getTypeLabels(): array
     {
-        $enTypeLabels = ['model' => 'Model', 'controller' => 'Controller', 'validation' => 'Validator'];
+        $enTypeLabels = [
+            'model' => 'Model name',
+            'controller' => 'Controller name',
+            'validation' => 'Validator',
+            'validator' => 'Validator name',
+        ];
         return [
-            'zh_CN' => ['model' => '模型', 'controller' => '控制器', 'validation' => '验证器'],
-            'zh_TW' => ['model' => '模型', 'controller' => '控制器', 'validation' => '驗證器'],
+            'zh_CN' => ['model' => '模型名', 'controller' => '控制器名', 'validation' => '验证器', 'validator' => '验证器名'],
+            'zh_TW' => ['model' => '模型名', 'controller' => '控制器名', 'validation' => '驗證器', 'validator' => '驗證器名'],
             'en' => $enTypeLabels,
-            'ja' => ['model' => 'モデル', 'controller' => 'コントローラ', 'validation' => 'バリデータ'],
-            'ko' => ['model' => '모델', 'controller' => '컨트롤러', 'validation' => '검증기'],
-            'fr' => ['model' => 'Modèle', 'controller' => 'Contrôleur', 'validation' => 'Validateur'],
-            'de' => ['model' => 'Modell', 'controller' => 'Controller', 'validation' => 'Validator'],
-            'es' => ['model' => 'Modelo', 'controller' => 'Controlador', 'validation' => 'Validador'],
-            'pt_BR' => ['model' => 'Modelo', 'controller' => 'Controlador', 'validation' => 'Validador'],
-            'ru' => ['model' => 'Модель', 'controller' => 'Контроллер', 'validation' => 'Валидатор'],
-            'vi' => ['model' => 'Model', 'controller' => 'Controller', 'validation' => 'Validator'],
-            'tr' => ['model' => 'Model', 'controller' => 'Kontrolör', 'validation' => 'Doğrulayıcı'],
-            'id' => ['model' => 'Model', 'controller' => 'Controller', 'validation' => 'Validator'],
-            'th' => ['model' => 'โมเดล', 'controller' => 'คอนโทรลเลอร์', 'validation' => 'ตัวตรวจสอบ'],
+            'ja' => ['model' => 'モデル名', 'controller' => 'コントローラ名', 'validation' => 'バリデータ', 'validator' => 'バリデータ名'],
+            'ko' => ['model' => '모델 이름', 'controller' => '컨트롤러 이름', 'validation' => '검증기', 'validator' => '검증기 이름'],
+            'fr' => ['model' => 'Nom du modèle', 'controller' => 'Nom du contrôleur', 'validation' => 'Validateur', 'validator' => 'Nom du validateur'],
+            'de' => ['model' => 'Modellname', 'controller' => 'Controller-Name', 'validation' => 'Validator', 'validator' => 'Validator-Name'],
+            'es' => ['model' => 'Nombre del modelo', 'controller' => 'Nombre del controlador', 'validation' => 'Validador', 'validator' => 'Nombre del validador'],
+            'pt_BR' => ['model' => 'Nome do modelo', 'controller' => 'Nome do controlador', 'validation' => 'Validador', 'validator' => 'Nome do validador'],
+            'ru' => ['model' => 'Имя модели', 'controller' => 'Имя контроллера', 'validation' => 'Валидатор', 'validator' => 'Имя валидатора'],
+            'vi' => ['model' => 'Tên model', 'controller' => 'Tên controller', 'validation' => 'Validator', 'validator' => 'Tên validator'],
+            'tr' => ['model' => 'Model adı', 'controller' => 'Controller adı', 'validation' => 'Doğrulayıcı', 'validator' => 'Doğrulayıcı adı'],
+            'id' => ['model' => 'Nama model', 'controller' => 'Nama controller', 'validation' => 'Validator', 'validator' => 'Nama validator'],
+            'th' => ['model' => 'ชื่อโมเดล', 'controller' => 'ชื่อคอนโทรลเลอร์', 'validation' => 'ตัวตรวจสอบ', 'validator' => 'ชื่อตัวตรวจสอบ'],
         ];
     }
 
