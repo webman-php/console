@@ -95,11 +95,39 @@ class MakeCrudCommand extends Command
         }
 
         if (!$table) {
-            if ($noInteraction) {
-                $output->writeln($this->msg('table_required'));
-                return Command::FAILURE;
+            $hintBaseNames = $this->extractBaseNamesFromCrudOptions(
+                $controllerOpt,
+                $modelOpt,
+                $validatorOpt,
+                $plugin,
+                $controllerPath,
+                $modelPath,
+                $validatorPath
+            );
+
+            if ($hintBaseNames !== []) {
+                if ($noInteraction) {
+                    $table = $this->guessTableFromHints($ormType, $connection, $hintBaseNames, $plugin, $database);
+                } else {
+                    $table = $this->promptForTable(
+                        $input,
+                        $output,
+                        $ormType,
+                        $connection,
+                        'Model',
+                        $plugin,
+                        $database,
+                        $hintBaseNames
+                    );
+                }
+            } else {
+                if ($noInteraction) {
+                    $output->writeln($this->msg('table_required'));
+                    return Command::FAILURE;
+                }
+                $table = $this->promptForTable($input, $output, $ormType, $connection, 'Model', $plugin, $database);
             }
-            $table = $this->promptForTable($input, $output, $ormType, $connection, 'Model', $plugin, $database);
+
             if (!$table) {
                 $output->writeln($this->msg('table_required'));
                 return Command::FAILURE;
@@ -275,6 +303,76 @@ class MakeCrudCommand extends Command
         $output->writeln($this->msg('reference_only'));
 
         return Command::SUCCESS;
+    }
+
+    /**
+     * Extract base names from --controller, --model, --validator for table guessing.
+     * Controller: strip controller_suffix (from app or plugin config).
+     * Model: use last segment as base.
+     * Validator: strip "Validator" suffix.
+     *
+     * Plugin for controller_suffix: when --plugin/-p passed or path starts with plugin/xxx/
+     *
+     * @return string[] Deduplicated base names, ordered by relevance (controller, model, validator)
+     */
+    protected function extractBaseNamesFromCrudOptions(
+        ?string $controllerOpt,
+        ?string $modelOpt,
+        ?string $validatorOpt,
+        ?string $plugin,
+        ?string $controllerPath,
+        ?string $modelPath,
+        ?string $validatorPath
+    ): array {
+        $baseNames = [];
+        $seen = [];
+
+        $pluginForSuffix = $plugin
+            ?: $this->inferPluginFromPath($controllerPath)
+            ?: $this->inferPluginFromPath($modelPath)
+            ?: $this->inferPluginFromPath($validatorPath);
+        $suffix = $pluginForSuffix
+            ? (string)config("plugin.$pluginForSuffix.app.controller_suffix", 'Controller')
+            : (string)config('app.controller_suffix', 'Controller');
+
+        if ($controllerOpt) {
+            $name = $this->normalizeClassLikeName($controllerOpt);
+            $base = $this->stripSuffixFromLastSegment($name, $suffix);
+            if ($base !== '' && !isset($seen[$base])) {
+                $baseNames[] = $base;
+                $seen[$base] = true;
+            }
+        }
+
+        if ($modelOpt) {
+            $name = $this->normalizeClassLikeName($modelOpt);
+            $base = $this->getLastSegment($name);
+            if ($base !== '' && !isset($seen[$base])) {
+                $baseNames[] = $base;
+                $seen[$base] = true;
+            }
+        }
+
+        if ($validatorOpt) {
+            $name = $this->normalizeClassLikeName($validatorOpt);
+            $base = $this->stripSuffixFromLastSegment($name, 'Validator');
+            if ($base !== '' && !isset($seen[$base])) {
+                $baseNames[] = $base;
+                $seen[$base] = true;
+            }
+        }
+
+        return $baseNames;
+    }
+
+    protected function getLastSegment(string $name): string
+    {
+        $name = str_replace('\\', '/', trim($name, '/'));
+        if ($name === '') {
+            return '';
+        }
+        $pos = strrpos($name, '/');
+        return $pos === false ? $name : substr($name, $pos + 1);
     }
 
     protected function isValidationEnabled(): bool

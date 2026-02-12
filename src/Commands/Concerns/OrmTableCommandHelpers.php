@@ -431,6 +431,7 @@ trait OrmTableCommandHelpers
      * @param string $ormType
      * @param string|null $connection
      * @param string $class
+     * @param string[]|null $hintBaseNames Optional base names for multi-candidate ranking
      * @return string|null
      */
     protected function promptForTableIfNeeded(
@@ -440,10 +441,11 @@ trait OrmTableCommandHelpers
         ?string $connection,
         string $class,
         ?string $plugin = null,
-        ?string $databaseOption = null
+        ?string $databaseOption = null,
+        ?array $hintBaseNames = null
     ): ?string
     {
-        return $this->promptForTableInternal($input, $output, $ormType, $connection, $class, true, $plugin, $databaseOption);
+        return $this->promptForTableInternal($input, $output, $ormType, $connection, $class, true, $plugin, $databaseOption, $hintBaseNames);
     }
 
     /**
@@ -454,6 +456,7 @@ trait OrmTableCommandHelpers
      * @param string $ormType
      * @param string|null $connection
      * @param string $class
+     * @param string[]|null $hintBaseNames Optional base names for multi-candidate ranking
      * @return string|null
      */
     protected function promptForTable(
@@ -463,10 +466,46 @@ trait OrmTableCommandHelpers
         ?string $connection,
         string $class = 'Model',
         ?string $plugin = null,
-        ?string $databaseOption = null
+        ?string $databaseOption = null,
+        ?array $hintBaseNames = null
     ): ?string
     {
-        return $this->promptForTableInternal($input, $output, $ormType, $connection, $class, false, $plugin, $databaseOption);
+        return $this->promptForTableInternal($input, $output, $ormType, $connection, $class, false, $plugin, $databaseOption, $hintBaseNames);
+    }
+
+    /**
+     * Guess table from hint base names when in no-interaction mode.
+     * Returns the top-ranked table or null if none.
+     *
+     * @param string $ormType
+     * @param string|null $connection
+     * @param array $hintBaseNames
+     * @param string|null $plugin
+     * @param string|null $databaseOption
+     * @return string|null
+     */
+    protected function guessTableFromHints(
+        string $ormType,
+        ?string $connection,
+        array $hintBaseNames,
+        ?string $plugin = null,
+        ?string $databaseOption = null
+    ): ?string {
+        $hintBaseNames = array_values(array_filter(array_map('trim', $hintBaseNames)));
+        if ($hintBaseNames === []) {
+            return null;
+        }
+        try {
+            $tables = $this->listTables($ormType, $connection, $plugin, $databaseOption);
+        } catch (\Throwable) {
+            return null;
+        }
+        if ($tables === []) {
+            return null;
+        }
+        $prefix = $this->getConnectionPrefix($ormType, $connection, $plugin, $databaseOption);
+        $ranked = $this->rankCandidateTablesMulti($tables, $prefix, $hintBaseNames);
+        return $ranked[0] ?? null;
     }
 
     /**
@@ -476,6 +515,7 @@ trait OrmTableCommandHelpers
      * @param string|null $connection
      * @param string $class
      * @param bool $skipIfConventionMatch
+     * @param string[]|null $hintBaseNames
      * @return string|null
      */
     private function promptForTableInternal(
@@ -486,7 +526,8 @@ trait OrmTableCommandHelpers
         string $class,
         bool $skipIfConventionMatch,
         ?string $plugin = null,
-        ?string $databaseOption = null
+        ?string $databaseOption = null,
+        ?array $hintBaseNames = null
     ): ?string {
         if (!$this->isTerminalInteractive($input)) {
             return null;
@@ -517,7 +558,9 @@ trait OrmTableCommandHelpers
         }
 
         $prefix = $this->getConnectionPrefix($ormType, $connection, $plugin, $databaseOption);
-        $orderedAll = $this->rankCandidateTables($tables, $prefix, $class);
+        $orderedAll = $hintBaseNames && $hintBaseNames !== []
+            ? $this->rankCandidateTablesMulti($tables, $prefix, $hintBaseNames)
+            : $this->rankCandidateTables($tables, $prefix, $class);
 
         $batchSize = 20;
         $filterKeyword = null;
@@ -772,30 +815,53 @@ trait OrmTableCommandHelpers
      */
     protected function rankCandidateTables(array $tables, string $prefix, string $class): array
     {
-        $inflector = InflectorFactory::create()->build();
-        $tableBase = Util::classToName($class);
-        $tablePlural = $inflector->pluralize($inflector->tableize($class));
+        return $this->rankCandidateTablesMulti($tables, $prefix, [$class]);
+    }
 
+    /**
+     * Rank candidate tables by relevance to multiple base names (e.g. from controller, model, validator).
+     * Combines scores from each base name, tables matching more hints rank higher.
+     *
+     * @param array $tables
+     * @param string $prefix
+     * @param array $baseNames Base class names (e.g. ['User', 'UserProfile'])
+     * @return array
+     */
+    protected function rankCandidateTablesMulti(array $tables, string $prefix, array $baseNames): array
+    {
+        $inflector = InflectorFactory::create()->build();
         $scores = [];
+
         foreach ($tables as $t) {
             $raw = (string)$t;
             $cmp = $this->stripPrefix($raw, $prefix);
-            $score = 0;
-            if ($cmp === $tableBase) {
-                $score += 100;
+            $totalScore = 0;
+
+            foreach ($baseNames as $class) {
+                $class = trim((string)$class);
+                if ($class === '') {
+                    continue;
+                }
+                $tableBase = Util::classToName($class);
+                $tablePlural = $inflector->pluralize($inflector->tableize($class));
+                $score = 0;
+                if ($cmp === $tableBase) {
+                    $score += 100;
+                }
+                if ($cmp === $tablePlural) {
+                    $score += 95;
+                }
+                if (str_contains($cmp, $tableBase)) {
+                    $score += 40;
+                }
+                if (str_contains($cmp, $tablePlural)) {
+                    $score += 35;
+                }
+                $score += max(0, 20 - levenshtein($cmp, $tableBase));
+                $totalScore += $score;
             }
-            if ($cmp === $tablePlural) {
-                $score += 95;
-            }
-            if (str_contains($cmp, $tableBase)) {
-                $score += 40;
-            }
-            if (str_contains($cmp, $tablePlural)) {
-                $score += 35;
-            }
-            // small heuristic: closer string distance gets higher score
-            $score += max(0, 20 - levenshtein($cmp, $tableBase));
-            $scores[$raw] = $score;
+
+            $scores[$raw] = $totalScore;
         }
 
         arsort($scores);
