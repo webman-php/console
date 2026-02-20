@@ -70,7 +70,7 @@ class MakeProcessCommand extends Command
         }
 
         if (!$path && $input->isInteractive()) {
-            $pathDefault = $plugin ? $this->getPluginProcessRelativePath($plugin) : $this->getAppProcessRelativePath();
+            $pathDefault = $plugin ? Util::getDefaultAppRelativePath('process', $plugin) : Util::getDefaultAppRelativePath('process');
             $path = $this->promptForPathWithDefault($input, $output, 'process', $pathDefault);
         }
 
@@ -191,7 +191,7 @@ class MakeProcessCommand extends Command
                 $plugin,
                 $path,
                 $output,
-                fn(string $p) => $this->getPluginProcessRelativePath($p),
+                fn(string $p) => Util::getDefaultAppRelativePath('process', $p),
                 fn(string $key, array $replace = []) => $this->msg($key, $replace)
             );
         }
@@ -205,11 +205,7 @@ class MakeProcessCommand extends Command
      */
     private function getAppProcessRelativePath(): string
     {
-        $processStr = Util::guessPath(app_path(), 'process');
-        if (!$processStr) {
-            $processStr = Util::guessPath(app_path(), 'controller') === 'Controller' ? 'Process' : 'process';
-        }
-        return $this->normalizeRelativePath("app/{$processStr}");
+        return Util::getDefaultAppRelativePath('process');
     }
 
     /**
@@ -220,19 +216,17 @@ class MakeProcessCommand extends Command
      */
     private function resolveAppProcessTarget(string $name): array
     {
-        $processStr = Util::guessPath(app_path(), 'process');
-        if (!$processStr) {
-            $processStr = Util::guessPath(app_path(), 'controller') === 'Controller' ? 'Process' : 'process';
-        }
-        $upper = $processStr === 'Process';
+        $processStr = Util::getDefaultAppPath('process');
+        $processRelPath = Util::getDefaultAppRelativePath('process');
 
         if (!($pos = strrpos($name, '/'))) {
             $class = ucfirst($name);
             $file = app_path() . DIRECTORY_SEPARATOR . $processStr . DIRECTORY_SEPARATOR . "{$class}.php";
-            $namespace = $upper ? 'App\Process' : 'app\process';
+            $namespace = Util::pathToNamespace($processRelPath);
             return [$class, $namespace, $file];
         }
 
+        $upper = strtolower($processStr[0]) !== $processStr[0];
         $dirPart = substr($name, 0, $pos);
         $realDirPart = Util::guessPath(app_path(), $dirPart);
         if ($realDirPart) {
@@ -243,12 +237,14 @@ class MakeProcessCommand extends Command
             }, ucfirst($dirPart));
         }
 
+        $appDirName = Util::detectAppDirName();
         $path = "{$processStr}/{$dirPart}";
         $class = ucfirst(substr($name, $pos + 1));
         $file = app_path() . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $path) . DIRECTORY_SEPARATOR . "{$class}.php";
-        $namespace = str_replace('/', '\\', ($upper ? 'App/' : 'app/') . $path);
+        $namespace = str_replace('/', '\\', $appDirName . '/' . $path);
         return [$class, $namespace, $file];
     }
+
 
     /**
      * @param string $plugin
@@ -256,13 +252,7 @@ class MakeProcessCommand extends Command
      */
     private function getPluginProcessRelativePath(string $plugin): string
     {
-        $plugin = trim($plugin);
-        $appDir = base_path('plugin' . DIRECTORY_SEPARATOR . $plugin . DIRECTORY_SEPARATOR . 'app');
-        $processDir = Util::guessPath($appDir, 'process');
-        if (!$processDir) {
-            $processDir = Util::guessPath($appDir, 'controller') === 'Controller' ? 'Process' : 'process';
-        }
-        return $this->normalizeRelativePath("plugin/{$plugin}/app/{$processDir}");
+        return Util::getDefaultAppRelativePath('process', $plugin);
     }
 
     /**

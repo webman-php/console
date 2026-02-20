@@ -67,7 +67,7 @@ class MakeCommandCommand extends Command
         $class = $this->commandToClassName($command);
 
         if (!$path && $input->isInteractive()) {
-            $pathDefault = $plugin ? $this->getPluginCommandRelativePath($plugin) : $this->getAppCommandRelativePath();
+            $pathDefault = $plugin ? Util::getDefaultAppRelativePath('command', $plugin) : Util::getDefaultAppRelativePath('command');
             $path = $this->promptForPathWithDefault($input, $output, 'command', $pathDefault);
         }
 
@@ -77,7 +77,7 @@ class MakeCommandCommand extends Command
                 $plugin,
                 $path,
                 $output,
-                fn(string $p) => $this->getPluginCommandRelativePath($p),
+                fn(string $p) => Util::getDefaultAppRelativePath('command', $p),
                 fn(string $key, array $replace = []) => $this->msg($key, $replace)
             );
             if ($resolved === null) {
@@ -133,13 +133,10 @@ class MakeCommandCommand extends Command
      */
     protected function resolveAppCommandTarget(string $class): array
     {
-        $commandStr = Util::guessPath(app_path(), 'command');
-        if (!$commandStr) {
-            $commandStr = Util::guessPath(app_path(), 'controller') === 'Controller' ? 'Command' : 'command';
-        }
-        $upper = $commandStr === 'Command';
+        $commandStr = Util::getDefaultAppPath('command');
+        $commandRelPath = Util::getDefaultAppRelativePath('command');
         $file = app_path() . DIRECTORY_SEPARATOR . $commandStr . DIRECTORY_SEPARATOR . "{$class}.php";
-        $namespace = $upper ? 'App\Command' : 'app\command';
+        $namespace = Util::pathToNamespace($commandRelPath);
         return [$class, $namespace, $file];
     }
 
@@ -148,11 +145,7 @@ class MakeCommandCommand extends Command
      */
     protected function getAppCommandRelativePath(): string
     {
-        $commandStr = Util::guessPath(app_path(), 'command');
-        if (!$commandStr) {
-            $commandStr = Util::guessPath(app_path(), 'controller') === 'Controller' ? 'Command' : 'command';
-        }
-        return $this->normalizeRelativePath("app/{$commandStr}");
+        return Util::getDefaultAppRelativePath('command');
     }
 
     /**
@@ -161,13 +154,7 @@ class MakeCommandCommand extends Command
      */
     protected function getPluginCommandRelativePath(string $plugin): string
     {
-        $plugin = trim($plugin);
-        $appDir = base_path('plugin' . DIRECTORY_SEPARATOR . $plugin . DIRECTORY_SEPARATOR . 'app');
-        $commandDir = Util::guessPath($appDir, 'command');
-        if (!$commandDir) {
-            $commandDir = Util::guessPath($appDir, 'controller') === 'Controller' ? 'Command' : 'command';
-        }
-        return $this->normalizeRelativePath("plugin/{$plugin}/app/{$commandDir}");
+        return Util::getDefaultAppRelativePath('command', $plugin);
     }
 
     /**

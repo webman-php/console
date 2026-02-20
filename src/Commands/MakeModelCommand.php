@@ -114,7 +114,7 @@ class MakeModelCommand extends Command
             }
             $nameNormalized = $this->normalizeClassLikeName($nameInput);
 
-            $defaultPath = $plugin ? $this->getPluginModelRelativePath($plugin) : $this->getAppModelRelativePath();
+            $defaultPath = $plugin ? Util::getDefaultAppRelativePath('model', $plugin) : Util::getDefaultAppRelativePath('model');
             $pathFinal = $pathOption;
             if (!$pathFinal) {
                 $pathFinal = $this->promptForModelPathWithDefault($input, $output, $defaultPath);
@@ -148,7 +148,7 @@ class MakeModelCommand extends Command
             }
             // When path is not provided and interactive: prompt for path after table.
             if (!$pathOption && $input->isInteractive()) {
-                $pathDefault = $plugin ? $this->getPluginModelRelativePath($plugin) : $this->getAppModelRelativePath();
+                $pathDefault = $plugin ? Util::getDefaultAppRelativePath('model', $plugin) : Util::getDefaultAppRelativePath('model');
                 $pathOption = $this->promptForModelPathWithDefault($input, $output, $pathDefault);
             }
             if ($plugin || $pathOption) {
@@ -161,17 +161,18 @@ class MakeModelCommand extends Command
                 // Original behavior for app models (backward compatible)
                 if (!($pos = strrpos($name, '/'))) {
                     $name = ucfirst($name);
-                    $model_str = Util::guessPath(app_path(), 'model') ?: 'model';
+                    $model_str = Util::getDefaultAppPath('model');
                     $file = app_path() . DIRECTORY_SEPARATOR .  $model_str . DIRECTORY_SEPARATOR . "$name.php";
-                    $namespace = $model_str === 'Model' ? 'App\Model' : 'app\model';
+                    $namespace = Util::pathToNamespace(Util::getDefaultAppRelativePath('model'));
                 } else {
                     $name_str = substr($name, 0, $pos);
                     if ($real_name_str = Util::guessPath(app_path(), $name_str)) {
                         $name_str = $real_name_str;
                     } else if ($real_section_name = Util::guessPath(app_path(), strstr($name_str, '/', true))) {
                         $upper = strtolower($real_section_name[0]) !== $real_section_name[0];
-                    } else if ($real_base_controller = Util::guessPath(app_path(), 'controller')) {
-                        $upper = strtolower($real_base_controller[0]) !== $real_base_controller[0];
+                    } else {
+                        $model_str_check = Util::getDefaultAppPath('model');
+                        $upper = strtolower($model_str_check[0]) !== $model_str_check[0];
                     }
                     $upper = $upper ?? strtolower($name_str[0]) !== $name_str[0];
                     if ($upper && !$real_name_str) {
@@ -179,10 +180,12 @@ class MakeModelCommand extends Command
                             return '/' . strtoupper($matches[1]);
                         }, ucfirst($name_str));
                     }
-                    $path_for_file = "$name_str/" . ($upper ? 'Model' : 'model');
+                    $appDirName = Util::detectAppDirName();
+                    $model_dir = Util::getDefaultAppPath('model');
+                    $path_for_file = "$name_str/" . $model_dir;
                     $name = ucfirst(substr($name, $pos + 1));
-                    $file = app_path() . DIRECTORY_SEPARATOR . $path_for_file . DIRECTORY_SEPARATOR . "$name.php";
-                    $namespace = str_replace('/', '\\', ($upper ? 'App/' : 'app/') . $path_for_file);
+                    $file = app_path() . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $path_for_file) . DIRECTORY_SEPARATOR . "$name.php";
+                    $namespace = str_replace('/', '\\', $appDirName . '/' . $path_for_file);
                 }
             }
         }
@@ -261,8 +264,7 @@ class MakeModelCommand extends Command
      */
     protected function getAppModelRelativePath(): string
     {
-        $modelDir = Util::guessPath(app_path(), 'model') ?: 'model';
-        return $this->normalizeRelativePath("app/$modelDir");
+        return Util::getDefaultAppRelativePath('model');
     }
 
     /**
@@ -702,10 +704,7 @@ EOF;
      */
     protected function getPluginModelRelativePath(string $plugin): string
     {
-        $plugin = trim($plugin);
-        $appDir = base_path('plugin' . DIRECTORY_SEPARATOR . $plugin . DIRECTORY_SEPARATOR . 'app');
-        $modelDir = Util::guessPath($appDir, 'model') ?: 'model';
-        return $this->normalizeRelativePath("plugin/{$plugin}/app/{$modelDir}");
+        return Util::getDefaultAppRelativePath('model', $plugin);
     }
 
     /**

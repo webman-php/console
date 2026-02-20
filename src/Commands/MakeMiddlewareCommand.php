@@ -60,7 +60,7 @@ class MakeMiddlewareCommand extends Command
         $name = str_replace('\\', '/', $name);
 
         if (!$path && $input->isInteractive()) {
-            $pathDefault = $plugin ? $this->getPluginMiddlewareRelativePath($plugin) : $this->getAppMiddlewareRelativePath();
+            $pathDefault = $plugin ? Util::getDefaultAppRelativePath('middleware', $plugin) : Util::getDefaultAppRelativePath('middleware');
             $path = $this->promptForPathWithDefault($input, $output, 'middleware', $pathDefault);
         }
 
@@ -70,7 +70,7 @@ class MakeMiddlewareCommand extends Command
                 $plugin,
                 $path,
                 $output,
-                fn(string $p) => $this->getPluginMiddlewareRelativePath($p),
+                fn(string $p) => Util::getDefaultAppRelativePath('middleware', $p),
                 fn(string $key, array $replace = []) => $this->msg($key, $replace)
             );
             if ($resolved === null) {
@@ -114,19 +114,17 @@ class MakeMiddlewareCommand extends Command
      */
     protected function resolveAppMiddlewareTarget(string $name): array
     {
-        $middlewareStr = Util::guessPath(app_path(), 'middleware');
-        if (!$middlewareStr) {
-            $middlewareStr = Util::guessPath(app_path(), 'controller') === 'Controller' ? 'Middleware' : 'middleware';
-        }
-        $upper = $middlewareStr === 'Middleware';
+        $middlewareStr = Util::getDefaultAppPath('middleware');
+        $middlewareRelPath = Util::getDefaultAppRelativePath('middleware');
 
         if (!($pos = strrpos($name, '/'))) {
             $class = ucfirst($name);
             $file = app_path() . DIRECTORY_SEPARATOR . $middlewareStr . DIRECTORY_SEPARATOR . "{$class}.php";
-            $namespace = $upper ? 'App\Middleware' : 'app\middleware';
+            $namespace = Util::pathToNamespace($middlewareRelPath);
             return [$class, $namespace, $file];
         }
 
+        $upper = strtolower($middlewareStr[0]) !== $middlewareStr[0];
         $dirPart = substr($name, 0, $pos);
         $realDirPart = Util::guessPath(app_path(), $dirPart);
         if ($realDirPart) {
@@ -137,23 +135,21 @@ class MakeMiddlewareCommand extends Command
             }, ucfirst($dirPart));
         }
 
+        $appDirName = Util::detectAppDirName();
         $path = "{$middlewareStr}/{$dirPart}";
         $class = ucfirst(substr($name, $pos + 1));
         $file = app_path() . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $path) . DIRECTORY_SEPARATOR . "{$class}.php";
-        $namespace = str_replace('/', '\\', ($upper ? 'App/' : 'app/') . $path);
+        $namespace = str_replace('/', '\\', $appDirName . '/' . $path);
         return [$class, $namespace, $file];
     }
+
 
     /**
      * Default app middleware relative path.
      */
     protected function getAppMiddlewareRelativePath(): string
     {
-        $middlewareStr = Util::guessPath(app_path(), 'middleware');
-        if (!$middlewareStr) {
-            $middlewareStr = Util::guessPath(app_path(), 'controller') === 'Controller' ? 'Middleware' : 'middleware';
-        }
-        return $this->normalizeRelativePath("app/{$middlewareStr}");
+        return Util::getDefaultAppRelativePath('middleware');
     }
 
     /**
@@ -162,13 +158,7 @@ class MakeMiddlewareCommand extends Command
      */
     protected function getPluginMiddlewareRelativePath(string $plugin): string
     {
-        $plugin = trim($plugin);
-        $appDir = base_path('plugin' . DIRECTORY_SEPARATOR . $plugin . DIRECTORY_SEPARATOR . 'app');
-        $middlewareDir = Util::guessPath($appDir, 'middleware');
-        if (!$middlewareDir) {
-            $middlewareDir = Util::guessPath($appDir, 'controller') === 'Controller' ? 'Middleware' : 'middleware';
-        }
-        return $this->normalizeRelativePath("plugin/{$plugin}/app/{$middlewareDir}");
+        return Util::getDefaultAppRelativePath('middleware', $plugin);
     }
 
     /**

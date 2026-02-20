@@ -401,10 +401,7 @@ class MakeCrudCommand extends Command
 
     protected function getDefaultPath(string $type, ?string $plugin): string
     {
-        if ($plugin) {
-            return "plugin/{$plugin}/app/{$type}";
-        }
-        return "app/{$type}";
+        return Util::getDefaultAppRelativePath($type, $plugin ?: null);
     }
 
     protected function promptForPath(InputInterface $input, OutputInterface $output, string $type, ?string $plugin): string

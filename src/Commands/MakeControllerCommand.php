@@ -69,9 +69,7 @@ class MakeControllerCommand extends Command
 
         // When path is not provided: in interactive mode prompt for path (same UX as make:crud).
         if (!$path && $input->isInteractive()) {
-            $pathDefault = $plugin
-                ? $this->getPluginControllerRelativePath($plugin)
-                : 'app/' . (Util::guessPath(app_path(), 'controller') ?: 'controller');
+            $pathDefault = Util::getDefaultAppRelativePath('controller', $plugin ?: null);
             $path = $this->promptForControllerPath($input, $output, $pathDefault);
         }
 
@@ -81,7 +79,7 @@ class MakeControllerCommand extends Command
                 $plugin,
                 $path,
                 $output,
-                fn(string $p) => $this->getPluginControllerRelativePath($p),
+                fn(string $p) => Util::getDefaultAppRelativePath('controller', $p),
                 fn(string $key, array $replace = []) => $this->msg($key, $replace)
             );
             if ($resolved === null) {
@@ -175,11 +173,13 @@ EOF;
      */
     protected function resolveAppControllerTarget(string $name): array
     {
+        $controllerRelPath = Util::getDefaultAppRelativePath('controller');
+        $controllerStr = Util::getDefaultAppPath('controller');
+
         if (!($pos = strrpos($name, '/'))) {
             $class = ucfirst($name);
-            $controllerStr = Util::guessPath(app_path(), 'controller') ?: 'controller';
             $file = app_path() . DIRECTORY_SEPARATOR . $controllerStr . DIRECTORY_SEPARATOR . "{$class}.php";
-            $namespace = $controllerStr === 'Controller' ? 'App\Controller' : 'app\controller';
+            $namespace = Util::pathToNamespace($controllerRelPath);
             return [$class, $namespace, $file];
         }
 
@@ -190,8 +190,8 @@ EOF;
             $nameStr = $tmp;
         } else if ($realSectionName = Util::guessPath(app_path(), strstr($nameStr, '/', true))) {
             $upper = strtolower($realSectionName[0]) !== $realSectionName[0];
-        } else if ($realBaseController = Util::guessPath(app_path(), 'controller')) {
-            $upper = strtolower($realBaseController[0]) !== $realBaseController[0];
+        } else {
+            $upper = strtolower($controllerStr[0]) !== $controllerStr[0];
         }
         $upper = $upper ?? strtolower($nameStr[0]) !== $nameStr[0];
 
@@ -201,10 +201,11 @@ EOF;
             }, ucfirst($nameStr));
         }
 
-        $path = "{$nameStr}/" . ($upper ? 'Controller' : 'controller');
+        $appDirName = Util::detectAppDirName();
+        $path = "{$nameStr}/{$controllerStr}";
         $class = ucfirst(substr($name, $pos + 1));
-        $file = app_path() . DIRECTORY_SEPARATOR . $path . DIRECTORY_SEPARATOR . "{$class}.php";
-        $namespace = str_replace('/', '\\', ($upper ? 'App/' : 'app/') . $path);
+        $file = app_path() . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $path) . DIRECTORY_SEPARATOR . "{$class}.php";
+        $namespace = str_replace('/', '\\', $appDirName . '/' . $path);
         return [$class, $namespace, $file];
     }
 
@@ -214,10 +215,7 @@ EOF;
      */
     protected function getPluginControllerRelativePath(string $plugin): string
     {
-        $plugin = trim($plugin);
-        $appDir = base_path('plugin' . DIRECTORY_SEPARATOR . $plugin . DIRECTORY_SEPARATOR . 'app');
-        $controllerDir = Util::guessPath($appDir, 'controller') ?: 'controller';
-        return $this->normalizeRelativePath("plugin/{$plugin}/app/{$controllerDir}");
+        return Util::getDefaultAppRelativePath('controller', $plugin);
     }
 
     /**

@@ -63,7 +63,7 @@ class MakeBootstrapCommand extends Command
         $name = str_replace('\\', '/', $name);
 
         if (!$path && $input->isInteractive()) {
-            $pathDefault = $plugin ? $this->getPluginBootstrapRelativePath($plugin) : $this->getAppBootstrapRelativePath();
+            $pathDefault = $plugin ? Util::getDefaultAppRelativePath('bootstrap', $plugin) : Util::getDefaultAppRelativePath('bootstrap');
             $path = $this->promptForPathWithDefault($input, $output, 'bootstrap', $pathDefault);
         }
 
@@ -73,7 +73,7 @@ class MakeBootstrapCommand extends Command
                 $plugin,
                 $path,
                 $output,
-                fn(string $p) => $this->getPluginBootstrapRelativePath($p),
+                fn(string $p) => Util::getDefaultAppRelativePath('bootstrap', $p),
                 fn(string $key, array $replace = []) => $this->msg($key, $replace)
             );
             if ($resolved === null) {
@@ -120,16 +120,14 @@ class MakeBootstrapCommand extends Command
      */
     protected function resolveAppBootstrapTarget(string $name): array
     {
-        $bootstrapStr = Util::guessPath(app_path(), 'bootstrap');
-        if (!$bootstrapStr) {
-            $bootstrapStr = Util::guessPath(app_path(), 'controller') === 'Controller' ? 'Bootstrap' : 'bootstrap';
-        }
-        $upper = $bootstrapStr === 'Bootstrap';
+        $bootstrapStr = Util::getDefaultAppPath('bootstrap');
+        $bootstrapRelPath = Util::getDefaultAppRelativePath('bootstrap');
+        $upper = strtolower($bootstrapStr[0]) !== $bootstrapStr[0];
 
         if (!($pos = strrpos($name, '/'))) {
             $class = ucfirst($name);
             $file = app_path() . DIRECTORY_SEPARATOR . $bootstrapStr . DIRECTORY_SEPARATOR . "{$class}.php";
-            $namespace = $upper ? 'App\Bootstrap' : 'app\bootstrap';
+            $namespace = Util::pathToNamespace($bootstrapRelPath);
             return [$class, $namespace, $file];
         }
 
@@ -143,10 +141,11 @@ class MakeBootstrapCommand extends Command
             }, ucfirst($dirPart));
         }
 
+        $appDirName = Util::detectAppDirName();
         $path = "{$bootstrapStr}/{$dirPart}";
         $class = ucfirst(substr($name, $pos + 1));
         $file = app_path() . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $path) . DIRECTORY_SEPARATOR . "{$class}.php";
-        $namespace = str_replace('/', '\\', ($upper ? 'App/' : 'app/') . $path);
+        $namespace = str_replace('/', '\\', $appDirName . '/' . $path);
         return [$class, $namespace, $file];
     }
 
@@ -155,11 +154,7 @@ class MakeBootstrapCommand extends Command
      */
     protected function getAppBootstrapRelativePath(): string
     {
-        $bootstrapStr = Util::guessPath(app_path(), 'bootstrap');
-        if (!$bootstrapStr) {
-            $bootstrapStr = Util::guessPath(app_path(), 'controller') === 'Controller' ? 'Bootstrap' : 'bootstrap';
-        }
-        return $this->normalizeRelativePath("app/{$bootstrapStr}");
+        return Util::getDefaultAppRelativePath('bootstrap');
     }
 
     /**
@@ -168,13 +163,7 @@ class MakeBootstrapCommand extends Command
      */
     protected function getPluginBootstrapRelativePath(string $plugin): string
     {
-        $plugin = trim($plugin);
-        $appDir = base_path('plugin' . DIRECTORY_SEPARATOR . $plugin . DIRECTORY_SEPARATOR . 'app');
-        $bootstrapDir = Util::guessPath($appDir, 'bootstrap');
-        if (!$bootstrapDir) {
-            $bootstrapDir = Util::guessPath($appDir, 'controller') === 'Controller' ? 'Bootstrap' : 'bootstrap';
-        }
-        return $this->normalizeRelativePath("plugin/{$plugin}/app/{$bootstrapDir}");
+        return Util::getDefaultAppRelativePath('bootstrap', $plugin);
     }
 
     /**
