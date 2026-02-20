@@ -127,12 +127,13 @@ class MakeControllerCommand extends Command
 namespace $namespace;
 
 use support\Request;
+use support\Response;
 
 class $name
 {
     public function index(Request \$request)
     {
-        return response(__CLASS__);
+        return response('Hello, $name');
     }
 
 }

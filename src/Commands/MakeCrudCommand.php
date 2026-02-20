@@ -381,7 +381,7 @@ class MakeCrudCommand extends Command
         if (!is_array($middlewares) || $middlewares === []) {
             return false;
         }
-        $class = 'Webman\\Validation\\Middleware\\ValidateMiddleware';
+        $class = 'Webman\\Validation\\Middleware';
         if (!class_exists($class)) {
             return false;
         }
@@ -700,7 +700,7 @@ class MakeCrudCommand extends Command
 
         if ($useValidator) {
             $uses[] = "use {$validatorNamespace}\\{$validatorName};";
-            $uses[] = 'use support\\validation\\Validate;';
+            $uses[] = 'use support\\validation\\annotation\\Validate;';
             if ($isThinkOrm) {
                 $uses[] = 'use think\\db\\exception\\DataNotFoundException;';
                 $uses[] = 'use think\\db\\exception\\DbException;';
@@ -723,7 +723,7 @@ class $name
      * @param Request \$request
      * @return Response
      */
-    #[Validate(validator: {$validatorName}::class, scene: 'create')]
+    #[Validate(validator: {$validatorName}::class, scene: 'create', in: ['body'])]
     public function create(Request \$request): Response
     {
         \$data = \$request->post();
@@ -740,7 +740,7 @@ class $name
      * @throws DbException
      * @throws ModelNotFoundException
      */
-    #[Validate(validator: {$validatorName}::class, scene: 'update')]
+    #[Validate(validator: {$validatorName}::class, scene: 'update', in: ['body'])]
     public function update(Request \$request): Response
     {
         if (!\$model = $modelName::find(\$request->post('id'))) {
@@ -760,7 +760,7 @@ class $name
      * @throws DbException
      * @throws ModelNotFoundException
      */
-    #[Validate(validator: {$validatorName}::class, scene: 'delete')]
+    #[Validate(validator: {$validatorName}::class, scene: 'delete', in: ['body'])]
     public function delete(Request \$request): Response
     {
         if (!\$model = $modelName::find(\$request->post('id'))) {
@@ -804,7 +804,7 @@ class $name
      * @param Request \$request
      * @return Response
      */
-    #[Validate(validator: {$validatorName}::class, scene: 'create')]
+    #[Validate(validator: {$validatorName}::class, scene: 'create', in: ['body'])]
     public function create(Request \$request): Response
     {
         \$data = \$request->post();
@@ -821,7 +821,7 @@ class $name
      * @param Request \$request
      * @return Response
      */
-    #[Validate(validator: {$validatorName}::class, scene: 'update')]
+    #[Validate(validator: {$validatorName}::class, scene: 'update', in: ['body'])]
     public function update(Request \$request): Response
     {
         if (!\$model = $modelName::find(\$request->post('id'))) {
@@ -841,7 +841,7 @@ class $name
      * @param Request \$request
      * @return Response
      */
-    #[Validate(validator: {$validatorName}::class, scene: 'delete')]
+    #[Validate(validator: {$validatorName}::class, scene: 'delete', in: ['body'])]
     public function delete(Request \$request): Response
     {
         if (!\$model = $modelName::find(\$request->post('id'))) {
@@ -1151,7 +1151,7 @@ EOF;
 
 namespace $namespace;
 
-use Webman\\Validation\\Validator;
+use support\\validation\\Validator;
 
 class $class extends Validator
 {
