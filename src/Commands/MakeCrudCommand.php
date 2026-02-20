@@ -168,7 +168,7 @@ class MakeCrudCommand extends Command
         }
 
         // Step 2: resolve controller name (depends on model name + suffix rules)
-        $controllerPathDefault = $this->deriveSiblingPath($modelPath, 'model', 'controller');
+        $controllerPathDefault = $this->deriveDefaultPath($modelPath, 'model', 'controller', $plugin);
         $controllerPlugin = $plugin ?: $this->inferPluginFromPath($controllerPathDefault);
         $suffix = $controllerPlugin
             ? (string)config("plugin.$controllerPlugin.app.controller_suffix", 'Controller')
@@ -220,7 +220,7 @@ class MakeCrudCommand extends Command
                 return Command::FAILURE;
             }
 
-            $validatorPathDefault = $this->deriveSiblingPath($controllerPath, 'controller', 'validation');
+            $validatorPathDefault = $this->deriveDefaultPath($controllerPath, 'controller', 'validation', $plugin);
             if (!$validatorPath) {
                 if ($noInteraction) {
                     $validatorPath = $validatorPathDefault;
@@ -548,6 +548,49 @@ class MakeCrudCommand extends Command
         }
         return $path . '/' . $to;
     }
+
+    /**
+     * Derive a default path for a target type based on a sibling path.
+     *
+     * First tries to detect the actual path from the filesystem via Util::getDefaultAppRelativePath().
+     * If the source path matches a standard app/plugin structure, use the detected path.
+     * Otherwise, falls back to string-based deriveSiblingPath().
+     *
+     * @param string $sourcePath e.g. "app/model" or "plugin/admin/app/model"
+     * @param string $fromType e.g. "model"
+     * @param string $toType e.g. "controller"
+     * @param string|null $plugin
+     * @return string
+     */
+    protected function deriveDefaultPath(string $sourcePath, string $fromType, string $toType, ?string $plugin): string
+    {
+        // First, try to get the detected path from Util for the target type.
+        $detectedPath = Util::getDefaultAppRelativePath($toType, $plugin ?: null);
+
+        // Check if the source path is a standard "app/{fromType}" or "plugin/{plugin}/app/{fromType}" structure.
+        $normalizedSource = $this->normalizeRelativePath($sourcePath);
+        $expectedSourcePath = Util::getDefaultAppRelativePath($fromType, $plugin ?: null);
+
+        // If the source path follows the standard structure, use the filesystem-detected target path.
+        if ($this->pathsEqual($normalizedSource, $expectedSourcePath)) {
+            return $detectedPath;
+        }
+
+        // Check if source path ends with the fromType name (case-insensitive).
+        // In that case, replace the fromType suffix with the detected toType name.
+        $detectedToDir = Util::getDefaultAppPath($toType, $plugin ?: null);
+        if (preg_match('#/' . preg_quote(strtolower($fromType), '#') . '$#i', $normalizedSource)) {
+            return preg_replace(
+                '#/' . preg_quote(strtolower($fromType), '#') . '$#i',
+                '/' . $detectedToDir,
+                $normalizedSource
+            ) ?: $normalizedSource;
+        }
+
+        // Fallback: append the detected name.
+        return $normalizedSource . '/' . $detectedToDir;
+    }
+
 
     protected function stripSuffixFromLastSegment(string $name, string $suffix): string
     {

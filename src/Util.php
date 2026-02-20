@@ -213,7 +213,8 @@ class Util
 
         // Determine the base app directory.
         if ($plugin) {
-            $baseDir = base_path('plugin' . DIRECTORY_SEPARATOR . trim($plugin) . DIRECTORY_SEPARATOR . 'app');
+            $appDirName = self::detectAppDirName($plugin);
+            $baseDir = base_path('plugin' . DIRECTORY_SEPARATOR . trim($plugin) . DIRECTORY_SEPARATOR . $appDirName);
         } else {
             $baseDir = app_path();
         }
@@ -270,7 +271,8 @@ class Util
     {
         $dirName = self::getDefaultAppPath($type, $plugin);
         if ($plugin) {
-            return 'plugin/' . trim($plugin) . '/app/' . $dirName;
+            $appDirName = self::detectAppDirName($plugin);
+            return 'plugin/' . trim($plugin) . '/' . $appDirName . '/' . $dirName;
         }
 
         // Detect the actual "app" directory name casing.
