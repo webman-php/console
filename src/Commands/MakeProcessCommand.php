@@ -24,7 +24,6 @@ class MakeProcessCommand extends Command
         '2' => 'http',
         '3' => 'tcp',
         '4' => 'udp',
-        '5' => 'unixsocket',
     ];
 
     /**
@@ -53,127 +52,143 @@ class MakeProcessCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $rawName = (string)$input->getArgument('name');
-        $name = Util::nameToClass($rawName);
-        $name = str_replace('\\', '/', $name);
+        try {
+            $rawName = (string)$input->getArgument('name');
+            $name = Util::nameToClass($rawName);
+            $name = str_replace('\\', '/', $name);
 
-        $plugin = $this->normalizeOptionValue($input->getOption('plugin'));
-        $path = $this->normalizeOptionValue($input->getOption('path'));
-        $force = (bool)$input->getOption('force');
+            $plugin = $this->normalizeOptionValue($input->getOption('plugin'));
+            $path = $this->normalizeOptionValue($input->getOption('path'));
+            $force = (bool)$input->getOption('force');
 
-        if ($plugin && (str_contains($plugin, '/') || str_contains($plugin, '\\'))) {
-            $output->writeln($this->msg('invalid_plugin', ['{plugin}' => $plugin]));
-            return Command::FAILURE;
-        }
-        if ($plugin && !$this->assertPluginExists($plugin, $output)) {
-            return Command::FAILURE;
-        }
+            if ($plugin && (str_contains($plugin, '/') || str_contains($plugin, '\\'))) {
+                $output->writeln($this->msg('invalid_plugin', ['{plugin}' => $plugin]));
+                return Command::FAILURE;
+            }
+            if ($plugin && !$this->assertPluginExists($plugin, $output)) {
+                return Command::FAILURE;
+            }
 
-        if (!$path && $input->isInteractive()) {
-            $pathDefault = $plugin ? Util::getDefaultAppRelativePath('process', $plugin) : Util::getDefaultAppRelativePath('process');
-            $path = $this->promptForPathWithDefault($input, $output, 'process', $pathDefault);
-        }
+            if (!$path && $input->isInteractive()) {
+                $pathDefault = $plugin ? Util::getDefaultAppRelativePath('process', $plugin) : Util::getDefaultAppRelativePath('process');
+                $path = $this->promptForPathWithDefault($input, $output, 'process', $pathDefault);
+            }
 
-        $target = $this->resolveTarget($name, $plugin, $path, $output);
-        if ($target === null) {
-            return Command::FAILURE;
-        }
-        [$class, $namespace, $file] = $target;
+            $target = $this->resolveTarget($name, $plugin, $path, $output);
+            if ($target === null) {
+                return Command::FAILURE;
+            }
+            [$class, $namespace, $file] = $target;
 
-        $snakeKey = $this->toSnakeKey($name);
-        $pluginForConfig = $this->inferPluginNameForConfig($plugin, $path);
-        $configFile = $pluginForConfig
-            ? base_path('plugin' . DIRECTORY_SEPARATOR . $pluginForConfig . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'process.php')
-            : (config_path() . DIRECTORY_SEPARATOR . 'process.php');
+            // Once path is confirmed, we can determine the target file path.
+            // Detect existing file early and ask whether to override.
+            if (!$force && is_file($file)) {
+                if (!$input->isInteractive()) {
+                    $output->writeln($this->msg('process_file_exists', ['{path}' => $this->toRelativePath($file)]));
+                    return Command::FAILURE;
+                }
+                $relative = $this->toRelativePath($file);
+                $prompt = $this->msg('override_prompt', ['{path}' => $relative]);
+                $question = new ConfirmationQuestion($prompt, true);
+                $yes = (bool)$this->askOrAbort($input, $output, $question);
+                if (!$yes) {
+                    return Command::SUCCESS;
+                }
+            }
 
-        $config = $this->loadPhpConfigArray($configFile);
-        if ($config === null) {
-            $output->writeln($this->msg('invalid_config', ['{path}' => $this->toRelativePath($configFile)]));
-            return Command::FAILURE;
-        }
-        if (array_key_exists($snakeKey, $config)) {
-            $handler = $this->stringifyHandler($config[$snakeKey] ?? null);
-            $output->writeln($this->msg('config_key_exists', [
-                '{key}' => $snakeKey,
-                '{handler}' => $handler,
-                '{path}' => $this->toRelativePath($configFile),
+            $snakeKey = $this->toSnakeKey($name);
+            $pluginForConfig = $this->inferPluginNameForConfig($plugin, $path);
+            $configFile = $pluginForConfig
+                ? base_path('plugin' . DIRECTORY_SEPARATOR . $pluginForConfig . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'process.php')
+                : (config_path() . DIRECTORY_SEPARATOR . 'process.php');
+
+            $config = $this->loadPhpConfigArray($configFile);
+            if ($config === null) {
+                $output->writeln($this->msg('invalid_config', ['{path}' => $this->toRelativePath($configFile)]));
+                return Command::FAILURE;
+            }
+
+            $processKey = $snakeKey;
+            $needsConfirmProcessKey = false;
+            if (array_key_exists($processKey, $config)) {
+                $needsConfirmProcessKey = true;
+                $processKey = $this->nextAvailableProcessKey($processKey, $config);
+            }
+
+            $output->writeln($this->msg('make_process', [
+                '{class}' => "{$namespace}\\{$class}",
+                '{key}' => $processKey,
+                '{config}' => $this->toRelativePath($configFile),
             ]));
-            return Command::FAILURE;
-        }
 
-        $helper = $this->getHelper('question');
+            $listen = null;
+            $listenValue = null; // null|array{kind:string,value:string} kind=string|raw
+            $protocol = null;
+            $httpMode = null; // builtin|custom|null
+            $listenMode = 'none'; // none|port|unixsocket
+            $needsFile = true;
+            $listenIp = null;
+            $listenPort = null;
 
-        $output->writeln($this->msg('make_process', [
-            '{class}' => "{$namespace}\\{$class}",
-            '{key}' => $snakeKey,
-            '{config}' => $this->toRelativePath($configFile),
-        ]));
+            if ($input->isInteractive()) {
+                $listenMode = $this->askListenMode($input, $output);
+            }
 
-        $listen = null;
-        $protocol = null;
-        $httpMode = null; // builtin|custom|null
-
-        $qListen = new ConfirmationQuestion($this->msg('ask_listen'), false);
-        $shouldListen = (bool)$helper->ask($input, $output, $qListen);
-
-        if (!$shouldListen) {
-            // Non-listening process: create class file; if exists, ask overwrite unless -f.
-            if (is_file($file) && !$force) {
-                $relative = $this->toRelativePath($file);
-                $prompt = $this->msg('override_prompt', ['{path}' => $relative]);
-                $question = new ConfirmationQuestion($prompt, true);
-                if (!$helper->ask($input, $output, $question)) {
-                    return Command::SUCCESS;
+            if ($listenMode === 'none') {
+                $needsFile = true;
+            } else if ($listenMode === 'unixsocket') {
+                $protocol = 'unixsocket';
+                $socketRelPath = $this->askUnixSocketPathRelative($input, $output, $processKey);
+                $listenValue = [
+                    'kind' => 'raw',
+                    'value' => "'unix://' . runtime_path(" . var_export($socketRelPath, true) . ")",
+                ];
+                $needsFile = true;
+            } else {
+                // Port listening process (IP:Port).
+                $protocol = $this->askProtocol($input, $output);
+                if ($protocol === 'http') {
+                    $httpMode = $this->askHttpMode($input, $output);
                 }
-            }
-        } else {
-            $protocol = $this->askProtocol($input, $output);
 
-            if ($protocol === 'http') {
-                $httpMode = $this->askHttpMode($input, $output);
-            }
+                $needsFile = $protocol !== 'http' || $httpMode !== 'builtin';
 
-            $needsFile = $protocol !== 'http' || $httpMode !== 'builtin';
-            if ($needsFile && is_file($file) && !$force) {
-                $relative = $this->toRelativePath($file);
-                $prompt = $this->msg('override_prompt', ['{path}' => $relative]);
-                $question = new ConfirmationQuestion($prompt, true);
-                if (!$helper->ask($input, $output, $question)) {
-                    return Command::SUCCESS;
-                }
+                $listenPort = $this->askPortWithConflictCheck($input, $output, $config, $configFile);
+                $listenIp = $this->askIp($input, $output);
+
+                $listen = $this->buildListenString($protocol, (string)$listenIp, (int)$listenPort);
+                $listenValue = ['kind' => 'string', 'value' => $listen];
             }
 
-            $listen = $this->askListenAddress($input, $output, $snakeKey, $protocol);
-        }
+            $countValue = $this->askProcessCount($input, $output, $protocol, $httpMode);
 
-        $countValue = $this->askProcessCount($input, $output, $protocol, $httpMode);
+            $handlerFqn = $this->buildHandlerFqn($namespace, $class, $pluginForConfig, $protocol, $httpMode);
 
-        $handlerFqn = $this->buildHandlerFqn($namespace, $class, $pluginForConfig, $protocol, $httpMode);
-        $configEntry = $this->buildProcessConfigEntry($snakeKey, $handlerFqn, $listen, $countValue, $protocol, $httpMode);
-
-        // Create process file if needed.
-        if (!$shouldListen) {
-            $this->createProcessFile($protocol, $httpMode, $namespace, $class, $file, $snakeKey, null);
-            $output->writeln($this->msg('created', ['{path}' => $this->toRelativePath($file)]));
-        } else {
-            $needsFile = $protocol !== 'http' || $httpMode !== 'builtin';
+            // Generate files/config at the final step.
             if ($needsFile) {
-                $this->createProcessFile($protocol, $httpMode, $namespace, $class, $file, $snakeKey, $listen);
+                $this->createProcessFile($protocol, $httpMode, $namespace, $class, $file, $processKey, null);
                 $output->writeln($this->msg('created', ['{path}' => $this->toRelativePath($file)]));
             } else {
                 $output->writeln($this->msg('reuse_builtin_http', ['{handler}' => $handlerFqn . '::class']));
             }
-        }
 
-        // Update config file.
-        $changed = $this->appendProcessConfigEntry($configFile, $configEntry);
-        if (!$changed) {
-            $output->writeln($this->msg('write_config_failed', ['{path}' => $this->toRelativePath($configFile)]));
-            return Command::FAILURE;
-        }
-        $output->writeln($this->msg('updated_config', ['{path}' => $this->toRelativePath($configFile), '{key}' => $snakeKey]));
+            if ($needsConfirmProcessKey && $input->isInteractive()) {
+                $processKey = $this->askProcessKey($input, $output, $processKey, $config);
+            }
 
-        return Command::SUCCESS;
+            $configEntry = $this->buildProcessConfigEntry($processKey, $handlerFqn, $listenValue, $countValue, $protocol, $httpMode);
+
+            // Update config file (after file creation to avoid broken handler reference).
+            $changed = $this->appendProcessConfigEntry($configFile, $configEntry);
+            if (!$changed) {
+                $output->writeln($this->msg('write_config_failed', ['{path}' => $this->toRelativePath($configFile)]));
+                return Command::FAILURE;
+            }
+            $output->writeln($this->msg('updated_config', ['{path}' => $this->toRelativePath($configFile), '{key}' => $processKey]));
+            return Command::SUCCESS;
+        } catch (\Throwable $e) {
+            throw $e;
+        }
     }
 
     /**
@@ -272,9 +287,8 @@ class MakeProcessCommand extends Command
             ?? 'Enter {label} path (Enter for default: {default}): ';
         $promptText = strtr($promptText, ['{label}' => $label, '{default}' => $defaultPath]);
         $promptText = '<question>' . trim($promptText) . "</question>\n";
-        $helper = $this->getHelper('question');
         $question = new Question($promptText, $defaultPath);
-        $path = $helper->ask($input, $output, $question);
+        $path = $this->askOrAbort($input, $output, $question);
         $path = is_string($path) ? $path : $defaultPath;
         return $this->normalizeRelativePath($path ?: $defaultPath);
     }
@@ -301,6 +315,57 @@ class MakeProcessCommand extends Command
         $key = strtolower(implode('_', $snakes));
         $key = preg_replace('/_+/', '_', $key);
         return $key ?: strtolower(Util::classToName(Util::nameToClass($name)));
+    }
+
+    /**
+     * @param string $baseKey
+     * @param array<string,mixed> $config
+     * @return string
+     */
+    private function nextAvailableProcessKey(string $baseKey, array $config): string
+    {
+        $baseKey = trim($baseKey);
+        if ($baseKey === '') {
+            $baseKey = 'process';
+        }
+        $i = 1;
+        while (true) {
+            $candidate = $baseKey . $i;
+            if (!array_key_exists($candidate, $config)) {
+                return $candidate;
+            }
+            $i++;
+        }
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @param string $defaultKey
+     * @param array<string,mixed> $config
+     * @return string
+     */
+    private function askProcessKey(InputInterface $input, OutputInterface $output, string $defaultKey, array $config): string
+    {
+        $q = new Question($this->msg('ask_process_name', ['{default}' => $defaultKey]), $defaultKey);
+        $q->setValidator(function (mixed $value) use ($defaultKey, $config) {
+            $v = trim((string)$value);
+            $v = ltrim($v, '=');
+            if ($v === '') {
+                $v = $defaultKey;
+            }
+            if ($v === '' || !preg_match('/^[A-Za-z0-9_]+$/', $v)) {
+                throw new \RuntimeException($this->msg('err_invalid_process_name'));
+            }
+            if (array_key_exists($v, $config)) {
+                throw new \RuntimeException($this->msg('err_process_name_exists', ['{key}' => $v]));
+            }
+            return $v;
+        });
+        $q->setMaxAttempts(3);
+        /** @var string $key */
+        $key = $this->askOrAbort($input, $output, $q);
+        return $key;
     }
 
     /**
@@ -350,11 +415,10 @@ class MakeProcessCommand extends Command
     /**
      * @param InputInterface $input
      * @param OutputInterface $output
-     * @return string protocol: websocket|http|tcp|udp|unixsocket
+     * @return string protocol: websocket|http|tcp|udp
      */
     private function askProtocol(InputInterface $input, OutputInterface $output): string
     {
-        $helper = $this->getHelper('question');
         $default = '1';
         $prompt = $this->msg('ask_protocol');
         $q = new Question($prompt, $default);
@@ -374,9 +438,6 @@ class MakeProcessCommand extends Command
                 'http' => 'http',
                 'tcp' => 'tcp',
                 'udp' => 'udp',
-                'unix' => 'unixsocket',
-                'unixsocket' => 'unixsocket',
-                'unixsock' => 'unixsocket',
             ];
             if (isset($aliases[$v])) {
                 return $aliases[$v];
@@ -385,7 +446,7 @@ class MakeProcessCommand extends Command
         });
         $q->setMaxAttempts(3);
         /** @var string $protocol */
-        $protocol = $helper->ask($input, $output, $q);
+        $protocol = $this->askOrAbort($input, $output, $q);
         return $protocol;
     }
 
@@ -396,7 +457,6 @@ class MakeProcessCommand extends Command
      */
     private function askHttpMode(InputInterface $input, OutputInterface $output): string
     {
-        $helper = $this->getHelper('question');
         $q = new Question($this->msg('ask_http_mode'), '1');
         $q->setValidator(function (mixed $value) {
             $v = strtolower(trim((string)$value));
@@ -411,7 +471,7 @@ class MakeProcessCommand extends Command
         });
         $q->setMaxAttempts(3);
         /** @var string $mode */
-        $mode = $helper->ask($input, $output, $q);
+        $mode = $this->askOrAbort($input, $output, $q);
         return $mode;
     }
 
@@ -422,21 +482,32 @@ class MakeProcessCommand extends Command
      * @param string $protocol
      * @return string listen string
      */
-    private function askListenAddress(InputInterface $input, OutputInterface $output, string $snakeKey, string $protocol): string
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return string none|port|unixsocket
+     */
+    private function askListenMode(InputInterface $input, OutputInterface $output): string
     {
-        if ($protocol === 'unixsocket') {
-            return $this->askUnixSocketListen($input, $output, $snakeKey);
-        }
-        $ip = $this->askIp($input, $output);
-        $port = $this->askPort($input, $output);
-        $scheme = match ($protocol) {
-            'websocket' => 'websocket://',
-            'http' => 'http://',
-            'tcp' => 'tcp://',
-            'udp' => 'udp://',
-            default => '',
-        };
-        return $scheme . $ip . ':' . $port;
+        $q = new Question($this->msg('ask_listen_mode'), '');
+        $q->setValidator(function (mixed $value) {
+            $v = strtolower(trim((string)$value));
+            $v = ltrim($v, '=');
+            if ($v === '' || $v === 'n' || $v === 'no' || $v === '0') {
+                return 'none';
+            }
+            if ($v === '1' || $v === 'port') {
+                return 'port';
+            }
+            if ($v === '2' || $v === 'unix' || $v === 'unixsocket' || $v === 'sock') {
+                return 'unixsocket';
+            }
+            throw new \RuntimeException($this->msg('err_invalid_listen_mode'));
+        });
+        $q->setMaxAttempts(3);
+        /** @var string $mode */
+        $mode = $this->askOrAbort($input, $output, $q);
+        return $mode;
     }
 
     /**
@@ -446,7 +517,6 @@ class MakeProcessCommand extends Command
      */
     private function askIp(InputInterface $input, OutputInterface $output): string
     {
-        $helper = $this->getHelper('question');
         $ips = $this->collectIps();
 
         $menu = [];
@@ -485,7 +555,7 @@ class MakeProcessCommand extends Command
         });
         $q->setMaxAttempts(3);
         /** @var string $ip */
-        $ip = $helper->ask($input, $output, $q);
+        $ip = $this->askOrAbort($input, $output, $q);
         return $ip;
     }
 
@@ -499,15 +569,201 @@ class MakeProcessCommand extends Command
         $labels = [];
         foreach ($menu as $k => $ip) {
             $suffix = '';
-            if (($ips['lan'] ?? null) === $ip) {
+            if ($ip === '0.0.0.0') {
+                $suffix = $this->msg('ip_any_suffix');
+            } else if ($ip === '127.0.0.1') {
+                $suffix = $this->msg('ip_loopback_suffix');
+            } else if (($ips['lan'] ?? null) === $ip) {
                 $suffix = $this->msg('ip_lan_suffix');
             } else if (($ips['wan'] ?? null) === $ip) {
                 $suffix = $this->msg('ip_wan_suffix');
             }
-            $labels[] = "{$k}) {$ip}{$suffix}";
+            $labels[] = "  [{$k}] {$ip}{$suffix}";
         }
-        $labels[] = $this->msg('ip_manual_hint');
-        return implode('  ', $labels);
+        $labels[] = '  ' . $this->msg('ip_manual_hint');
+        return implode("\n", $labels);
+    }
+
+    /**
+     * Ask port and warn if conflicts exist in app/plugin process configs.
+     *
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @param array<string,mixed> $targetConfig The config array loaded from the target process.php file.
+     * @param string $configFile Absolute path of target config file (for display).
+     * @return int
+     */
+    private function askPortWithConflictCheck(InputInterface $input, OutputInterface $output, array $targetConfig, string $configFile): int
+    {
+        while (true) {
+            $port = $this->askPort($input, $output);
+            $conflicts = $this->findPortConflicts($port, $targetConfig, $configFile);
+            if ($conflicts === []) {
+                return $port;
+            }
+
+            $output->writeln($this->msg('warn_port_conflict', [
+                '{port}' => (string)$port,
+                '{items}' => $this->formatPortConflictItems($conflicts),
+            ]));
+
+            $q = new ConfirmationQuestion($this->msg('ask_port_conflict_continue'), false);
+            $useAnyway = (bool)$this->askOrAbort($input, $output, $q);
+            if ($useAnyway) {
+                return $port;
+            }
+        }
+    }
+
+    /**
+     * @param int $port
+     * @param array<string,mixed> $targetConfig
+     * @param string $configFile
+     * @return array<int,array{key:string,listen:string,source:string}>
+     */
+    private function findPortConflicts(int $port, array $targetConfig, string $configFile): array
+    {
+        $items = [];
+        foreach ($this->collectProcessConfigFiles($configFile) as $file) {
+            $cfg = $file === $configFile ? $targetConfig : $this->loadPhpConfigArray($file);
+            if ($cfg === null || !is_array($cfg) || $cfg === []) {
+                continue;
+            }
+            foreach ($this->extractProcessListenItems($cfg, $this->toRelativePath($file)) as $it) {
+                $p = $this->extractPortFromListen($it['listen']);
+                if ($p !== null && $p === $port) {
+                    $items[] = $it;
+                }
+            }
+        }
+
+        // De-dup by (source file + key).
+        $seen = [];
+        $uniq = [];
+        foreach ($items as $it) {
+            $sig = (string)($it['source'] ?? '') . "\n" . (string)($it['key'] ?? '');
+            if (isset($seen[$sig])) {
+                continue;
+            }
+            $seen[$sig] = true;
+            $uniq[] = $it;
+        }
+        return $uniq;
+    }
+
+    /**
+     * @param string $targetConfigFile
+     * @return array<int,string> absolute file paths
+     */
+    private function collectProcessConfigFiles(string $targetConfigFile): array
+    {
+        $files = [];
+        $targetConfigFile = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $targetConfigFile);
+        if ($targetConfigFile !== '') {
+            $files[] = $targetConfigFile;
+        }
+        $main = config_path() . DIRECTORY_SEPARATOR . 'process.php';
+        $files[] = $main;
+
+        $pluginRoot = base_path('plugin');
+        $pluginPattern = rtrim((string)$pluginRoot, "\\/") . DIRECTORY_SEPARATOR . '*' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'process.php';
+        $pluginFiles = glob($pluginPattern) ?: [];
+        foreach ($pluginFiles as $f) {
+            if (is_string($f) && $f !== '') {
+                $files[] = $f;
+            }
+        }
+
+        // unique, existing only
+        $seen = [];
+        $uniq = [];
+        foreach ($files as $f) {
+            $f = (string)$f;
+            if ($f === '' || !is_file($f)) {
+                continue;
+            }
+            $k = strtolower(str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $f));
+            if (isset($seen[$k])) {
+                continue;
+            }
+            $seen[$k] = true;
+            $uniq[] = $f;
+        }
+        return $uniq;
+    }
+
+    /**
+     * @param array<string,mixed> $processConfig
+     * @param string $source
+     * @return array<int,array{key:string,listen:string,source:string}>
+     */
+    private function extractProcessListenItems(array $processConfig, string $source): array
+    {
+        $items = [];
+        foreach ($processConfig as $key => $cfg) {
+            if (!is_array($cfg)) {
+                continue;
+            }
+            $listen = $cfg['listen'] ?? null;
+            if (!is_string($listen) || $listen === '') {
+                continue;
+            }
+            $items[] = [
+                'key' => is_string($key) ? $key : (string)$key,
+                'listen' => $listen,
+                'source' => $source,
+            ];
+        }
+        return $items;
+    }
+
+    /**
+     * @param array<int,array{key:string,listen:string,source:string}> $items
+     * @return string
+     */
+    private function formatPortConflictItems(array $items): string
+    {
+        $lines = [];
+        foreach ($items as $it) {
+            $key = (string)($it['key'] ?? '');
+            $src = (string)($it['source'] ?? '');
+            $lines[] = $src !== '' ? "  - {$src}  <comment>({$key})</comment>" : "  - {$key}";
+        }
+        return implode("\n", $lines);
+    }
+
+    private function extractPortFromListen(string $listen): ?int
+    {
+        if (str_starts_with($listen, 'unix://')) {
+            return null;
+        }
+        if (str_contains($listen, '://')) {
+            $p = parse_url($listen, PHP_URL_PORT);
+            if (is_int($p)) {
+                return $p;
+            }
+            if (is_string($p) && ctype_digit($p)) {
+                return (int)$p;
+            }
+            return null;
+        }
+        if (preg_match('/:(\d{1,5})$/', $listen, $m)) {
+            $p = (int)$m[1];
+            return ($p >= 1 && $p <= 65535) ? $p : null;
+        }
+        return null;
+    }
+
+    private function buildListenString(string $protocol, string $ip, int $port): string
+    {
+        $scheme = match ($protocol) {
+            'websocket' => 'websocket://',
+            'http' => 'http://',
+            'tcp' => 'tcp://',
+            'udp' => 'udp://',
+            default => '',
+        };
+        return $scheme . $ip . ':' . $port;
     }
 
     /**
@@ -551,7 +807,6 @@ class MakeProcessCommand extends Command
      */
     private function askPort(InputInterface $input, OutputInterface $output): int
     {
-        $helper = $this->getHelper('question');
         $q = new Question($this->msg('ask_port'));
         $q->setValidator(function (mixed $value) {
             $v = trim((string)$value);
@@ -567,7 +822,7 @@ class MakeProcessCommand extends Command
         });
         $q->setMaxAttempts(3);
         /** @var int $port */
-        $port = $helper->ask($input, $output, $q);
+        $port = $this->askOrAbort($input, $output, $q);
         return $port;
     }
 
@@ -577,40 +832,33 @@ class MakeProcessCommand extends Command
      * @param string $snakeKey
      * @return string
      */
-    private function askUnixSocketListen(InputInterface $input, OutputInterface $output, string $snakeKey): string
+    private function askUnixSocketPathRelative(InputInterface $input, OutputInterface $output, string $snakeKey): string
     {
-        $helper = $this->getHelper('question');
-        $default = 'runtime/' . $snakeKey . '.sock';
-        $q = new Question($this->msg('ask_unixsocket', ['{default}' => $default]), $default);
+        $default = $snakeKey . '.sock';
+        $q = new Question($this->msg('ask_unixsocket', ['{default}' => 'runtime/' . $default]), $default);
         $q->setValidator(function (mixed $value) {
             $v = trim((string)$value);
             $v = ltrim($v, '=');
             if ($v === '') {
                 throw new \RuntimeException($this->msg('err_invalid_unixsocket_path'));
             }
+            $v = str_replace('\\', '/', $v);
+            $v = trim($v);
+            if ($v === '' || str_contains($v, '://')) {
+                throw new \RuntimeException($this->msg('err_invalid_unixsocket_path'));
+            }
+            // normalize: allow "runtime/foo.sock" but store "foo.sock"
+            $v = preg_replace('#^runtime/+?#i', '', $v);
+            $v = ltrim($v, '/');
+            if ($v === '' || $this->isAbsolutePath($v) || str_starts_with($v, '../') || str_contains($v, '/..')) {
+                throw new \RuntimeException($this->msg('err_invalid_unixsocket_path'));
+            }
             return $v;
         });
         $q->setMaxAttempts(3);
         /** @var string $path */
-        $path = $helper->ask($input, $output, $q);
-
-        // Allow user to pass full listen string like unix:///tmp/a.sock
-        if (str_contains($path, '://')) {
-            return $path;
-        }
-
-        $path = str_replace('\\', '/', $path);
-        if (str_starts_with($path, '/')) {
-            return 'unix://' . $path;
-        }
-        $abs = base_path($path);
-        $abs = str_replace('\\', '/', $abs);
-        // Workerman unix socket typically expects three slashes: unix:///path/to.sock
-        if (!str_starts_with($abs, '/')) {
-            // Windows path, keep as-is after scheme (for cross-platform config editing)
-            return 'unix://' . $abs;
-        }
-        return 'unix://' . $abs;
+        $path = $this->askOrAbort($input, $output, $q);
+        return $path;
     }
 
     /**
@@ -622,7 +870,6 @@ class MakeProcessCommand extends Command
      */
     private function askProcessCount(InputInterface $input, OutputInterface $output, ?string $protocol, ?string $httpMode): array
     {
-        $helper = $this->getHelper('question');
         $default = '1';
         $defaultRaw = null;
         if ($protocol === 'http' && $httpMode === 'builtin') {
@@ -630,17 +877,23 @@ class MakeProcessCommand extends Command
             $defaultRaw = 'cpu_count() * 4';
         }
 
+        $usedDefault = false;
+        $usedDefaultValue = '';
         $prompt = $this->msg('ask_count', [
             '{default}' => $defaultRaw ?: $default,
         ]);
         $q = new Question($prompt, $default);
-        $q->setValidator(function (mixed $value) use ($defaultRaw, $default) {
+        $q->setValidator(function (mixed $value) use ($defaultRaw, $default, &$usedDefault, &$usedDefaultValue) {
             $v = trim((string)$value);
             $v = ltrim($v, '=');
             if ($v === '') {
                 if ($defaultRaw) {
+                    $usedDefault = true;
+                    $usedDefaultValue = $defaultRaw;
                     return ['kind' => 'raw', 'value' => $defaultRaw];
                 }
+                $usedDefault = true;
+                $usedDefaultValue = $default;
                 return ['kind' => 'int', 'value' => (int)$default];
             }
             if (!ctype_digit($v)) {
@@ -654,7 +907,11 @@ class MakeProcessCommand extends Command
         });
         $q->setMaxAttempts(3);
         /** @var array{kind:string,value:int|string} $count */
-        $count = $helper->ask($input, $output, $q);
+        $count = $this->askOrAbort($input, $output, $q);
+
+        if ($usedDefault && $usedDefaultValue !== '') {
+            $output->writeln($this->msg('used_default_count', ['{value}' => $usedDefaultValue]));
+        }
         return $count;
     }
 
@@ -680,7 +937,7 @@ class MakeProcessCommand extends Command
     /**
      * @param string $key
      * @param string $handlerFqn
-     * @param string|null $listen
+     * @param array{kind:string,value:string}|null $listenValue
      * @param array{kind:string,value:int|string} $countValue
      * @param string|null $protocol
      * @param string|null $httpMode
@@ -689,7 +946,7 @@ class MakeProcessCommand extends Command
     private function buildProcessConfigEntry(
         string $key,
         string $handlerFqn,
-        ?string $listen,
+        mixed $listenValue,
         array $countValue,
         ?string $protocol,
         ?string $httpMode
@@ -699,8 +956,14 @@ class MakeProcessCommand extends Command
         $lines[] = "    " . var_export($key, true) . " => [";
         $lines[] = "        'handler' => {$handlerFqn}::class,";
 
-        if ($listen !== null && $listen !== '') {
-            $lines[] = "        'listen' => " . var_export($listen, true) . ",";
+        if (is_array($listenValue)) {
+            $kind = (string)($listenValue['kind'] ?? '');
+            $value = $listenValue['value'] ?? null;
+            if ($kind === 'raw' && is_string($value) && $value !== '') {
+                $lines[] = "        'listen' => {$value},";
+            } else if ($kind === 'string' && is_string($value) && $value !== '') {
+                $lines[] = "        'listen' => " . var_export($value, true) . ",";
+            }
         }
 
         // count (optional in webman, but we always write for clarity)
@@ -742,8 +1005,11 @@ class MakeProcessCommand extends Command
         $eol = "\n";
         if (is_file($configFile)) {
             $content = file_get_contents($configFile);
-            if (!is_string($content) || $content === '') {
-                return false;
+            if (!is_string($content) || trim($content) === '') {
+                // Treat empty/broken file as new config file to avoid leaving it unusable.
+                $header = $this->getPhpHeaderWithDocblock($configFile);
+                $body = "return [{$eol}{$entryText}{$eol}];{$eol}";
+                return $this->writeFileSafelyWithBackup($configFile, $header . $body);
             }
             if (str_contains($content, "\r\n")) {
                 $eol = "\r\n";
@@ -758,18 +1024,56 @@ class MakeProcessCommand extends Command
             $head = substr($content, 0, $pos);
             $tail = substr($content, $pos); // starts with ];
             $headTrim = rtrim($head);
-            $needsComma = !str_ends_with($headTrim, ',');
+            $last = $headTrim !== '' ? substr($headTrim, -1) : '';
+            // Avoid leading comma for empty arrays: return [ ... ];
+            $needsComma = ($last !== '' && $last !== '[' && $last !== ',');
             $insert = ($needsComma ? ',' : '') . $eol . $entryText . $eol;
             $newContent = $headTrim . $insert . $tail;
-            file_put_contents($configFile, $newContent);
-            return true;
+            return $this->writeFileSafelyWithBackup($configFile, $newContent);
         }
 
         // Create new config file.
         $this->ensureParentDir($configFile);
         $header = "<?php{$eol}{$eol}";
         $body = "return [{$eol}{$entryText}{$eol}];{$eol}";
-        file_put_contents($configFile, $header . $body);
+        return $this->writeFileSafelyWithBackup($configFile, $header . $body);
+    }
+
+    private function writeFileSafelyWithBackup(string $file, string $content): bool
+    {
+        $this->ensureParentDir($file);
+        $dir = pathinfo($file, PATHINFO_DIRNAME);
+        $tmp = tempnam($dir ?: sys_get_temp_dir(), 'webman_process_');
+        if (!is_string($tmp) || $tmp === '') {
+            return false;
+        }
+        $written = file_put_contents($tmp, $content, LOCK_EX);
+        if (!is_int($written) || $written < 0) {
+            @unlink($tmp);
+            return false;
+        }
+
+        $bak = $file . '.bak';
+        if (is_file($bak)) {
+            @unlink($bak);
+        }
+
+        // Two-step replace: move original to .bak, then move tmp to target.
+        if (is_file($file)) {
+            if (!@rename($file, $bak)) {
+                @unlink($tmp);
+                return false;
+            }
+        }
+
+        if (!@rename($tmp, $file)) {
+            // Try to restore.
+            @unlink($tmp);
+            if (is_file($bak)) {
+                @rename($bak, $file);
+            }
+            return false;
+        }
         return true;
     }
 

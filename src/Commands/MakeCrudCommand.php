@@ -414,9 +414,8 @@ class MakeCrudCommand extends Command
     {
         $defaultPath = $this->normalizeRelativePath($defaultPath);
         $label = $this->getTypeLabel($type);
-        $helper = $this->getHelper('question');
         $question = new Question($this->msg('enter_path_prompt', ['{label}' => $label, '{default}' => $defaultPath]), $defaultPath);
-        $path = $helper->ask($input, $output, $question);
+        $path = $this->askOrAbort($input, $output, $question);
         $path = is_string($path) ? $path : $defaultPath;
         return $this->normalizeRelativePath($path ?: $defaultPath);
     }
@@ -448,7 +447,6 @@ class MakeCrudCommand extends Command
             return false;
         }
 
-        $helper = $this->getHelper('question');
         while (true) {
             $confirm = new ConfirmationQuestion(
                 $this->msg('plugin_path_mismatch_confirm', [
@@ -457,12 +455,12 @@ class MakeCrudCommand extends Command
                 ]),
                 true
             );
-            if ($helper->ask($input, $output, $confirm)) {
+            if ($this->askOrAbort($input, $output, $confirm)) {
                 return $pluginOpt;
             }
 
             $q = new Question($this->msg('plugin_reinput_prompt', ['{default}' => $inferred]), $inferred);
-            $new = $helper->ask($input, $output, $q);
+            $new = $this->askOrAbort($input, $output, $q);
             $new = is_string($new) ? trim($new) : '';
             $new = $new !== '' ? $new : $inferred;
             if ($new && (str_contains($new, '/') || str_contains($new, '\\'))) {
@@ -494,9 +492,8 @@ class MakeCrudCommand extends Command
             return $this->normalizeClassLikeName($default);
         }
         $label = $this->getNameLabel($type);
-        $helper = $this->getHelper('question');
         $question = new Question($this->msg('enter_name_prompt', ['{label}' => $label, '{default}' => $default]), $default);
-        $answer = $helper->ask($input, $output, $question);
+        $answer = $this->askOrAbort($input, $output, $question);
         $answer = is_string($answer) ? trim($answer) : '';
         $answer = $answer !== '' ? $answer : $default;
         return $this->normalizeClassLikeName($answer);
@@ -636,12 +633,11 @@ class MakeCrudCommand extends Command
 
     protected function promptForValidator(InputInterface $input, OutputInterface $output): bool
     {
-        $helper = $this->getHelper('question');
         $question = new ConfirmationQuestion(
             Util::selectByLocale(Messages::getValidatorPrompt()),
             true
         );
-        return (bool)$helper->ask($input, $output, $question);
+        return (bool)$this->askOrAbort($input, $output, $question);
     }
 
     protected function generateModel(
@@ -1208,10 +1204,9 @@ EOF;
     protected function promptForOverride(InputInterface $input, OutputInterface $output, string $file): bool
     {
         $relative = $this->toRelativePath($file);
-        $helper = $this->getHelper('question');
         $prompt = $this->msg('override_prompt', ['{path}' => $relative]);
         $question = new ConfirmationQuestion($prompt, true);
-        return (bool)$helper->ask($input, $output, $question);
+        return (bool)$this->askOrAbort($input, $output, $question);
     }
 
     /**

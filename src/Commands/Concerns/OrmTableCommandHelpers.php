@@ -586,7 +586,7 @@ trait OrmTableCommandHelpers
                 $output->writeln($this->msg('no_more'));
             }
 
-            $answerRaw = $helper->ask($input, $output, $question);
+            $answerRaw = $this->askOrAbort($input, $output, $question);
             $answerRaw = is_string($answerRaw) ? $answerRaw : '';
             $answer = trim($answerRaw);
 

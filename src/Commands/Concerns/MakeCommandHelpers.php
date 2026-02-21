@@ -212,6 +212,53 @@ trait MakeCommandHelpers
     }
 
     /**
+     * Ask a question with Ctrl+C safety.
+     *
+     * On Windows, Ctrl+C during a prompt can corrupt the console code page,
+     * causing subsequent UTF-8 output to display as garbled text.
+     * This method restores the code page after every prompt to prevent that.
+     *
+     * @param \Symfony\Component\Console\Input\InputInterface $input
+     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @param \Symfony\Component\Console\Question\Question $question
+     * @return mixed
+     */
+    protected function askOrAbort(
+        \Symfony\Component\Console\Input\InputInterface $input,
+        \Symfony\Component\Console\Output\OutputInterface $output,
+        \Symfony\Component\Console\Question\Question $question
+    ): mixed {
+        $cpBefore = function_exists('sapi_windows_cp_get') ? sapi_windows_cp_get() : null;
+
+        /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
+        $helper = $this->getHelper('question');
+        try {
+            $value = $helper->ask($input, $output, $question);
+        } catch (\Throwable $e) {
+            $this->restoreConsoleCodePage($cpBefore);
+            throw $e;
+        }
+
+        $this->restoreConsoleCodePage($cpBefore);
+
+        if ($value === null || (is_string($value) && str_contains($value, "\x03"))) {
+            exit(130);
+        }
+        return $value;
+    }
+
+    /**
+     * Restore console code page on Windows after an interactive prompt.
+     * Ctrl+C can corrupt the code page; this resets it to what it was before.
+     */
+    private function restoreConsoleCodePage(?int $codepage): void
+    {
+        if ($codepage !== null && function_exists('sapi_windows_cp_set')) {
+            sapi_windows_cp_set($codepage);
+        }
+    }
+
+    /**
      * Resolve namespace/file path by --plugin/-p or --path/-P.
      * - --path/-P: must be a relative path (to project root).
      * - If both are provided, they must point to the same directory, otherwise it's an error.

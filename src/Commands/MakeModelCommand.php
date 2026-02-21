@@ -193,12 +193,10 @@ class MakeModelCommand extends Command
         $output->writeln($this->msg('make_model', ['{name}' => $name]));
 
         if (is_file($file) && !$force) {
-            $helper = $this->getHelper('question');
             $relative = $this->toRelativePath($file);
             $prompt = $this->msg('override_prompt', ['{path}' => $relative]);
-            // Default: yes (Enter = yes)
             $question = new ConfirmationQuestion($prompt, true);
-            if (!$helper->ask($input, $output, $question)) {
+            if (!$this->askOrAbort($input, $output, $question)) {
                 return Command::SUCCESS;
             }
         }
@@ -219,9 +217,8 @@ class MakeModelCommand extends Command
     protected function promptForModelNameWithDefault(InputInterface $input, OutputInterface $output, string $default): string
     {
         $default = $this->normalizeClassLikeName($default ?: 'Model');
-        $helper = $this->getHelper('question');
         $question = new Question($this->msg('enter_model_name_prompt', ['{default}' => $default]), $default);
-        $answer = $helper->ask($input, $output, $question);
+        $answer = $this->askOrAbort($input, $output, $question);
         $answer = is_string($answer) ? trim($answer) : '';
         $answer = $answer !== '' ? $answer : $default;
         return $this->normalizeClassLikeName($answer);
@@ -233,9 +230,8 @@ class MakeModelCommand extends Command
     protected function promptForModelPathWithDefault(InputInterface $input, OutputInterface $output, string $default): string
     {
         $default = $this->normalizeRelativePath($default ?: 'app/model');
-        $helper = $this->getHelper('question');
         $question = new Question($this->msg('enter_model_path_prompt', ['{default}' => $default]), $default);
-        $answer = $helper->ask($input, $output, $question);
+        $answer = $this->askOrAbort($input, $output, $question);
         $answer = is_string($answer) ? trim($answer) : '';
         $answer = $answer !== '' ? $answer : $default;
         return $this->normalizeRelativePath($answer ?: $default);

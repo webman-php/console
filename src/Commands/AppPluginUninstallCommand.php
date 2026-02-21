@@ -55,9 +55,8 @@ class AppPluginUninstallCommand extends Command
         }
 
         if (!(bool)$input->getOption('yes')) {
-            $helper = $this->getHelper('question');
             $question = new ConfirmationQuestion($this->msg('uninstall_confirm'), false);
-            if (!$helper->ask($input, $output, $question)) {
+            if (!$this->askOrAbort($input, $output, $question)) {
                 return Command::SUCCESS;
             }
         }

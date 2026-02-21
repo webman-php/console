@@ -87,11 +87,10 @@ class MakeBootstrapCommand extends Command
         $output->writeln($this->msg('make_bootstrap', ['{name}' => $class]));
 
         if (is_file($file) && !$force) {
-            $helper = $this->getHelper('question');
             $relative = $this->toRelativePath($file);
             $prompt = $this->msg('override_prompt', ['{path}' => $relative]);
             $question = new ConfirmationQuestion($prompt, true);
-            if (!$helper->ask($input, $output, $question)) {
+            if (!$this->askOrAbort($input, $output, $question)) {
                 return Command::SUCCESS;
             }
         }
@@ -177,9 +176,8 @@ class MakeBootstrapCommand extends Command
             ?? 'Enter {label} path (Enter for default: {default}): ';
         $promptText = strtr($promptText, ['{label}' => $label, '{default}' => $defaultPath]);
         $promptText = '<question>' . trim($promptText) . "</question>\n";
-        $helper = $this->getHelper('question');
         $question = new Question($promptText, $defaultPath);
-        $path = $helper->ask($input, $output, $question);
+        $path = $this->askOrAbort($input, $output, $question);
         $path = is_string($path) ? $path : $defaultPath;
         return $this->normalizeRelativePath($path ?: $defaultPath);
     }

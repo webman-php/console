@@ -44,67 +44,71 @@ class MakeControllerCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $name = Util::nameToClass((string)$input->getArgument('name'));
-        $plugin = $this->normalizeOptionValue($input->getOption('plugin'));
-        $path = $this->normalizeOptionValue($input->getOption('path'));
-        $force = (bool)$input->getOption('force');
+        try {
+            $name = Util::nameToClass((string)$input->getArgument('name'));
+            $plugin = $this->normalizeOptionValue($input->getOption('plugin'));
+            $path = $this->normalizeOptionValue($input->getOption('path'));
+            $force = (bool)$input->getOption('force');
 
-        if ($plugin && (str_contains($plugin, '/') || str_contains($plugin, '\\'))) {
-            $output->writeln($this->msg('invalid_plugin', ['{plugin}' => $plugin]));
-            return Command::FAILURE;
-        }
-        if ($plugin && !$this->assertPluginExists($plugin, $output)) {
-            return Command::FAILURE;
-        }
-
-        // When "-p/--plugin" is provided, controller suffix should come from the plugin config,
-        // not from the main project config.
-        if ($plugin) {
-            $suffix = (string)config("plugin.$plugin.app.controller_suffix", 'Controller');
-        } else {
-            $suffix = (string)config('app.controller_suffix', 'Controller');
-        }
-        $name = str_replace('\\', '/', $name);
-        $name = $this->applySuffixToLastSegment($name, $suffix);
-
-        // When path is not provided: in interactive mode prompt for path (same UX as make:crud).
-        if (!$path && $input->isInteractive()) {
-            $pathDefault = Util::getDefaultAppRelativePath('controller', $plugin ?: null);
-            $path = $this->promptForControllerPath($input, $output, $pathDefault);
-        }
-
-        if ($plugin || $path) {
-            $resolved = $this->resolveTargetByPluginOrPath(
-                $name,
-                $plugin,
-                $path,
-                $output,
-                fn(string $p) => Util::getDefaultAppRelativePath('controller', $p),
-                fn(string $key, array $replace = []) => $this->msg($key, $replace)
-            );
-            if ($resolved === null) {
+            if ($plugin && (str_contains($plugin, '/') || str_contains($plugin, '\\'))) {
+                $output->writeln($this->msg('invalid_plugin', ['{plugin}' => $plugin]));
                 return Command::FAILURE;
             }
-            [$class, $namespace, $file] = $resolved;
-        } else {
-            [$class, $namespace, $file] = $this->resolveAppControllerTarget($name);
-        }
-
-        $output->writeln($this->msg('make_controller', ['{name}' => $class]));
-
-        if (is_file($file) && !$force) {
-            $helper = $this->getHelper('question');
-            $relative = $this->toRelativePath($file);
-            $prompt = $this->msg('override_prompt', ['{path}' => $relative]);
-            $question = new ConfirmationQuestion($prompt, true);
-            if (!$helper->ask($input, $output, $question)) {
-                return Command::SUCCESS;
+            if ($plugin && !$this->assertPluginExists($plugin, $output)) {
+                return Command::FAILURE;
             }
-        }
 
-        $this->createController($class, $namespace, $file);
-        $output->writeln($this->msg('created', ['{path}' => $this->toRelativePath($file)]));
-        return self::SUCCESS;
+            // When "-p/--plugin" is provided, controller suffix should come from the plugin config,
+            // not from the main project config.
+            if ($plugin) {
+                $suffix = (string)config("plugin.$plugin.app.controller_suffix", 'Controller');
+            } else {
+                $suffix = (string)config('app.controller_suffix', 'Controller');
+            }
+            $name = str_replace('\\', '/', $name);
+            $name = $this->applySuffixToLastSegment($name, $suffix);
+
+            // When path is not provided: in interactive mode prompt for path (same UX as make:crud).
+            if (!$path && $input->isInteractive()) {
+                $pathDefault = Util::getDefaultAppRelativePath('controller', $plugin ?: null);
+                $path = $this->promptForControllerPath($input, $output, $pathDefault);
+            }
+
+            if ($plugin || $path) {
+                $resolved = $this->resolveTargetByPluginOrPath(
+                    $name,
+                    $plugin,
+                    $path,
+                    $output,
+                    fn(string $p) => Util::getDefaultAppRelativePath('controller', $p),
+                    fn(string $key, array $replace = []) => $this->msg($key, $replace)
+                );
+                if ($resolved === null) {
+                    return Command::FAILURE;
+                }
+                [$class, $namespace, $file] = $resolved;
+            } else {
+                [$class, $namespace, $file] = $this->resolveAppControllerTarget($name);
+            }
+
+            $output->writeln($this->msg('make_controller', ['{name}' => $class]));
+
+            if (is_file($file) && !$force) {
+                $relative = $this->toRelativePath($file);
+                $prompt = $this->msg('override_prompt', ['{path}' => $relative]);
+                $question = new ConfirmationQuestion($prompt, true);
+                $yes = (bool)$this->askOrAbort($input, $output, $question);
+                if (!$yes) {
+                    return Command::SUCCESS;
+                }
+            }
+
+            $this->createController($class, $namespace, $file);
+            $output->writeln($this->msg('created', ['{path}' => $this->toRelativePath($file)]));
+            return self::SUCCESS;
+        } catch (\Throwable $e) {
+            throw $e;
+        }
     }
 
     /**
@@ -234,9 +238,8 @@ EOF;
             ?? 'Enter {label} path (Enter for default: {default}): ';
         $promptText = strtr($promptText, ['{label}' => $label, '{default}' => $defaultPath]);
         $promptText = '<question>' . trim($promptText) . "</question>\n";
-        $helper = $this->getHelper('question');
         $question = new Question($promptText, $defaultPath);
-        $path = $helper->ask($input, $output, $question);
+        $path = $this->askOrAbort($input, $output, $question);
         $path = is_string($path) ? $path : $defaultPath;
         return $this->normalizeRelativePath($path ?: $defaultPath);
     }
