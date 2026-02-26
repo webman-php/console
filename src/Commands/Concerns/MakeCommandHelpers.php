@@ -2,6 +2,7 @@
 
 namespace Webman\Console\Commands\Concerns;
 
+use Webman\Console\Messages;
 use Webman\Console\Util;
 
 trait MakeCommandHelpers
@@ -263,7 +264,7 @@ trait MakeCommandHelpers
      * - --path/-P: must be a relative path (to project root).
      * - If both are provided, they must point to the same directory, otherwise it's an error.
      *
-     * @param string $name Name like "Admin/User"
+     * @param string $name Name like "admin/User"
      * @param string|null $plugin
      * @param string|null $path
      * @param \Symfony\Component\Console\Output\OutputInterface $output
@@ -296,12 +297,13 @@ trait MakeCommandHelpers
             $expected = $pluginDefaultPathResolver($plugin);
         }
 
-        if ($expected && $pathNorm) {
-            if (!$this->pathsEqual($expected, $pathNorm)) {
-                $output->writeln($msg('plugin_path_conflict', [
-                    '{expected}' => $expected,
-                    '{actual}' => $pathNorm,
-                ]));
+        if ($plugin && $pathNorm) {
+            $pluginPrefix = 'plugin/' . $plugin . '/';
+            if (!str_starts_with(strtolower($pathNorm), strtolower($pluginPrefix))) {
+                $output->writeln(strtr(
+                    Util::selectByLocale(Messages::getPluginPathConflictMessage()),
+                    ['{plugin}' => $plugin, '{path}' => $pathNorm]
+                ));
                 return null;
             }
         }

@@ -132,6 +132,124 @@ class Util
         return is_array($first) ? $first : [];
     }
 
+    /**
+     * Execute an external shell command using the best available PHP function.
+     *
+     * Non-interactive (default): captures output, stdin from null device to prevent blocking.
+     *   Tries: proc_open -> exec -> system -> passthru -> popen
+     *
+     * Interactive ($interactive = true): passes I/O through to the terminal so the user
+     *   can see prompts and respond. Output is not captured (returned as empty string).
+     *   Tries: passthru -> system -> proc_open
+     *   If no interactive-capable function is available, returns null.
+     *
+     * @param string $command
+     * @param bool $interactive
+     * @return array{output: string, exit_code: int}|null null if no suitable function is available
+     */
+    public static function exec(string $command, bool $interactive = false): ?array
+    {
+        return $interactive
+            ? static::execInteractive($command)
+            : static::execCapture($command);
+    }
+
+    /**
+     * Run a command with terminal passthrough — user can see output and respond to prompts.
+     */
+    protected static function execInteractive(string $command): ?array
+    {
+        if (static::isCallable('passthru')) {
+            $code = 0;
+            passthru($command, $code);
+            return ['output' => '', 'exit_code' => $code];
+        }
+
+        if (static::isCallable('system')) {
+            $code = 0;
+            system($command, $code);
+            return ['output' => '', 'exit_code' => $code];
+        }
+
+        if (static::isCallable('proc_open') && defined('STDIN')) {
+            $process = proc_open($command, [STDIN, STDOUT, STDERR], $pipes);
+            if (is_resource($process)) {
+                return ['output' => '', 'exit_code' => proc_close($process)];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Run a command non-interactively — capture output, stdin from null device to prevent blocking.
+     */
+    protected static function execCapture(string $command): ?array
+    {
+        $nullDevice = PHP_OS_FAMILY === 'Windows' ? 'NUL' : '/dev/null';
+
+        if (static::isCallable('proc_open')) {
+            $process = proc_open($command, [
+                0 => ['file', $nullDevice, 'r'],
+                1 => ['pipe', 'w'],
+                2 => ['pipe', 'w'],
+            ], $pipes);
+            if (is_resource($process)) {
+                $stdout = (string)stream_get_contents($pipes[1]);
+                $stderr = (string)stream_get_contents($pipes[2]);
+                fclose($pipes[1]);
+                fclose($pipes[2]);
+                $exitCode = proc_close($process);
+                return ['output' => trim($stdout . $stderr), 'exit_code' => $exitCode];
+            }
+        }
+
+        $cmd = "$command < $nullDevice 2>&1";
+
+        if (static::isCallable('exec')) {
+            $lines = [];
+            $code = 0;
+            exec($cmd, $lines, $code);
+            return ['output' => implode("\n", $lines), 'exit_code' => $code];
+        }
+
+        if (static::isCallable('system')) {
+            ob_start();
+            $code = 0;
+            system($cmd, $code);
+            return ['output' => trim((string)ob_get_clean()), 'exit_code' => $code];
+        }
+
+        if (static::isCallable('passthru')) {
+            ob_start();
+            $code = 0;
+            passthru($cmd, $code);
+            return ['output' => trim((string)ob_get_clean()), 'exit_code' => $code];
+        }
+
+        if (static::isCallable('popen')) {
+            $handle = popen($cmd, 'r');
+            if ($handle !== false) {
+                $output = (string)stream_get_contents($handle);
+                $exitCode = pclose($handle);
+                return ['output' => trim($output), 'exit_code' => $exitCode];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Check whether a function exists and is not disabled.
+     *
+     * @param string $function
+     * @return bool
+     */
+    public static function isCallable(string $function): bool
+    {
+        return function_exists($function) && is_callable($function);
+    }
+
     public static function nameToNamespace($name)
     {
         $namespace = ucfirst($name);

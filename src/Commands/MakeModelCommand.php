@@ -12,6 +12,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
+use Webman\Console\OrmType;
 use Webman\Console\Util;
 use Webman\Console\Commands\Concerns\MakeCommandHelpers;
 use Webman\Console\Commands\Concerns\OrmTableCommandHelpers;
@@ -57,7 +58,7 @@ class MakeModelCommand extends Command
         $this->addUsage('User -P plugin/admin/app/model');
         $this->addUsage('User -t wa_users -o laravel');
         $this->addUsage('User -t=wa_users -o=thinkorm -f');
-        $this->addUsage('Admin/User --table=wa_admin_users --orm=laravel --database=mysql');
+        $this->addUsage('admin/User --table=wa_admin_users --orm=laravel --database=mysql');
     }
 
     /**
@@ -201,7 +202,7 @@ class MakeModelCommand extends Command
             }
         }
 
-        if ($type === self::ORM_THINKORM) {
+        if ($type === OrmType::THINKORM) {
             $this->createTpModel($name, $namespace, $file, $connection, $table, $output);
         } else {
             $this->createModel($name, $namespace, $file, $connection, $table, $output);
@@ -239,8 +240,8 @@ class MakeModelCommand extends Command
 
     /**
      * Normalize "class-like" names with optional sub paths, e.g.:
-     * - "admin/user_profile" => "Admin/UserProfile"
-     * - "Admin\\User" => "Admin/User"
+     * - "admin/user_profile" => "admin/UserProfile"
+     * - "Admin\\User" => "admin/User"
      */
     protected function normalizeClassLikeName(string $name): string
     {
@@ -665,12 +666,13 @@ EOF;
             $expected = $this->getPluginModelRelativePath($plugin);
         }
 
-        if ($expected && $pathNorm) {
-            if (!$this->pathsEqual($expected, $pathNorm)) {
-                $output->writeln($this->msg('plugin_path_conflict', [
-                    '{expected}' => $expected,
-                    '{actual}' => $pathNorm,
-                ]));
+        if ($plugin && $pathNorm) {
+            $pluginPrefix = 'plugin/' . $plugin . '/';
+            if (!str_starts_with(strtolower($pathNorm), strtolower($pluginPrefix))) {
+                $output->writeln(strtr(
+                    Util::selectByLocale(Messages::getPluginPathConflictMessage()),
+                    ['{plugin}' => $plugin, '{path}' => $pathNorm]
+                ));
                 return null;
             }
         }

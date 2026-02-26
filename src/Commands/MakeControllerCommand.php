@@ -34,7 +34,7 @@ class MakeControllerCommand extends Command
         $this->addUsage('User');
         $this->addUsage('User -p admin');
         $this->addUsage('User -P plugin/admin/app/controller');
-        $this->addUsage('Admin/User -f');
+        $this->addUsage('admin/User -f');
     }
 
     /**
@@ -87,6 +87,11 @@ class MakeControllerCommand extends Command
                     return Command::FAILURE;
                 }
                 [$class, $namespace, $file] = $resolved;
+
+                if (!$this->isControllerNamespace($namespace)) {
+                    $output->writeln(Util::selectByLocale(Messages::getPathMissingControllerMessage()));
+                    return Command::FAILURE;
+                }
             } else {
                 [$class, $namespace, $file] = $this->resolveAppControllerTarget($name);
             }
@@ -133,7 +138,7 @@ use support\Response;
 
 class $name
 {
-    public function index(Request \$request)
+    public function index(Request \$request): Response
     {
         return response('Hello, $name');
     }
@@ -142,6 +147,15 @@ class $name
 
 EOF;
         file_put_contents($file, $controller_content);
+    }
+
+    /**
+     * Check if namespace contains a "controller" segment (case-insensitive).
+     */
+    protected function isControllerNamespace(string $namespace): bool
+    {
+        $segments = preg_split('/[\\\\\/]/', strtolower($namespace));
+        return in_array('controller', $segments, true);
     }
 
     /**

@@ -189,16 +189,14 @@ EOF;
         }
         $output->writeln($this->pluginMsg('created', ['{path}' => $this->toRelativePath($plugin_path . '/composer.json')]));
 
-        if (!is_callable('exec')) {
-            $output->writeln($this->pluginMsg('dumpautoload_manual'));
+        $baseCmd = "composer dumpautoload";
+        $result = Util::exec("$baseCmd --no-interaction");
+        if ($result === null) {
+            $output->writeln($this->pluginMsg('dumpautoload_manual', ['{cmd}' => $baseCmd]));
             return null;
         }
-        $cmd = "composer dumpautoload";
-        $lines = [];
-        $code = 0;
-        exec($cmd, $lines, $code);
-        if ($code !== 0) {
-            $output->writeln($this->pluginMsg('dumpautoload_failed', ['{cmd}' => $cmd]));
+        if ($result['exit_code'] !== 0) {
+            $output->writeln($this->pluginMsg('dumpautoload_failed', ['{cmd}' => $baseCmd]));
             return null;
         }
         $output->writeln($this->pluginMsg('dumpautoload_ok'));

@@ -7,12 +7,11 @@ use support\Db;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
+use Webman\Console\OrmType;
 use Webman\Console\Util;
 
 trait OrmTableCommandHelpers
 {
-    protected const ORM_LARAVEL = 'laravel';
-    protected const ORM_THINKORM = 'tp';
 
     /**
      * Set to 'db' when promptForTable returns null due to DB connection/permission failure.
@@ -96,7 +95,7 @@ trait OrmTableCommandHelpers
             return $databaseOption;
         }
 
-        if ($ormType === self::ORM_THINKORM) {
+        if ($ormType === OrmType::THINKORM) {
             $is_thinkorm_v2 = class_exists(\support\think\Db::class);
             $configName = $is_thinkorm_v2 ? 'think-orm' : 'thinkorm';
             return (string)(config("$configName.default") ?: 'mysql');
@@ -137,9 +136,9 @@ trait OrmTableCommandHelpers
         if ($ormOption) {
             $ormOption = ltrim($ormOption, '=');
             if ($ormOption === 'thinkorm' || $ormOption === 'tp') {
-                return self::ORM_THINKORM;
+                return OrmType::THINKORM;
             }
-            return self::ORM_LARAVEL;
+            return OrmType::LARAVEL;
         }
 
         // Auto detect
@@ -151,7 +150,7 @@ trait OrmTableCommandHelpers
         if (isset($thinkorm['default']) && strpos($thinkorm['default'], 'plugin.') === 0) {
             $thinkorm = false;
         }
-        return !$database && $thinkorm ? self::ORM_THINKORM : self::ORM_LARAVEL;
+        return !$database && $thinkorm ? OrmType::THINKORM : OrmType::LARAVEL;
     }
 
     /**
@@ -186,7 +185,7 @@ trait OrmTableCommandHelpers
             return null;
         }
 
-        if ($ormType === self::ORM_THINKORM) {
+        if ($ormType === OrmType::THINKORM) {
             $is_thinkorm_v2 = class_exists(\support\think\Db::class);
             $configName = $is_thinkorm_v2 ? 'think-orm' : 'thinkorm';
             $default = $this->normalizeOptionValue(config("plugin.$plugin.$configName.default"));
@@ -230,7 +229,7 @@ trait OrmTableCommandHelpers
         $connectionOption = $this->normalizeOptionValue($connectionOption);
 
         // Determine which config set to validate against.
-        $isThink = $ormType === self::ORM_THINKORM;
+        $isThink = $ormType === OrmType::THINKORM;
         $thinkConfigName = null;
         if ($isThink) {
             $is_thinkorm_v2 = class_exists(\support\think\Db::class);
@@ -398,7 +397,7 @@ trait OrmTableCommandHelpers
             return false;
         }
 
-        if ($ormType === self::ORM_THINKORM) {
+        if ($ormType === OrmType::THINKORM) {
             $is_thinkorm_v2 = class_exists(\support\think\Db::class);
             $configName = $is_thinkorm_v2 ? 'think-orm' : 'thinkorm';
             $connections = config("plugin.$plugin.$configName.connections");
@@ -592,7 +591,7 @@ trait OrmTableCommandHelpers
         $output->writeln($this->msg('prompt_help'));
 
         $helper = $this->getHelper('question');
-        $question = new Question('> ');
+        $question = new Question('> ', '');
 
         while (true) {
             $slice = array_slice($ordered, $offset, $batchSize);
@@ -743,7 +742,7 @@ trait OrmTableCommandHelpers
         $tableBase = Util::classToName($class);
         $tablePlural = $inflector->pluralize($inflector->tableize($class));
 
-        if ($ormType === self::ORM_THINKORM) {
+        if ($ormType === OrmType::THINKORM) {
             return $this->thinkOrmTableExists($connection, $tablePlural, $plugin, $databaseOption)
                 || $this->thinkOrmTableExists($connection, $tableBase, $plugin, $databaseOption);
         }
@@ -760,7 +759,7 @@ trait OrmTableCommandHelpers
      */
     protected function listTables(string $ormType, ?string $connection, ?string $plugin = null, ?string $databaseOption = null): array
     {
-        return $ormType === self::ORM_THINKORM
+        return $ormType === OrmType::THINKORM
             ? $this->listThinkOrmTables($connection, $plugin, $databaseOption)
             : $this->listLaravelTables($connection, $plugin, $databaseOption);
     }
@@ -771,7 +770,7 @@ trait OrmTableCommandHelpers
      */
     protected function listLaravelTables(?string $connection, ?string $plugin = null, ?string $databaseOption = null): array
     {
-        $connection = $this->resolveConnectionName(self::ORM_LARAVEL, $connection, $plugin, $databaseOption);
+        $connection = $this->resolveConnectionName(OrmType::LARAVEL, $connection, $plugin, $databaseOption);
         $conn = $this->getLaravelConnectionConfig((string)$connection);
         $driver = (string)($conn['driver'] ?? 'mysql');
         $con = Db::connection($connection);
@@ -799,7 +798,7 @@ trait OrmTableCommandHelpers
      */
     protected function listThinkOrmTables(?string $connection, ?string $plugin = null, ?string $databaseOption = null): array
     {
-        $connection = $this->resolveConnectionName(self::ORM_THINKORM, $connection, $plugin, $databaseOption);
+        $connection = $this->resolveConnectionName(OrmType::THINKORM, $connection, $plugin, $databaseOption);
         $is_thinkorm_v2 = class_exists(\support\think\Db::class);
         $config_name = $is_thinkorm_v2 ? 'think-orm' : 'thinkorm';
         $conn = $this->getThinkOrmConnectionConfig($config_name, (string)$connection);
@@ -913,7 +912,7 @@ trait OrmTableCommandHelpers
             $connection = $this->resolveConnectionNameOrDefault($ormType, $plugin, $databaseOption);
         }
 
-        if ($ormType === self::ORM_THINKORM) {
+        if ($ormType === OrmType::THINKORM) {
             $is_thinkorm_v2 = class_exists(\support\think\Db::class);
             $config_name = $is_thinkorm_v2 ? 'think-orm' : 'thinkorm';
             $conn = $this->getThinkOrmConnectionConfig($config_name, (string)$connection);
@@ -935,7 +934,7 @@ trait OrmTableCommandHelpers
         ?string $databaseOption = null
     ): bool
     {
-        $connection = $this->resolveConnectionName(self::ORM_LARAVEL, $connection, $plugin, $databaseOption);
+        $connection = $this->resolveConnectionName(OrmType::LARAVEL, $connection, $plugin, $databaseOption);
         $conn = $this->getLaravelConnectionConfig((string)$connection);
         $driver = (string)($conn['driver'] ?? 'mysql');
         $prefix = (string)($conn['prefix'] ?? '');
@@ -961,7 +960,7 @@ trait OrmTableCommandHelpers
         ?string $databaseOption = null
     ): bool
     {
-        $connection = $this->resolveConnectionName(self::ORM_THINKORM, $connection, $plugin, $databaseOption);
+        $connection = $this->resolveConnectionName(OrmType::THINKORM, $connection, $plugin, $databaseOption);
         $is_thinkorm_v2 = class_exists(\support\think\Db::class);
         $config_name = $is_thinkorm_v2 ? 'think-orm' : 'thinkorm';
         $conn = $this->getThinkOrmConnectionConfig($config_name, (string)$connection);
@@ -1045,7 +1044,7 @@ trait OrmTableCommandHelpers
         $plugin = $this->normalizeOptionValue($plugin);
         $pluginForConfig = $plugin && $this->pluginHasDbConfig($ormType, $plugin) ? $plugin : null;
         $baseDir = $pluginForConfig ? "plugin/{$pluginForConfig}/config/" : 'config/';
-        if ($ormType !== self::ORM_THINKORM) {
+        if ($ormType !== OrmType::THINKORM) {
             return $baseDir . 'database.php';
         }
         $first = $baseDir . 'think-orm.php';
@@ -1071,7 +1070,7 @@ trait OrmTableCommandHelpers
         ?string $databaseOption = null
     ): array {
         $connection = $this->resolveConnectionName($ormType, $connection, $plugin, $databaseOption);
-        if ($ormType === self::ORM_THINKORM) {
+        if ($ormType === OrmType::THINKORM) {
             $is_thinkorm_v2 = class_exists(\support\think\Db::class);
             $configName = $is_thinkorm_v2 ? 'think-orm' : 'thinkorm';
             $cfg = $this->getThinkOrmConnectionConfig($configName, (string)$connection);

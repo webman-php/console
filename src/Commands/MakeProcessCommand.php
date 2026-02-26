@@ -192,7 +192,7 @@ class MakeProcessCommand extends Command
     }
 
     /**
-     * @param string $name class path like "Admin/MyProcess"
+     * @param string $name class path like "admin/MyProcess"
      * @param string|null $plugin
      * @param string|null $path
      * @param OutputInterface $output
@@ -296,7 +296,7 @@ class MakeProcessCommand extends Command
     /**
      * Convert class path to snake key for config.
      *
-     * @param string $name class path like "Admin/MyProcess"
+     * @param string $name class path like "admin/MyProcess"
      * @return string
      */
     private function toSnakeKey(string $name): string

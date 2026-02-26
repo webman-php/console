@@ -11,6 +11,7 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
 use Webman\Console\Commands\Concerns\MakeCommandHelpers;
 use Webman\Console\Commands\Concerns\OrmTableCommandHelpers;
+use Webman\Console\OrmType;
 use Webman\Console\Util;
 use Webman\Console\Messages;
 
@@ -694,7 +695,7 @@ class MakeCrudCommand extends Command
             $modelCommand->setApplication($this->getApplication());
         }
         $reflection = new \ReflectionClass($modelCommand);
-        $methodName = $ormType === self::ORM_THINKORM ? 'createTpModel' : 'createModel';
+        $methodName = $ormType === OrmType::THINKORM ? 'createTpModel' : 'createModel';
         $method = $reflection->getMethod($methodName);
         $method->setAccessible(true);
         $method->invoke($modelCommand, $class, $namespace, $file, $connection, $table, $output);
@@ -748,7 +749,7 @@ class MakeCrudCommand extends Command
         $modelName = $modelClass ?: str_replace('Controller', '', $name);
         $validatorName = $modelName . 'Validator';
         $useValidator = $validatorNamespace !== null && $this->isValidationEnabled();
-        $isThinkOrm = $ormType === self::ORM_THINKORM;
+        $isThinkOrm = $ormType === OrmType::THINKORM;
 
         $uses = [
             'use support\Request;',
@@ -1163,7 +1164,7 @@ EOF;
 
         try {
             $detector = new \Webman\Validation\Command\ValidatorGenerator\Support\OrmDetector();
-            $orm = $detector->resolve($ormType === self::ORM_THINKORM ? 'thinkorm' : 'laravel');
+            $orm = $detector->resolve($ormType === OrmType::THINKORM ? 'thinkorm' : 'laravel');
             if (!in_array($orm, ['laravel', 'thinkorm'], true)) {
                 $this->createSimpleValidatorFile($class, $namespace, $file);
                 return;
