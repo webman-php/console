@@ -697,7 +697,9 @@ class MakeCrudCommand extends Command
         $reflection = new \ReflectionClass($modelCommand);
         $methodName = $ormType === OrmType::THINKORM ? 'createTpModel' : 'createModel';
         $method = $reflection->getMethod($methodName);
-        $method->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) { // PHP < 8.1 才调用
+            $method->setAccessible(true);
+        }
         $method->invoke($modelCommand, $class, $namespace, $file, $connection, $table, $output);
 
         return $this->toRelativePath($file);
