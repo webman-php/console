@@ -22,7 +22,10 @@ return [
         '.env', 'LICENSE', 'composer.json', 'composer.lock', 'start.php', 'webman.phar', 'webman.bin'
     ],
 
+    // php.ini entries embedded into the bin file. Swow's async file IO interleaves phar reads across coroutines and can only be disabled at startup.
     'custom_ini' => '
 memory_limit = 256M
+swow.async_file = 0
+swow.async_tty = 0
     ',
 ];
