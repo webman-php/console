@@ -48,15 +48,19 @@ class BuildPharCommand extends Command
             }
         }
 
+        $base_file = $this->buildDir . DIRECTORY_SEPARATOR . $this->pharFileName;
         $phar_file = $this->buildDir . DIRECTORY_SEPARATOR . $this->getPharFileName();
-        if (file_exists($phar_file)) {
-            unlink($phar_file);
+        // convertToExecutable() 会把基础归档里已有的文件和签名带进新包，所以基础归档必须是空的
+        foreach ([$base_file, $phar_file] as $file) {
+            if (file_exists($file)) {
+                unlink($file);
+            }
         }
 
         $exclude_pattern = config('plugin.webman.console.app.exclude_pattern','');
 
-        $phar = new Phar($this->buildDir . DIRECTORY_SEPARATOR . $this->pharFileName,0 , 'webman');
-        if(!str_ends_with($this->getPharFileName(), '.phar')) {
+        $phar = new Phar($base_file, 0, 'webman');
+        if ($phar_file !== $base_file) {
             $phar = $phar->convertToExecutable($this->pharFormat, $this->pharCompression);
         }
 
@@ -74,9 +78,9 @@ class BuildPharCommand extends Command
             $private = openssl_get_privatekey(file_get_contents($private_key_file));
             $pkey = '';
             openssl_pkey_export($private, $pkey);
-            !$phar->getSignature() && $phar->setSignatureAlgorithm($signature_algorithm, $pkey);
+            $phar->setSignatureAlgorithm($signature_algorithm, $pkey);
         } else {
-            !$phar->getSignature() && $phar->setSignatureAlgorithm($signature_algorithm);
+            $phar->setSignatureAlgorithm($signature_algorithm);
         }
 
         $phar->buildFromDirectory(BASE_PATH,$exclude_pattern);
@@ -186,7 +190,7 @@ __HALT_COMPILER();
         }
         $phar_filename .= match ($this->pharFormat) {
             Phar::TAR => '.tar',
-            Phar::ZIP => 'zip',
+            Phar::ZIP => '.zip',
             default => ''
         };
         $phar_filename .= match ($this->pharCompression) {
