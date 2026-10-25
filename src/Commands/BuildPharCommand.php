@@ -114,10 +114,6 @@ class BuildPharCommand extends Command
             }
         }
 
-        if ($this->pharCompression != Phar::NONE) {
-            $phar->addFromString('vendor/composer/ClassLoader.php', $this->getClassLoaderContents());
-            $phar->addFromString('/vendor/workerman/workerman/src/Worker.php', $this->getWorkerContents());
-        }
         $output->writeln($this->msg('collect_complete'));
 
         $phar->setStub("#!/usr/bin/env php
@@ -199,30 +195,5 @@ __HALT_COMPILER();
             default => ''
         };
         return $phar_filename;
-    }
-
-    public function getClassLoaderContents(): string
-    {
-        $fileContents = file_get_contents(BASE_PATH . '/vendor/composer/ClassLoader.php');
-        $replaceContents = <<<'PHP'
-            if (str_starts_with($file, 'phar://')) {
-                $lockFile = sys_get_temp_dir() . '/phar_' . md5($file) . '.lock';
-                $fp = fopen($lockFile, 'c');
-                flock($fp, LOCK_EX) && include $file;
-                fclose($fp);
-                file_exists($lockFile) && @unlink($lockFile);
-            } else {
-                include $file;
-            }
-PHP;
-        return str_replace('            include $file;', $replaceContents, $fileContents);
-    }
-    public function getWorkerContents(): string
-    {
-        $fileContents = file_get_contents(BASE_PATH . '/vendor/workerman/workerman/src/Worker.php');
-        $replaceContents = <<<'PHP'
-        static::forkOneWorkerForLinux($worker); php_sapi_name() == 'micro' && usleep(50000);
-        PHP;
-        return str_replace('static::forkOneWorkerForLinux($worker);', $replaceContents, $fileContents);
     }
 }

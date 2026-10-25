@@ -27,6 +27,9 @@
     "symfony/console": "^6.1 || ^7.0",
     "doctrine/inflector": "^2.0"
   },
+  "conflict": {
+    "workerman/webman-framework": "<2.2.5"
+  },
   "autoload": {
     "psr-4": {
       "Webman\\Console\\" : "src"
